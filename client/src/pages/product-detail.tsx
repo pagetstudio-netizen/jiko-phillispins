@@ -1,5 +1,6 @@
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { useLocation, useParams } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +43,7 @@ export default function ProductDetailPage() {
   const { user, refreshUser } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { fmt, symbol } = useUserCurrency();
   const [showConfirm, setShowConfirm] = useState(false);
 
   const { data: products } = useQuery<ProductWithOwnership[]>({
@@ -102,7 +104,7 @@ export default function ProductDetailPage() {
       <div className="px-4 pt-4">
         <h2 className="text-white font-extrabold text-2xl mb-1">{product.name}</h2>
         <p className="font-bold text-xl mb-4" style={{ color: "#f59e0b" }}>
-          ₱{price.toLocaleString()}
+          {fmt(price)}
         </p>
 
         {/* Daily + Total */}
@@ -110,13 +112,13 @@ export default function ProductDetailPage() {
           <div className="flex justify-between items-center">
             <span className="text-gray-400 font-medium">Daily Income:</span>
             <span className="font-bold" style={{ color: "#f59e0b" }}>
-              ₱{dailyEarnings.toLocaleString()}
+              {fmt(dailyEarnings)}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-400 font-medium">Total Earnings:</span>
             <span className="font-bold" style={{ color: "#f59e0b" }}>
-              ₱{totalReturn.toLocaleString()}
+              {fmt(totalReturn)}
             </span>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Loader2, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -36,8 +36,7 @@ export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals">("deposits");
   const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
-  const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "PHP";
+  const { fmt } = useUserCurrency();
 
   const { data: deposits = [], isLoading: depositsLoading } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],
@@ -191,12 +190,12 @@ export default function HistoryPage() {
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500 w-20">Amount</span>
-                      <span className="text-sm text-gray-800 font-semibold">: ₱{parseFloat(deposit.amount).toLocaleString()}</span>
+                      <span className="text-sm text-gray-800 font-semibold">: {fmt(parseFloat(deposit.amount))}</span>
                     </div>
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500 w-20">Received</span>
                       <span className="text-sm text-gray-800 font-semibold">
-                        : ₱{deposit.status === "approved" ? parseFloat(deposit.amount).toLocaleString() : "0"}
+                        : {deposit.status === "approved" ? fmt(parseFloat(deposit.amount)) : "0"}
                       </span>
                     </div>
                     <div className="flex items-center">
@@ -251,12 +250,12 @@ export default function HistoryPage() {
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500 w-20">Amount</span>
-                      <span className="text-sm text-gray-800 font-semibold">: ₱{parseFloat(withdrawal.amount).toLocaleString()}</span>
+                      <span className="text-sm text-gray-800 font-semibold">: {fmt(parseFloat(withdrawal.amount))}</span>
                     </div>
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500 w-20">Received</span>
                       <span className="text-sm text-gray-800 font-semibold">
-                        : ₱{withdrawal.status === "approved" ? parseFloat(withdrawal.netAmount).toLocaleString() : "0"}
+                        : {withdrawal.status === "approved" ? fmt(parseFloat(withdrawal.netAmount)) : "0"}
                       </span>
                     </div>
                     <div className="flex items-center">

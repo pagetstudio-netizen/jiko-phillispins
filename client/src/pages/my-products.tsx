@@ -2,6 +2,7 @@ import { useAuth } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Loader2 } from "lucide-react";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Link } from "wouter";
 
 import fallbackImg from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
@@ -24,6 +25,7 @@ const GREEN_DARK = "#2a8d13";
 
 export default function MyProductsPage() {
   const { user } = useAuth();
+  const { fmt } = useUserCurrency();
 
   const { data: userProducts, isLoading } = useQuery<any[]>({
     queryKey: ["/api/user/products"],
@@ -62,7 +64,7 @@ export default function MyProductsPage() {
             </Link>
           </div>
           <p className="text-white text-4xl font-black tracking-tight">
-            ₱{totalEarned.toLocaleString()}
+            {fmt(totalEarned)}
           </p>
           <p className="text-white/80 text-sm mt-1">Total Earnings</p>
         </div>
@@ -117,25 +119,25 @@ export default function MyProductsPage() {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 text-sm">Price:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          ₱{Number(price).toLocaleString()}
+                          {fmt(Number(price))}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 text-sm">Daily Income:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          ₱{Number(dailyEarnings).toLocaleString()}
+                          {fmt(Number(dailyEarnings))}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 text-sm">Total Earnings:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          ₱{Number(totalRevenue).toLocaleString()}
+                          {fmt(Number(totalRevenue))}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 text-sm">Earned so far:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          ₱{earnedSoFar.toLocaleString()}
+                          {fmt(earnedSoFar)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">

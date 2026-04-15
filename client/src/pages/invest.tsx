@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { formatCurrency } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Loader2, AlertTriangle, Settings } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
@@ -24,6 +24,7 @@ export default function InvestPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { fmt, symbol } = useUserCurrency();
   useEffect(() => { document.title = "Invest | Jinko Solar"; }, []);
   const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
   const [showContactSheet, setShowContactSheet] = useState(false);
@@ -123,13 +124,13 @@ export default function InvestPage() {
                       <span className="text-sm font-bold text-white">{product.cycleDays}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Daily Income (₱)</span>
-                      <span className="text-sm font-bold text-white">{product.dailyEarnings.toLocaleString()}</span>
+                      <span className="text-sm text-white/90">Daily Income ({symbol})</span>
+                      <span className="text-sm font-bold text-white">{fmt(product.dailyEarnings)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Total Return (₱)</span>
+                      <span className="text-sm text-white/90">Total Return ({symbol})</span>
                       <span className="text-sm font-bold text-white">
-                        {product.price.toLocaleString()}+{product.totalReturn.toLocaleString()}
+                        {fmt(product.price)}+{fmt(product.totalReturn)}
                       </span>
                     </div>
                   </div>
@@ -137,8 +138,8 @@ export default function InvestPage() {
 
                 <div className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <span className="text-xs text-gray-400">Price (₱)</span>
-                    <p className="text-base font-bold text-orange-500">{product.price.toLocaleString()}</p>
+                    <span className="text-xs text-gray-400">Price ({symbol})</span>
+                    <p className="text-base font-bold text-orange-500">{fmt(product.price)}</p>
                   </div>
                   <button
                     onClick={() => handleBuyClick(product)}
@@ -183,15 +184,15 @@ export default function InvestPage() {
             <div className="px-6 pb-2 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-gray-700 text-sm">Price:</span>
-                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.price.toLocaleString()}</span>
+                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.price)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-700 text-sm">Daily Income:</span>
-                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.dailyEarnings.toLocaleString()}</span>
+                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.dailyEarnings)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-700 text-sm">Total Return:</span>
-                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.totalReturn.toLocaleString()}</span>
+                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.totalReturn)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-700 text-sm">Duration:</span>

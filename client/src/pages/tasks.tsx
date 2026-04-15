@@ -7,6 +7,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ChevronLeft, Loader2, Trophy, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Task } from "@shared/schema";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import wendysImg from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
 import jinkoLogo from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
 import iconBronze from "@assets/344464_1773318022355.png";
@@ -41,9 +42,12 @@ const TIER_COLORS = [
 
 const TIER_ICONS = [iconBronze, iconArgent, iconOr, iconPlatine, iconDiamant, iconBronze];
 
+const MIN_DEPOSIT_FCFA = 300;
+
 export default function TasksPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
+  const { fmt } = useUserCurrency();
 
   const { data: tasks, isLoading } = useQuery<TaskWithStatus[]>({
     queryKey: ["/api/tasks"],
@@ -113,9 +117,9 @@ export default function TasksPage() {
         <div className="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-between">
           <div className="flex-1 text-center border-r border-gray-100">
             <p className="text-[#3db51d] text-xl font-bold" data-testid="text-total-rewards">
-              {totalTaskRewards.toLocaleString()}
+              {fmt(totalTaskRewards)}
             </p>
-            <p className="text-gray-500 text-[11px] mt-0.5">₱ earned</p>
+            <p className="text-gray-500 text-[11px] mt-0.5">Earned</p>
           </div>
           <div className="flex-1 text-center border-r border-gray-100">
             <p className="text-[#3db51d] text-xl font-bold">{completedCount}</p>
@@ -191,10 +195,10 @@ export default function TasksPage() {
                       <p className="text-gray-700 text-xs leading-snug mb-0.5">
                         Invite{" "}
                         <span className="font-bold text-gray-900">{task.requiredInvites}</span>{" "}
-                        people to deposit (min. ₱300)
+                        people to deposit (min. {fmt(MIN_DEPOSIT_FCFA)})
                       </p>
                       <p className="text-[#3db51d] font-bold text-base">
-                        ₱{task.reward.toLocaleString()}
+                        {fmt(task.reward)}
                       </p>
 
                       <div className="mt-1.5">

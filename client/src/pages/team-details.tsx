@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { ChevronLeft, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 interface TeamMember {
   id: number;
@@ -45,6 +46,7 @@ function formatDate(dateStr: string): string {
 
 export default function TeamDetailsPage() {
   const [activeLevel, setActiveLevel] = useState<1 | 2 | 3>(1);
+  const { fmt } = useUserCurrency();
 
   const { data: team, isLoading } = useQuery<TeamDetails>({
     queryKey: ["/api/team/details"],
@@ -123,7 +125,7 @@ export default function TeamDetailsPage() {
           <div>
             <p className="text-xs text-gray-400">Total investi — Niveau {activeLevel}</p>
             <p className="text-base font-black mt-0.5" style={{ color: "#3db51d" }}>
-              {levels[activeLevel - 1].total.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {fmt(levels[activeLevel - 1].total)}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#fff0f2" }}>
@@ -187,7 +189,7 @@ export default function TeamDetailsPage() {
                     style={{ color: "#3db51d" }}
                     data-testid={`text-member-invested-${member.id}`}
                   >
-                    {member.totalInvested.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    {fmt(member.totalInvested)}
                   </p>
                 </div>
               ))}

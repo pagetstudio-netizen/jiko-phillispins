@@ -8,6 +8,7 @@ import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.pn
 import walletIcon from "@assets/20260410_193054_1775850084890.png";
 import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
 import { Link, useLocation } from "wouter";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 const GREEN = "#3db51d";
 
@@ -35,7 +36,10 @@ export default function WithdrawalPage() {
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
   const [, navigate] = useLocation();
 
-  const minWithdrawal = 120;
+  const { fmt, symbol, fromFcfa, toFcfa } = useUserCurrency();
+
+  const minWithdrawalFcfa = 120;
+  const minWithdrawal = fromFcfa(minWithdrawalFcfa);
 
   const { data: withdrawalSettings } = useQuery<{
     withdrawalFees: number;
@@ -123,7 +127,7 @@ export default function WithdrawalPage() {
     if (!amount || amount < minWithdrawal) {
       toast({
         title: "Invalid amount",
-        description: `Minimum withdrawal is ₱${minWithdrawal}`,
+        description: `Minimum withdrawal is ${fmt(minWithdrawalFcfa)}`,
         variant: "destructive",
       });
       return;
@@ -136,7 +140,7 @@ export default function WithdrawalPage() {
       });
       return;
     }
-    withdrawMutation.mutate({ amount, walletId: selectedWallet.id });
+    withdrawMutation.mutate({ amount: toFcfa(amount as number), walletId: selectedWallet.id });
   };
 
   if (walletsLoading) {
@@ -176,7 +180,7 @@ export default function WithdrawalPage() {
             <div>
               <p className="text-sm font-semibold" style={{ color: GREEN }}>Account Balance</p>
               <p className="text-4xl font-extrabold mt-1 leading-tight" style={{ color: GREEN }} data-testid="text-balance">
-                ₱{balance.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+                {fmt(balance)}
               </p>
             </div>
             <img src={walletIcon} alt="Wallet" style={{ width: 80, height: 80, objectFit: "contain" }} />
@@ -186,7 +190,7 @@ export default function WithdrawalPage() {
             <p className="text-sm mb-3" style={{ color: GREEN }}>Please enter the withdrawal amount</p>
 
             <div className="flex items-center rounded-xl px-4 py-3 border" style={{ borderColor: "#e5e7eb" }}>
-              <span className="text-gray-400 font-semibold mr-2">₱</span>
+              <span className="text-gray-400 font-semibold mr-2">{symbol}</span>
               <input
                 type="number"
                 value={amount}
@@ -198,7 +202,7 @@ export default function WithdrawalPage() {
             </div>
 
             <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-              <span>Amount received: ₱{amountAfterFees.toLocaleString()}</span>
+              <span>Amount received: {symbol}{amountAfterFees.toLocaleString()}</span>
               <span>Fee: {withdrawalFee.toFixed(2)}%</span>
             </div>
           </div>
@@ -278,7 +282,7 @@ export default function WithdrawalPage() {
         <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p><span className="font-bold">Minimum withdrawal amount:</span> ₱{minWithdrawal.toLocaleString()}</p>
+            <p><span className="font-bold">Minimum withdrawal amount:</span> {fmt(minWithdrawalFcfa)}</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>

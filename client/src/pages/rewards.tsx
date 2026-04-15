@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, HelpCircle, Users } from "lucide-react";
-import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 import globeImg from "@/assets/images/elf-station-2.jpeg";
 
@@ -43,10 +43,9 @@ export default function RewardsPage() {
     },
   });
 
-  if (!user) return null;
+  const { fmt, symbol } = useUserCurrency();
 
-  const country = getCountryByCode(user.country);
-  const currency = country?.currency || "FCFA";
+  if (!user) return null;
 
   const totalReward = tasks?.reduce((sum, t) => sum + t.reward, 0) || 0;
   const claimedReward = tasks?.filter(t => t.isCompleted).reduce((sum: number, t: any) => sum + t.reward, 0) || 0;
@@ -66,10 +65,10 @@ export default function RewardsPage() {
             <img src={globeImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
             <div className="relative z-10 flex items-center justify-between px-5 py-5">
               <div>
-                <p className="text-white/80 text-sm">{currency}</p>
-                <p className="text-white text-3xl font-black" data-testid="text-claimed-reward">{claimedReward.toLocaleString()}</p>
+                <p className="text-white/80 text-sm">{symbol}</p>
+                <p className="text-white text-3xl font-black" data-testid="text-claimed-reward">{fmt(claimedReward)}</p>
                 <p className="text-white/70 text-xs mt-1">
-                  Remplissez ces taches pour obtenir {totalReward.toLocaleString()} {currency}
+                  Remplissez ces taches pour obtenir {fmt(totalReward)}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-2">
@@ -102,7 +101,7 @@ export default function RewardsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">{task.description}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Recompense: {task.reward.toLocaleString()} {currency}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Recompense: {fmt(task.reward)}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-gray-500">({task.currentInvites}/{task.requiredInvites})</span>

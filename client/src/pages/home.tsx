@@ -5,6 +5,7 @@ import ContactSheet from "@/components/contact-sheet";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Loader2, MessageCircleMore, X, Gift } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -83,6 +84,7 @@ export default function HomePage() {
 
   const country = getCountryByCode(user.country);
   const currency = country?.currency || "PHP";
+  const { fmt } = useUserCurrency();
   const paidProducts = products?.filter(p => !p.isFree) || [];
 
   const quickActions = [
@@ -300,7 +302,7 @@ export default function HomePage() {
                     <div>
                       <span className="text-cyan-400 text-xs font-semibold">Price </span>
                       <span className="font-extrabold text-base" style={{ color: "#f59e0b" }}>
-                        ₱{price.toLocaleString()}
+                        {fmt(price)}
                       </span>
                     </div>
                   </div>
@@ -313,12 +315,12 @@ export default function HomePage() {
                 <div className="flex items-center justify-between px-3 py-2.5">
                   <div className="flex-1">
                     <p className="text-gray-500 text-[10px] mb-0.5">Daily Income</p>
-                    <p className="text-white font-bold text-sm">₱{daily.toLocaleString()}</p>
+                    <p className="text-white font-bold text-sm">{fmt(daily)}</p>
                   </div>
                   <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
                   <div className="flex-1 text-center">
                     <p className="text-gray-500 text-[10px] mb-0.5">Total Earnings</p>
-                    <p className="text-white font-bold text-sm">₱{total.toLocaleString()}</p>
+                    <p className="text-white font-bold text-sm">{fmt(total)}</p>
                   </div>
                   <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
                   <div className="flex-1 text-right">
@@ -391,7 +393,7 @@ export default function HomePage() {
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs font-medium leading-relaxed">
                   <span className="font-bold">Cash Rewards!</span><br />
-                  Enter the bonus code to receive a random amount! Up to ₱1,000!
+                  Enter the bonus code to receive a random amount! Up to {fmt(1000)}!
                 </p>
               </div>
               <div className="flex items-start gap-2">

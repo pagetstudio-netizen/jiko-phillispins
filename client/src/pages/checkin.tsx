@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Loader2, Gift } from "lucide-react";
 import { Link } from "wouter";
 import robotGift from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773319220043.png";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 interface BonusStatus {
   canClaim: boolean;
@@ -14,9 +15,12 @@ interface BonusStatus {
   daysPointed: number;
 }
 
+const DAILY_BONUS_FCFA = 5;
+
 export default function CheckinPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { fmt } = useUserCurrency();
   useEffect(() => { document.title = "Daily Check-in | Jinko Solar"; }, []);
 
   const { data: bonusStatus } = useQuery<BonusStatus>({
@@ -36,7 +40,7 @@ export default function CheckinPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/daily-bonus-status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({ title: "Bonus received!", description: "₱5 added to your balance" });
+      toast({ title: "Bonus received!", description: `${fmt(DAILY_BONUS_FCFA)} added to your balance` });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -82,7 +86,7 @@ export default function CheckinPage() {
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-1">
                   <Gift className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-white text-xl font-bold">₱5</p>
+                <p className="text-white text-xl font-bold">{fmt(DAILY_BONUS_FCFA)}</p>
                 <p className="text-white/75 text-xs text-center">Today's reward</p>
               </div>
 
@@ -99,7 +103,7 @@ export default function CheckinPage() {
 
         <div className="mx-4 mt-3">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-5 px-6 text-center">
-            <p className="text-[#3db51d] text-2xl font-bold">₱{totalBonusClaimed}</p>
+            <p className="text-[#3db51d] text-2xl font-bold">{fmt(totalBonusClaimed)}</p>
             <p className="text-gray-500 text-sm mt-1">Total bonuses claimed</p>
           </div>
         </div>
@@ -135,7 +139,7 @@ export default function CheckinPage() {
         </div>
 
         <div className="mx-4 mt-5 space-y-1.5">
-          <p className="text-gray-400 text-xs">1. Daily login reward: ₱5</p>
+          <p className="text-gray-400 text-xs">1. Daily login reward: {fmt(DAILY_BONUS_FCFA)}</p>
           <p className="text-gray-400 text-xs">2. Log in once per day to accumulate points.</p>
         </div>
 

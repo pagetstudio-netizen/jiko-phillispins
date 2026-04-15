@@ -2,7 +2,7 @@ import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Deposit {
@@ -15,8 +15,7 @@ interface Deposit {
 
 export default function DepositHistoryRealPage() {
   const { user } = useAuth();
-  const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "FCFA";
+  const { fmt } = useUserCurrency();
 
   const { data: deposits = [], isLoading } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],
@@ -82,7 +81,7 @@ export default function DepositHistoryRealPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-900">
-                      {parseFloat(deposit.amount).toLocaleString()} {currency}
+                      {fmt(parseFloat(deposit.amount))}
                     </p>
                     <p className="text-sm text-gray-500">
                       {date.toLocaleDateString('fr-FR')} a {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

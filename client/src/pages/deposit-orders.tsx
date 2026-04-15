@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import historyIcon from "@assets/20260409_133235_1775847886254.png";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 interface Deposit {
   id: number;
@@ -30,6 +31,7 @@ function formatDate(iso: string) {
 export default function DepositOrdersPage() {
   useEffect(() => { document.title = "Deposit History | Jinko Solar"; }, []);
   const { user } = useAuth();
+  const { fmt } = useUserCurrency();
 
   const { data: deposits = [], isLoading } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],
@@ -78,7 +80,7 @@ export default function DepositOrdersPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>Deposit</span>
                     <span style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>
-                      ₱{parseFloat(d.amount).toLocaleString()}
+                      {fmt(parseFloat(d.amount))}
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

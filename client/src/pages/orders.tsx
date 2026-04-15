@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 
@@ -13,6 +14,7 @@ const productImages = [elfExpert1, elfExpert2, elfStation1, elfStation2];
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const { fmt } = useUserCurrency();
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
 
   const { data: userProducts, isLoading } = useQuery<any[]>({
@@ -118,10 +120,10 @@ export default function OrdersPage() {
                       
                       <div className="space-y-0.5 text-[12px]">
                         <p className="text-gray-600">
-                          Prix : <span className="text-blue-500 font-medium">{up.product?.price?.toLocaleString() || 0} Fcfa</span>
+                          Prix : <span className="text-blue-500 font-medium">{fmt(up.product?.price || 0)}</span>
                         </p>
                         <p className="text-gray-600">
-                          Gains/jour : <span className="text-green-500 font-medium">{up.product?.dailyEarnings?.toLocaleString() || 0} Fcfa</span>
+                          Gains/jour : <span className="text-green-500 font-medium">{fmt(up.product?.dailyEarnings || 0)}</span>
                         </p>
                         <p className="text-gray-600">
                           Duree : <span className="text-blue-500 font-medium">{up.product?.cycleDays || 0} Jours</span>
@@ -130,7 +132,7 @@ export default function OrdersPage() {
                           Jours restants : <span className="text-[#2196F3] font-medium">{up.daysRemaining || 0}</span>
                         </p>
                         <p className="text-gray-600">
-                          Total gagne : <span className="text-green-600 font-bold">{totalEarned.toLocaleString()} Fcfa</span>
+                          Total gagne : <span className="text-green-600 font-bold">{fmt(totalEarned)}</span>
                         </p>
                         <p className="text-gray-600">
                           Date : <span className="text-gray-700 font-medium">{purchaseDate}</span> a <span className="text-gray-700 font-medium">{purchaseTime}</span>

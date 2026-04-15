@@ -2,7 +2,7 @@ import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Withdrawal {
@@ -15,8 +15,7 @@ interface Withdrawal {
 
 export default function DepositHistoryPage() {
   const { user } = useAuth();
-  const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "FCFA";
+  const { fmt } = useUserCurrency();
 
   const { data: withdrawals = [], isLoading } = useQuery<Withdrawal[]>({
     queryKey: ["/api/withdrawals/history"],
@@ -82,7 +81,7 @@ export default function DepositHistoryPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-900">
-                      {parseFloat(withdrawal.amount).toLocaleString()} {currency}
+                      {fmt(parseFloat(withdrawal.amount))}
                     </p>
                     <p className="text-sm text-gray-500">
                       {date.toLocaleDateString('fr-FR')} a {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

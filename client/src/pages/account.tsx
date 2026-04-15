@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCountryByCode } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Loader2, Shield, ChevronRight, Copy, MessageCircleMore } from "lucide-react";
 import { useState } from "react";
 import ContactSheet from "@/components/contact-sheet";
@@ -98,6 +99,7 @@ export default function AccountPage() {
   const todayEarnings = products?.reduce((sum: number, p: any) => sum + parseFloat(p.dailyIncome || "0"), 0) || 0;
   const country = getCountryByCode(user.country);
   const phonePrefix = country?.phonePrefix || "";
+  const { fmt } = useUserCurrency();
 
   const menuItems = [
     { icon: iconWallet, label: "My Wallet", href: "/wallet" },
@@ -177,14 +179,14 @@ export default function AccountPage() {
             </div>
 
             <p className="text-3xl font-extrabold mb-4" style={{ color: GREEN }} data-testid="text-balance">
-              {balance.toFixed(0)}
+              {fmt(balance)}
             </p>
 
             <div className="flex justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <div>
                 <p className="text-gray-500 text-[10px] leading-tight mb-1">Today's<br />Earnings</p>
                 <p className="text-white font-bold text-sm" data-testid="text-today-earnings">
-                  {todayEarnings.toFixed(0)}
+                  {fmt(todayEarnings)}
                 </p>
               </div>
               <div className="w-px" style={{ background: "rgba(255,255,255,0.08)" }} />
@@ -196,7 +198,7 @@ export default function AccountPage() {
               <div className="text-right">
                 <p className="text-gray-500 text-[10px] leading-tight mb-1">Total<br />Income</p>
                 <p className="text-white font-bold text-sm" data-testid="text-cumulative">
-                  {balance.toFixed(0)}
+                  {fmt(balance)}
                 </p>
               </div>
             </div>
