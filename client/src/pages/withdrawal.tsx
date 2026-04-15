@@ -38,7 +38,7 @@ export default function WithdrawalPage() {
 
   const { fmt, symbol, fromFcfa, toFcfa } = useUserCurrency();
 
-  const minWithdrawalFcfa = 120;
+  const minWithdrawalFcfa = 1200;
   const minWithdrawal = fromFcfa(minWithdrawalFcfa);
 
   const { data: withdrawalSettings } = useQuery<{

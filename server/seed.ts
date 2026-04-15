@@ -59,66 +59,66 @@ export async function seed() {
     },
     {
       name: "Mini Solar Panel",
-      price: 300,
-      dailyEarnings: 50,
+      price: 3000,
+      dailyEarnings: 500,
       cycleDays: 120,
-      totalReturn: 6000,
+      totalReturn: 60000,
       sortOrder: 1,
     },
     {
       name: "Basic Solar Kit",
-      price: 800,
-      dailyEarnings: 100,
+      price: 8000,
+      dailyEarnings: 1000,
       cycleDays: 120,
-      totalReturn: 12000,
+      totalReturn: 120000,
       sortOrder: 2,
     },
     {
       name: "Solar Panel 100W",
-      price: 1500,
-      dailyEarnings: 160,
+      price: 15000,
+      dailyEarnings: 1600,
       cycleDays: 120,
-      totalReturn: 19200,
+      totalReturn: 192000,
       sortOrder: 3,
     },
     {
       name: "Solar Panel 200W",
-      price: 2500,
-      dailyEarnings: 240,
+      price: 25000,
+      dailyEarnings: 2400,
       cycleDays: 120,
-      totalReturn: 28800,
+      totalReturn: 288000,
       sortOrder: 4,
     },
     {
       name: "Home Solar System",
-      price: 5000,
-      dailyEarnings: 500,
+      price: 50000,
+      dailyEarnings: 5000,
       cycleDays: 120,
-      totalReturn: 60000,
+      totalReturn: 600000,
       sortOrder: 5,
     },
     {
       name: "Mini Solar Plant",
-      price: 12000,
-      dailyEarnings: 1300,
+      price: 120000,
+      dailyEarnings: 13000,
       cycleDays: 120,
-      totalReturn: 156000,
+      totalReturn: 1560000,
       sortOrder: 6,
     },
     {
       name: "Advanced Solar Station",
-      price: 35000,
-      dailyEarnings: 2500,
+      price: 350000,
+      dailyEarnings: 25000,
       cycleDays: 120,
-      totalReturn: 300000,
+      totalReturn: 3000000,
       sortOrder: 7,
     },
     {
       name: "Industrial Solar Plant",
-      price: 55000,
-      dailyEarnings: 5700,
+      price: 550000,
+      dailyEarnings: 57000,
       cycleDays: 120,
-      totalReturn: 684000,
+      totalReturn: 6840000,
       sortOrder: 8,
     },
   ];
@@ -198,7 +198,8 @@ export async function seed() {
     { key: "support2Link", value: "https://t.me/Jinkosolarr" },
     { key: "channelLink", value: "https://t.me/Jinkosolarr" },
     { key: "groupLink", value: "https://t.me/Jinkosolarr" },
-    { key: "minDeposit", value: "300" },
+    { key: "minDeposit", value: "3000" },
+    { key: "minWithdrawal", value: "1200" },
     { key: "withdrawalFees", value: "17" },
     { key: "withdrawalStartHour", value: "8" },
     { key: "withdrawalEndHour", value: "17" },
@@ -216,11 +217,17 @@ export async function seed() {
     { key: "phpToFcfaRate", value: "10" },
   ];
 
+  // Settings that should always be updated to the required value (critical platform config)
+  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal"]);
+
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);
     if (!existing) {
       await db.insert(platformSettings).values(settingData);
       console.log(`Setting added: ${settingData.key}`);
+    } else if (alwaysUpdateKeys.has(settingData.key) && existing.value !== settingData.value) {
+      await db.update(platformSettings).set({ value: settingData.value }).where(eq(platformSettings.key, settingData.key));
+      console.log(`Setting updated: ${settingData.key} = ${settingData.value}`);
     } else {
       console.log(`Setting preserved: ${settingData.key} = ${existing.value}`);
     }
