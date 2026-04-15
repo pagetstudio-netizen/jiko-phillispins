@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { Component, ReactNode } from "react";
+import { LangProvider } from "./lib/i18n";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: string }> {
   constructor(props: { children: ReactNode }) {
@@ -47,6 +48,8 @@ document.addEventListener("dragstart", (e) => {
 
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
-    <App />
+    <LangProvider>
+      <App />
+    </LangProvider>
   </ErrorBoundary>
 );

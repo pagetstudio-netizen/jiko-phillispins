@@ -1,4 +1,5 @@
 export const COUNTRIES = [
+  { code: "PH", name: "Philippines", flag: "PH", currency: "PHP", paymentMethods: ["GCash", "Maya", "Bank Transfer"] },
   { code: "BJ", name: "Benin", flag: "BJ", currency: "XOF", paymentMethods: ["Moov Money", "MTN"] },
   { code: "CM", name: "Cameroun", flag: "CM", currency: "XAF", paymentMethods: ["Orange Money", "MTN"] },
   { code: "BF", name: "Burkina Faso", flag: "BF", currency: "XOF", paymentMethods: ["Orange Money", "Moov Money"] },
@@ -6,6 +7,7 @@ export const COUNTRIES = [
 ];
 
 export const ELIGIBLE_COUNTRIES = [
+  { code: "PH", name: "Philippines", flag: "PH", currency: "PHP", phonePrefix: "63", paymentMethods: ["GCash", "Maya", "Bank Transfer"] },
   { code: "BJ", name: "Benin", flag: "BJ", currency: "XOF", phonePrefix: "229", paymentMethods: ["Moov Money", "MTN"] },
   { code: "CM", name: "Cameroun", flag: "CM", currency: "XAF", phonePrefix: "237", paymentMethods: ["Orange Money", "MTN"] },
   { code: "BF", name: "Burkina Faso", flag: "BF", currency: "XOF", phonePrefix: "226", paymentMethods: ["Orange Money", "Moov Money"] },
