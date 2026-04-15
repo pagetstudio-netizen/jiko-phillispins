@@ -13,14 +13,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 import { Edit, Loader2, TrendingUp } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 const productSchema = z.object({
-  name: z.string().min(2, "Nom requis"),
-  price: z.string().min(1, "Prix requis"),
-  dailyEarnings: z.string().min(1, "Gains journaliers requis"),
-  cycleDays: z.string().min(1, "Durée requise"),
+  name: z.string().min(2, "Name required"),
+  price: z.string().min(1, "Price required"),
+  dailyEarnings: z.string().min(1, "Daily earnings required"),
+  cycleDays: z.string().min(1, "Duration required"),
   imageUrl: z.string().optional(),
 });
 
@@ -28,6 +29,7 @@ type ProductForm = z.infer<typeof productSchema>;
 
 export default function AdminProducts() {
   const { toast } = useToast();
+  const { formatAmount } = useAdminCurrency();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { data: products, isLoading } = useQuery<Product[]>({
@@ -50,17 +52,17 @@ export default function AdminProducts() {
       const response = await apiRequest("PATCH", `/api/admin/products/${id}`, data);
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Erreur");
+        throw new Error(result.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products/all"] });
-      toast({ title: "Produit mis à jour!" });
+      toast({ title: "Product updated!" });
       setSelectedProduct(null);
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -69,7 +71,7 @@ export default function AdminProducts() {
       const response = await apiRequest("PATCH", `/api/admin/products/${id}`, { isActive });
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Erreur");
+        throw new Error(result.message || "Error");
       }
       return response.json();
     },
@@ -77,7 +79,7 @@ export default function AdminProducts() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products/all"] });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -94,11 +96,11 @@ export default function AdminProducts() {
 
   const handleSubmit = (data: ProductForm) => {
     if (!selectedProduct) return;
-    
+
     const price = parseInt(data.price);
     const dailyEarnings = parseInt(data.dailyEarnings);
     const cycleDays = parseInt(data.cycleDays);
-    
+
     updateMutation.mutate({
       id: selectedProduct.id,
       data: {
@@ -128,10 +130,10 @@ export default function AdminProducts() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-foreground">{product.name}</p>
-                      {product.isFree && <Badge variant="secondary" className="text-xs">Gratuit</Badge>}
+                      {product.isFree && <Badge variant="secondary" className="text-xs">Free</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {product.price.toLocaleString()} F - {product.dailyEarnings.toLocaleString()} F/jour
+                      {formatAmount(product.price)} - {formatAmount(product.dailyEarnings)}/day
                     </p>
                   </div>
                 </div>
@@ -148,16 +150,16 @@ export default function AdminProducts() {
 
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Prix</p>
-                  <p className="font-medium text-foreground">{product.price.toLocaleString()} F</p>
+                  <p className="text-muted-foreground">Price</p>
+                  <p className="font-medium text-foreground">{formatAmount(product.price)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Gains/jour</p>
-                  <p className="font-medium text-foreground">{product.dailyEarnings.toLocaleString()} F</p>
+                  <p className="text-muted-foreground">Daily earnings</p>
+                  <p className="font-medium text-foreground">{formatAmount(product.dailyEarnings)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Total</p>
-                  <p className="font-medium text-primary">{product.totalReturn.toLocaleString()} F</p>
+                  <p className="text-muted-foreground">Total return</p>
+                  <p className="font-medium text-primary">{formatAmount(product.totalReturn)}</p>
                 </div>
               </div>
             </CardContent>
@@ -165,14 +167,14 @@ export default function AdminProducts() {
         ))
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          Aucun produit
+          No products
         </div>
       )}
 
       <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Modifier le produit</DialogTitle>
+            <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
@@ -182,7 +184,7 @@ export default function AdminProducts() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -197,7 +199,7 @@ export default function AdminProducts() {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prix (F)</FormLabel>
+                      <FormLabel>Price (FCFA)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" />
                       </FormControl>
@@ -211,7 +213,7 @@ export default function AdminProducts() {
                   name="dailyEarnings"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gains/jour (F)</FormLabel>
+                      <FormLabel>Daily earnings (FCFA)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" />
                       </FormControl>
@@ -226,7 +228,7 @@ export default function AdminProducts() {
                 name="cycleDays"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Durée (jours)</FormLabel>
+                    <FormLabel>Duration (days)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -240,7 +242,7 @@ export default function AdminProducts() {
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL de l'image (optionnel)</FormLabel>
+                    <FormLabel>Image URL (optional)</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="https://..." />
                     </FormControl>
@@ -250,7 +252,7 @@ export default function AdminProducts() {
               />
 
               <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
               </Button>
             </form>
           </Form>

@@ -18,15 +18,15 @@ import { Plus, Edit, Trash2, Loader2, Link } from "lucide-react";
 import type { PaymentChannel } from "@shared/schema";
 
 const COUNTRY_OPTIONS = [
-  { code: "BJ", label: "🇧🇯 Bénin" },
-  { code: "CM", label: "🇨🇲 Cameroun" },
+  { code: "BJ", label: "🇧🇯 Benin" },
+  { code: "CM", label: "🇨🇲 Cameroon" },
   { code: "BF", label: "🇧🇫 Burkina Faso" },
-  { code: "CI", label: "🇨🇮 Côte d'Ivoire" },
+  { code: "CI", label: "🇨🇮 Ivory Coast" },
 ];
 
 const channelSchema = z.object({
-  name: z.string().min(2, "Nom requis"),
-  redirectUrl: z.string().min(5, "URL requise"),
+  name: z.string().min(2, "Name required"),
+  redirectUrl: z.string().min(5, "URL required"),
   isApi: z.boolean().default(false),
   countries: z.array(z.string()).default([]),
 });
@@ -54,59 +54,59 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
   const createMutation = useMutation({
     mutationFn: async (data: ChannelForm) => {
       const response = await apiRequest("POST", "/api/admin/channels", data);
-      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Erreur"); }
+      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Error"); }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/channels"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-channels"] });
-      toast({ title: "Canal créé!" });
+      toast({ title: "Channel created!" });
       setShowForm(false);
       form.reset();
     },
-    onError: (error: any) => toast({ title: "Erreur", description: error.message, variant: "destructive" }),
+    onError: (error: any) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<ChannelForm> }) => {
       const response = await apiRequest("PATCH", `/api/admin/channels/${id}`, data);
-      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Erreur"); }
+      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Error"); }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/channels"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-channels"] });
-      toast({ title: "Canal mis à jour!" });
+      toast({ title: "Channel updated!" });
       setEditChannel(null);
     },
-    onError: (error: any) => toast({ title: "Erreur", description: error.message, variant: "destructive" }),
+    onError: (error: any) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/channels/${id}`, {});
-      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Erreur"); }
+      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Error"); }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/channels"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-channels"] });
-      toast({ title: "Canal supprimé!" });
+      toast({ title: "Channel deleted!" });
     },
-    onError: (error: any) => toast({ title: "Erreur", description: error.message, variant: "destructive" }),
+    onError: (error: any) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
       const response = await apiRequest("PATCH", `/api/admin/channels/${id}`, { isActive });
-      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Erreur"); }
+      if (!response.ok) { const result = await response.json(); throw new Error(result.message || "Error"); }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/channels"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-channels"] });
     },
-    onError: (error: any) => toast({ title: "Erreur", description: error.message, variant: "destructive" }),
+    onError: (error: any) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
 
   const openEdit = (channel: PaymentChannel) => {
@@ -131,7 +131,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
     <div className="space-y-4">
       <Button onClick={() => { setShowForm(true); form.reset({ name: "", redirectUrl: "", isApi: false, countries: [] }); }} className="w-full">
         <Plus className="w-4 h-4 mr-2" />
-        Ajouter un canal
+        Add Channel
       </Button>
 
       {isLoading ? (
@@ -161,7 +161,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                       </div>
                     )}
                     {(!channel.countries || (channel.countries as string[]).length === 0) && (
-                      <p className="text-xs text-orange-500 mt-0.5">⚠ Aucun pays configuré</p>
+                      <p className="text-xs text-orange-500 mt-0.5">⚠ No country configured</p>
                     )}
                   </div>
                 </div>
@@ -183,14 +183,14 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
         ))
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          Aucun canal de paiement
+          No payment channels
         </div>
       )}
 
       <Dialog open={showForm || !!editChannel} onOpenChange={() => { setShowForm(false); setEditChannel(null); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editChannel ? "Modifier le canal" : "Nouveau canal"}</DialogTitle>
+            <DialogTitle>{editChannel ? "Edit Channel" : "New Channel"}</DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
@@ -200,9 +200,9 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du canal</FormLabel>
+                    <FormLabel>Channel Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Ex: MTN Mobile Money" data-testid="input-channel-name" />
+                      <Input {...field} placeholder="E.g. MTN Mobile Money" data-testid="input-channel-name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -214,7 +214,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                 name="redirectUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL de redirection / Instructions</FormLabel>
+                    <FormLabel>Redirect URL / Instructions</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="https://..." data-testid="input-channel-url" />
                     </FormControl>
@@ -223,13 +223,12 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                 )}
               />
 
-              {/* Countries */}
               <FormField
                 control={form.control}
                 name="countries"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pays disponibles *</FormLabel>
+                    <FormLabel>Available Countries *</FormLabel>
                     <div className="grid grid-cols-2 gap-2 mt-1">
                       {COUNTRY_OPTIONS.map((opt) => {
                         const checked = field.value.includes(opt.code);
@@ -255,7 +254,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">Ce canal sera visible uniquement pour les utilisateurs des pays sélectionnés.</p>
+                    <p className="text-xs text-gray-400 mt-1">This channel will only be visible to users from the selected countries.</p>
                   </FormItem>
                 )}
               />
@@ -268,7 +267,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
                     <FormControl>
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
-                    <FormLabel className="!mt-0">Paiement API automatique</FormLabel>
+                    <FormLabel className="!mt-0">Automatic API payment</FormLabel>
                   </FormItem>
                 )}
               />
@@ -276,7 +275,7 @@ export default function AdminChannels({ isSuperAdmin }: AdminChannelsProps) {
               <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
                 {(createMutation.isPending || updateMutation.isPending) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : editChannel ? "Enregistrer" : "Créer"}
+                ) : editChannel ? "Save" : "Create"}
               </Button>
             </form>
           </Form>

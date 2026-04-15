@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { formatCurrency } from "@/lib/countries";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 import { Search, Edit, Ban, Shield, Lock, Unlock, Star, Users, Loader2, UserPlus, ChevronDown, ChevronUp, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { User, Product } from "@shared/schema";
 
@@ -72,6 +72,7 @@ interface UsersResponse {
 export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { formatAmount } = useAdminCurrency();
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,7 +85,6 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
   const [teamUserId, setTeamUserId] = useState<number | null>(null);
   const [adminPinInput, setAdminPinInput] = useState("");
 
-  // Debounce search input
   const debounceTimeout = useRef<ReturnType<typeof setTimeout>>();
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -141,17 +141,17 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
       const response = await apiRequest("POST", `/api/admin/users/${userId}/revoke-product`, { value: productId });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users", selectedUser?.id, "products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Produit revoque!" });
+      toast({ title: "Product revoked!" });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -160,21 +160,20 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
       const response = await apiRequest("POST", `/api/admin/users/${userId}/${action}`, { value });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Utilisateur mis a jour!" });
+      toast({ title: "User updated!" });
       setSelectedUser(null);
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
-  // Client-side status filter only (search is now server-side)
   const filteredUsers = users.filter(u => {
     if (statusFilter === "all") return true;
     if (statusFilter === "banned") return u.isBanned;
@@ -195,28 +194,28 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
           <div>
             <p className="font-medium text-foreground">{member.fullName}</p>
             <p className="text-xs text-muted-foreground">{member.phone} - {member.country}</p>
-            <p className="text-xs text-muted-foreground">Inscrit: {new Date(member.createdAt).toLocaleDateString()}</p>
+            <p className="text-xs text-muted-foreground">Registered: {new Date(member.createdAt).toLocaleDateString()}</p>
           </div>
           <div className="text-right">
             {member.hasActiveProduct && (
-              <Badge className="text-xs mb-1">Actif</Badge>
+              <Badge className="text-xs mb-1">Active</Badge>
             )}
             {member.hasDeposited && (
-              <Badge variant="secondary" className="text-xs mb-1 ml-1">A depose</Badge>
+              <Badge variant="secondary" className="text-xs mb-1 ml-1">Deposited</Badge>
             )}
           </div>
         </div>
         <div className="mt-2 pt-2 border-t">
           <p className="text-sm font-medium text-primary">
-            Total investi: {member.totalInvested.toLocaleString()} F
+            Total invested: {formatAmount(member.totalInvested)}
           </p>
           {member.products.length > 0 && (
             <div className="mt-1">
-              <p className="text-xs text-muted-foreground">Produits:</p>
+              <p className="text-xs text-muted-foreground">Products:</p>
               {member.products.map((p, i) => (
                 <p key={i} className="text-xs">
-                  - {p.productName} ({p.productPrice.toLocaleString()} F) 
-                  {p.isActive ? " (actif)" : " (termine)"}
+                  - {p.productName} ({formatAmount(p.productPrice)})
+                  {p.isActive ? " (active)" : " (ended)"}
                 </p>
               ))}
             </div>
@@ -232,7 +231,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par telephone, nom ou code..."
+            placeholder="Search by phone, name or code..."
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
@@ -243,7 +242,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
 
       {usersData && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{usersData.total} utilisateur{usersData.total > 1 ? "s" : ""} trouve{usersData.total > 1 ? "s" : ""}</span>
+          <span>{usersData.total} user{usersData.total > 1 ? "s" : ""} found</span>
           <span>Page {usersData.page} / {usersData.totalPages}</span>
         </div>
       )}
@@ -256,7 +255,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
             variant={statusFilter === status ? "default" : "outline"}
             onClick={() => setStatusFilter(status)}
           >
-            {status === "all" ? "Tous" : status === "banned" ? "Bannis" : status === "blocked" ? "Retrait bloque" : "Promoteurs"}
+            {status === "all" ? "All" : status === "banned" ? "Banned" : status === "blocked" ? "Withdrawal blocked" : "Promoters"}
           </Button>
         ))}
       </div>
@@ -273,29 +272,29 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-foreground">{user.fullName}</p>
                       {user.isAdmin && <Badge variant="destructive" className="text-xs">Admin</Badge>}
-                      {user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
-                      {user.isBanned && <Badge variant="destructive" className="text-xs">Banni</Badge>}
-                      {user.isWithdrawalBlocked && <Badge variant="secondary" className="text-xs">Retrait bloque</Badge>}
+                      {user.isPromoter && <Badge className="text-xs">Promoter</Badge>}
+                      {user.isBanned && <Badge variant="destructive" className="text-xs">Banned</Badge>}
+                      {user.isWithdrawalBlocked && <Badge variant="secondary" className="text-xs">Withdrawal blocked</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{user.phone} - {user.country}</p>
                     <p className="text-xs text-muted-foreground">Code: {user.referralCode}</p>
                     {user.referrerName && (
                       <p className="text-xs text-primary flex items-center gap-1 mt-1">
                         <UserPlus className="w-3 h-3" />
-                        Invite par: <span className="font-medium">{user.referrerName}</span>
+                        Referred by: <span className="font-medium">{user.referrerName}</span>
                       </p>
                     )}
                     {user.referredBy && !user.referrerName && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                         <UserPlus className="w-3 h-3" />
-                        Code parrain: {user.referredBy}
+                        Referral code: {user.referredBy}
                       </p>
                     )}
                   </div>
                   <div className="flex gap-1">
                     <Button size="sm" variant="outline" onClick={() => navigate(`/admin/team/${user.id}`)}>
                       <Users className="w-4 h-4 mr-1" />
-                      Equipe
+                      Team
                     </Button>
                     <Button size="icon" variant="ghost" onClick={() => setSelectedUser(user)}>
                       <Edit className="w-4 h-4" />
@@ -305,16 +304,16 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
 
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Solde</p>
-                    <p className="font-medium text-foreground">{formatCurrency(parseFloat(user.balance), user.country)}</p>
+                    <p className="text-muted-foreground">Balance</p>
+                    <p className="font-medium text-foreground">{formatAmount(parseFloat(user.balance))}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Equipe</p>
+                    <p className="text-muted-foreground">Team</p>
                     <p className="font-medium text-foreground">{user.level1Count + user.level2Count + user.level3Count}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Commissions</p>
-                    <p className="font-medium text-primary">{formatCurrency(user.totalCommission, user.country)}</p>
+                    <p className="font-medium text-primary">{formatAmount(user.totalCommission)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -322,7 +321,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
           ))
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            Aucun utilisateur trouve
+            No users found
           </div>
         )}
       </div>
@@ -337,7 +336,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
             data-testid="button-prev-page"
           >
             <ChevronLeft className="w-4 h-4" />
-            Precedent
+            Previous
           </Button>
           <span className="text-sm text-muted-foreground px-2">
             {currentPage} / {usersData.totalPages}
@@ -349,7 +348,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
             disabled={currentPage === usersData.totalPages || isLoading}
             data-testid="button-next-page"
           >
-            Suivant
+            Next
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -358,7 +357,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
       <Dialog open={showTeamModal} onOpenChange={() => { setShowTeamModal(false); setTeamUserId(null); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Equipe de l'utilisateur</DialogTitle>
+            <DialogTitle>User's Team</DialogTitle>
           </DialogHeader>
 
           {teamLoading ? (
@@ -368,68 +367,50 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
           ) : teamData ? (
             <Tabs defaultValue="level1" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="level1">
-                  Niveau 1 ({teamData.level1.length})
-                </TabsTrigger>
-                <TabsTrigger value="level2">
-                  Niveau 2 ({teamData.level2.length})
-                </TabsTrigger>
-                <TabsTrigger value="level3">
-                  Niveau 3 ({teamData.level3.length})
-                </TabsTrigger>
+                <TabsTrigger value="level1">Level 1 ({teamData.level1.length})</TabsTrigger>
+                <TabsTrigger value="level2">Level 2 ({teamData.level2.length})</TabsTrigger>
+                <TabsTrigger value="level3">Level 3 ({teamData.level3.length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="level1" className="mt-4">
                 <Card className="mb-3">
                   <CardContent className="p-3 text-center">
-                    <p className="text-lg font-bold text-primary">
-                      {teamData.totalLevel1Invested.toLocaleString()} F
-                    </p>
-                    <p className="text-xs text-muted-foreground">Total investi niveau 1</p>
+                    <p className="text-lg font-bold text-primary">{formatAmount(teamData.totalLevel1Invested)}</p>
+                    <p className="text-xs text-muted-foreground">Total invested level 1</p>
                   </CardContent>
                 </Card>
                 {teamData.level1.length > 0 ? (
-                  teamData.level1.map(member => (
-                    <TeamMemberCard key={member.id} member={member} level={1} />
-                  ))
+                  teamData.level1.map(member => <TeamMemberCard key={member.id} member={member} level={1} />)
                 ) : (
-                  <p className="text-center text-muted-foreground py-4">Aucun filleul niveau 1</p>
+                  <p className="text-center text-muted-foreground py-4">No level 1 referrals</p>
                 )}
               </TabsContent>
 
               <TabsContent value="level2" className="mt-4">
                 <Card className="mb-3">
                   <CardContent className="p-3 text-center">
-                    <p className="text-lg font-bold text-primary">
-                      {teamData.totalLevel2Invested.toLocaleString()} F
-                    </p>
-                    <p className="text-xs text-muted-foreground">Total investi niveau 2</p>
+                    <p className="text-lg font-bold text-primary">{formatAmount(teamData.totalLevel2Invested)}</p>
+                    <p className="text-xs text-muted-foreground">Total invested level 2</p>
                   </CardContent>
                 </Card>
                 {teamData.level2.length > 0 ? (
-                  teamData.level2.map(member => (
-                    <TeamMemberCard key={member.id} member={member} level={2} />
-                  ))
+                  teamData.level2.map(member => <TeamMemberCard key={member.id} member={member} level={2} />)
                 ) : (
-                  <p className="text-center text-muted-foreground py-4">Aucun filleul niveau 2</p>
+                  <p className="text-center text-muted-foreground py-4">No level 2 referrals</p>
                 )}
               </TabsContent>
 
               <TabsContent value="level3" className="mt-4">
                 <Card className="mb-3">
                   <CardContent className="p-3 text-center">
-                    <p className="text-lg font-bold text-primary">
-                      {teamData.totalLevel3Invested.toLocaleString()} F
-                    </p>
-                    <p className="text-xs text-muted-foreground">Total investi niveau 3</p>
+                    <p className="text-lg font-bold text-primary">{formatAmount(teamData.totalLevel3Invested)}</p>
+                    <p className="text-xs text-muted-foreground">Total invested level 3</p>
                   </CardContent>
                 </Card>
                 {teamData.level3.length > 0 ? (
-                  teamData.level3.map(member => (
-                    <TeamMemberCard key={member.id} member={member} level={3} />
-                  ))
+                  teamData.level3.map(member => <TeamMemberCard key={member.id} member={member} level={3} />)
                 ) : (
-                  <p className="text-center text-muted-foreground py-4">Aucun filleul niveau 3</p>
+                  <p className="text-center text-muted-foreground py-4">No level 3 referrals</p>
                 )}
               </TabsContent>
             </Tabs>
@@ -440,7 +421,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Gerer {selectedUser?.fullName}</DialogTitle>
+            <DialogTitle>Manage {selectedUser?.fullName}</DialogTitle>
           </DialogHeader>
 
           {selectedUser && (
@@ -448,7 +429,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
               {selectedUser.referrerName && (
                 <div className="bg-secondary rounded-lg p-3">
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Invite par:</span>{" "}
+                    <span className="text-muted-foreground">Referred by:</span>{" "}
                     <span className="font-medium">{selectedUser.referrerName}</span>
                   </p>
                 </div>
@@ -457,30 +438,30 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
               <div className="grid grid-cols-3 gap-2 text-center text-sm">
                 <div className="bg-secondary rounded-lg p-3">
                   <Users className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Niveau 1</p>
+                  <p className="text-xs text-muted-foreground">Level 1</p>
                   <p className="font-bold">{selectedUser.level1Count}</p>
                 </div>
                 <div className="bg-secondary rounded-lg p-3">
                   <Users className="w-5 h-5 text-foreground mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Niveau 2</p>
+                  <p className="text-xs text-muted-foreground">Level 2</p>
                   <p className="font-bold">{selectedUser.level2Count}</p>
                 </div>
                 <div className="bg-secondary rounded-lg p-3">
                   <Users className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Niveau 3</p>
+                  <p className="text-xs text-muted-foreground">Level 3</p>
                   <p className="font-bold">{selectedUser.level3Count}</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium">Modifier le solde</label>
+                  <label className="text-sm font-medium">Edit Balance</label>
                   <div className="flex gap-2 mt-1">
                     <Input
                       type="number"
                       value={editBalance}
                       onChange={(e) => setEditBalance(e.target.value)}
-                      placeholder="Nouveau solde"
+                      placeholder="New balance"
                     />
                     <Button
                       onClick={() => updateMutation.mutate({ userId: selectedUser.id, action: "balance", value: parseFloat(editBalance) })}
@@ -492,13 +473,13 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Reinitialiser mot de passe</label>
+                  <label className="text-sm font-medium">Reset Password</label>
                   <div className="flex gap-2 mt-1">
                     <Input
                       type="text"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Nouveau mot de passe"
+                      placeholder="New password"
                     />
                     <Button
                       onClick={() => updateMutation.mutate({ userId: selectedUser.id, action: "password", value: newPassword })}
@@ -510,16 +491,16 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Attribuer un produit</label>
+                  <label className="text-sm font-medium">Assign a Product</label>
                   <div className="flex gap-2 mt-1">
                     <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                       <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Choisir un produit" />
+                        <SelectValue placeholder="Choose a product" />
                       </SelectTrigger>
                       <SelectContent>
                         {products?.filter(p => !p.isFree).map((product) => (
                           <SelectItem key={product.id} value={product.id.toString()}>
-                            {product.name} - {product.price.toLocaleString()} F
+                            {product.name} - {formatAmount(product.price)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -534,18 +515,18 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Produits de l'utilisateur</label>
+                  <label className="text-sm font-medium">User's Products</label>
                   <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
                     {userProductsLoading ? (
-                      <p className="text-sm text-muted-foreground">Chargement...</p>
+                      <p className="text-sm text-muted-foreground">Loading...</p>
                     ) : userProducts && userProducts.length > 0 ? (
                       userProducts.map((up) => (
                         <div key={up.id} className={`flex items-center justify-between p-2 rounded-lg ${up.isActive ? "bg-green-500/10 border border-green-500/20" : "bg-secondary"}`}>
                           <div>
                             <p className="text-sm font-medium">{up.productName}</p>
                             <p className="text-xs text-muted-foreground">
-                              {up.productPrice.toLocaleString()} F - Jour {up.daysClaimed}/{up.totalCycle}
-                              {up.isActive ? " (Actif)" : " (Termine)"}
+                              {formatAmount(up.productPrice)} - Day {up.daysClaimed}/{up.totalCycle}
+                              {up.isActive ? " (Active)" : " (Ended)"}
                             </p>
                           </div>
                           {up.isActive && (
@@ -562,7 +543,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">Aucun produit</p>
+                      <p className="text-sm text-muted-foreground">No products</p>
                     )}
                   </div>
                 </div>
@@ -574,7 +555,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                     disabled={updateMutation.isPending}
                   >
                     <Ban className="w-4 h-4 mr-2" />
-                    {selectedUser.isBanned ? "Debannir" : "Bannir"}
+                    {selectedUser.isBanned ? "Unban" : "Ban"}
                   </Button>
 
                   <Button
@@ -583,7 +564,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                     disabled={updateMutation.isPending}
                   >
                     {selectedUser.isWithdrawalBlocked ? <Unlock className="w-4 h-4 mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
-                    {selectedUser.isWithdrawalBlocked ? "Debloquer" : "Bloquer retrait"}
+                    {selectedUser.isWithdrawalBlocked ? "Unblock" : "Block withdrawal"}
                   </Button>
 
                   <Button
@@ -592,7 +573,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                     disabled={updateMutation.isPending}
                   >
                     <Star className="w-4 h-4 mr-2" />
-                    {selectedUser.isPromoter ? "Retirer promoteur" : "Promoteur"}
+                    {selectedUser.isPromoter ? "Remove promoter" : "Make promoter"}
                   </Button>
 
                   <Button
@@ -601,19 +582,19 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                     disabled={updateMutation.isPending}
                   >
                     <Users className="w-4 h-4 mr-2" />
-                    {selectedUser.mustInviteToWithdraw ? "Desactiver" : "Doit inviter"}
+                    {selectedUser.mustInviteToWithdraw ? "Disable" : "Must invite"}
                   </Button>
 
                   {isSuperAdmin && !selectedUser.isSuperAdmin && (
                     <div className="col-span-2 space-y-2">
                       {!selectedUser.isAdmin && (
                         <div>
-                          <label className="text-sm font-medium">Code PIN pour l'admin</label>
+                          <label className="text-sm font-medium">PIN code for admin</label>
                           <Input
                             type="text"
                             value={adminPinInput}
                             onChange={(e) => setAdminPinInput(e.target.value)}
-                            placeholder="Ex: 1234"
+                            placeholder="E.g. 1234"
                             className="mt-1"
                             maxLength={8}
                             data-testid="input-new-admin-pin"
@@ -623,10 +604,10 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                       <Button
                         variant={selectedUser.isAdmin ? "secondary" : "outline"}
                         onClick={() => {
-                          updateMutation.mutate({ 
-                            userId: selectedUser.id, 
-                            action: "toggle-admin", 
-                            value: !selectedUser.isAdmin ? adminPinInput : undefined 
+                          updateMutation.mutate({
+                            userId: selectedUser.id,
+                            action: "toggle-admin",
+                            value: !selectedUser.isAdmin ? adminPinInput : undefined
                           });
                           setAdminPinInput("");
                         }}
@@ -634,21 +615,21 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
                         className="w-full"
                       >
                         <Shield className="w-4 h-4 mr-2" />
-                        {selectedUser.isAdmin ? "Retirer admin" : "Nommer admin"}
+                        {selectedUser.isAdmin ? "Remove admin" : "Make admin"}
                       </Button>
                       {selectedUser.isAdmin && (
                         <Button
                           variant={selectedUser.isAdminPasswordRequired ? "outline" : "default"}
-                          onClick={() => updateMutation.mutate({ 
-                            userId: selectedUser.id, 
-                            action: "toggle-password-required", 
-                            value: !selectedUser.isAdminPasswordRequired 
+                          onClick={() => updateMutation.mutate({
+                            userId: selectedUser.id,
+                            action: "toggle-password-required",
+                            value: !selectedUser.isAdminPasswordRequired
                           })}
                           disabled={updateMutation.isPending}
                           className="w-full"
                         >
                           {selectedUser.isAdminPasswordRequired ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
-                          {selectedUser.isAdminPasswordRequired ? "PIN requis pour cet admin" : "Sans PIN pour cet admin"}
+                          {selectedUser.isAdminPasswordRequired ? "PIN required for this admin" : "No PIN for this admin"}
                         </Button>
                       )}
                     </div>

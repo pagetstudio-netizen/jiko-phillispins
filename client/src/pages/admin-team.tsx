@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Users, TrendingUp } from "lucide-react";
 import type { User } from "@shared/schema";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 
 interface TeamMember {
   id: number;
@@ -34,6 +35,7 @@ export default function AdminTeamPage() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const userId = parseInt(params.id || "0");
+  const { formatAmount } = useAdminCurrency();
 
   const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/admin/users", userId, "info"],
@@ -66,15 +68,15 @@ export default function AdminTeamPage() {
             <p className="font-medium text-foreground text-lg">{member.fullName}</p>
             <p className="text-sm text-muted-foreground">{member.phone} - {member.country}</p>
             <p className="text-xs text-muted-foreground">
-              Inscrit le {new Date(member.createdAt).toLocaleDateString("fr-FR")}
+              Registered on {new Date(member.createdAt).toLocaleDateString("en-GB")}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
             {member.hasActiveProduct && (
-              <Badge className="text-xs">Produit actif</Badge>
+              <Badge className="text-xs">Active Product</Badge>
             )}
             {member.hasDeposited && (
-              <Badge variant="secondary" className="text-xs">A depose</Badge>
+              <Badge variant="secondary" className="text-xs">Deposited</Badge>
             )}
           </div>
         </div>
@@ -83,9 +85,9 @@ export default function AdminTeamPage() {
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
             <div>
-              <p className="text-xs text-muted-foreground">Total investi</p>
+              <p className="text-xs text-muted-foreground">Total invested</p>
               <p className="text-xl font-bold text-primary">
-                {member.totalInvested.toLocaleString()} F
+                {formatAmount(member.totalInvested)}
               </p>
             </div>
           </div>
@@ -93,15 +95,15 @@ export default function AdminTeamPage() {
 
         {member.products.length > 0 && (
           <div>
-            <p className="text-sm font-medium mb-2">Produits achetes:</p>
+            <p className="text-sm font-medium mb-2">Products purchased:</p>
             <div className="space-y-1">
               {member.products.map((p, i) => (
                 <div key={i} className="flex items-center justify-between text-sm bg-secondary rounded-lg px-3 py-2">
                   <span>{p.productName}</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{p.productPrice.toLocaleString()} F</span>
+                    <span className="font-medium">{formatAmount(p.productPrice)}</span>
                     <Badge variant={p.isActive ? "default" : "secondary"} className="text-xs">
-                      {p.isActive ? "Actif" : "Termine"}
+                      {p.isActive ? "Active" : "Ended"}
                     </Badge>
                   </div>
                 </div>
@@ -112,7 +114,7 @@ export default function AdminTeamPage() {
 
         {member.products.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-2">
-            Aucun produit achete
+            No products purchased
           </p>
         )}
       </CardContent>
@@ -128,13 +130,13 @@ export default function AdminTeamPage() {
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Niveau {level}</p>
-              <p className="font-medium">{count} membre{count > 1 ? "s" : ""}</p>
+              <p className="text-sm text-muted-foreground">Level {level}</p>
+              <p className="font-medium">{count} member{count > 1 ? "s" : ""}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Total investi</p>
-            <p className="text-xl font-bold text-primary">{total.toLocaleString()} F</p>
+            <p className="text-xs text-muted-foreground">Total invested</p>
+            <p className="text-xl font-bold text-primary">{formatAmount(total)}</p>
           </div>
         </div>
       </CardContent>
@@ -149,7 +151,7 @@ export default function AdminTeamPage() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="font-bold text-lg">Equipe de {user?.fullName || "..."}</h1>
+            <h1 className="font-bold text-lg">Team of {user?.fullName || "..."}</h1>
             <p className="text-xs text-muted-foreground">{user?.phone}</p>
           </div>
         </div>
@@ -170,21 +172,21 @@ export default function AdminTeamPage() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-2xl font-bold text-primary">{teamData.level1.length}</p>
-                    <p className="text-xs text-muted-foreground">Niveau 1</p>
+                    <p className="text-xs text-muted-foreground">Level 1</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{teamData.level2.length}</p>
-                    <p className="text-xs text-muted-foreground">Niveau 2</p>
+                    <p className="text-xs text-muted-foreground">Level 2</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-muted-foreground">{teamData.level3.length}</p>
-                    <p className="text-xs text-muted-foreground">Niveau 3</p>
+                    <p className="text-xs text-muted-foreground">Level 3</p>
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t text-center">
-                  <p className="text-xs text-muted-foreground">Total investi par l'equipe</p>
+                  <p className="text-xs text-muted-foreground">Total invested by team</p>
                   <p className="text-2xl font-bold text-primary">
-                    {(teamData.totalLevel1Invested + teamData.totalLevel2Invested + teamData.totalLevel3Invested).toLocaleString()} F
+                    {formatAmount(teamData.totalLevel1Invested + teamData.totalLevel2Invested + teamData.totalLevel3Invested)}
                   </p>
                 </div>
               </CardContent>
@@ -193,70 +195,40 @@ export default function AdminTeamPage() {
             <Tabs defaultValue="level1" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="level1">
-                  Niv. 1 ({teamData.level1.length})
+                  Lv. 1 ({teamData.level1.length})
                 </TabsTrigger>
                 <TabsTrigger value="level2">
-                  Niv. 2 ({teamData.level2.length})
+                  Lv. 2 ({teamData.level2.length})
                 </TabsTrigger>
                 <TabsTrigger value="level3">
-                  Niv. 3 ({teamData.level3.length})
+                  Lv. 3 ({teamData.level3.length})
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="level1">
-                <LevelSummary 
-                  total={teamData.totalLevel1Invested} 
-                  count={teamData.level1.length} 
-                  level={1} 
-                />
+                <LevelSummary total={teamData.totalLevel1Invested} count={teamData.level1.length} level={1} />
                 {teamData.level1.length > 0 ? (
-                  teamData.level1.map(member => (
-                    <TeamMemberCard key={member.id} member={member} />
-                  ))
+                  teamData.level1.map(member => <TeamMemberCard key={member.id} member={member} />)
                 ) : (
-                  <Card>
-                    <CardContent className="p-8 text-center text-muted-foreground">
-                      Aucun filleul niveau 1
-                    </CardContent>
-                  </Card>
+                  <Card><CardContent className="p-8 text-center text-muted-foreground">No level 1 referrals</CardContent></Card>
                 )}
               </TabsContent>
 
               <TabsContent value="level2">
-                <LevelSummary 
-                  total={teamData.totalLevel2Invested} 
-                  count={teamData.level2.length} 
-                  level={2} 
-                />
+                <LevelSummary total={teamData.totalLevel2Invested} count={teamData.level2.length} level={2} />
                 {teamData.level2.length > 0 ? (
-                  teamData.level2.map(member => (
-                    <TeamMemberCard key={member.id} member={member} />
-                  ))
+                  teamData.level2.map(member => <TeamMemberCard key={member.id} member={member} />)
                 ) : (
-                  <Card>
-                    <CardContent className="p-8 text-center text-muted-foreground">
-                      Aucun filleul niveau 2
-                    </CardContent>
-                  </Card>
+                  <Card><CardContent className="p-8 text-center text-muted-foreground">No level 2 referrals</CardContent></Card>
                 )}
               </TabsContent>
 
               <TabsContent value="level3">
-                <LevelSummary 
-                  total={teamData.totalLevel3Invested} 
-                  count={teamData.level3.length} 
-                  level={3} 
-                />
+                <LevelSummary total={teamData.totalLevel3Invested} count={teamData.level3.length} level={3} />
                 {teamData.level3.length > 0 ? (
-                  teamData.level3.map(member => (
-                    <TeamMemberCard key={member.id} member={member} />
-                  ))
+                  teamData.level3.map(member => <TeamMemberCard key={member.id} member={member} />)
                 ) : (
-                  <Card>
-                    <CardContent className="p-8 text-center text-muted-foreground">
-                      Aucun filleul niveau 3
-                    </CardContent>
-                  </Card>
+                  <Card><CardContent className="p-8 text-center text-muted-foreground">No level 3 referrals</CardContent></Card>
                 )}
               </TabsContent>
             </Tabs>
@@ -264,7 +236,7 @@ export default function AdminTeamPage() {
         ) : (
           <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-              Utilisateur non trouve
+              User not found
             </CardContent>
           </Card>
         )}

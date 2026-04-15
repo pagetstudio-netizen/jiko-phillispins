@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 import { Check, X, Ban, Search, Loader2, CreditCard } from "lucide-react";
 import type { Deposit } from "@shared/schema";
 
@@ -31,6 +32,7 @@ interface SoleaspayStats {
 
 export default function AdminDeposits() {
   const { toast } = useToast();
+  const { formatAmount } = useAdminCurrency();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
 
@@ -43,7 +45,7 @@ export default function AdminDeposits() {
     },
   });
 
-  const deposits = allDeposits?.filter(d => 
+  const deposits = allDeposits?.filter(d =>
     statusFilter === "all" ? true : d.status === statusFilter
   );
 
@@ -52,17 +54,17 @@ export default function AdminDeposits() {
       const response = await apiRequest("POST", `/api/admin/deposits/${id}/${action}`, { ban });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/deposits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-      toast({ title: "Dépôt traité!" });
+      toast({ title: "Deposit processed!" });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -70,8 +72,8 @@ export default function AdminDeposits() {
     queryKey: ["/api/admin/deposits/soleaspay-stats"],
   });
 
-  const filteredDeposits = deposits?.filter(d => 
-    d.accountNumber.includes(filter) || 
+  const filteredDeposits = deposits?.filter(d =>
+    d.accountNumber.includes(filter) ||
     d.user.phone.includes(filter) ||
     d.user.fullName.toLowerCase().includes(filter.toLowerCase())
   ) || [];
@@ -87,19 +89,19 @@ export default function AdminDeposits() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3 text-center">
-                <p className="text-xs text-muted-foreground">Aujourd'hui</p>
-                <p className="text-lg font-bold text-foreground">{soleaspayStats.totalToday.toLocaleString()} F</p>
-                <p className="text-xs text-muted-foreground">{soleaspayStats.countToday} depot(s)</p>
+                <p className="text-xs text-muted-foreground">Today</p>
+                <p className="text-lg font-bold text-foreground">{formatAmount(soleaspayStats.totalToday)}</p>
+                <p className="text-xs text-muted-foreground">{soleaspayStats.countToday} deposit(s)</p>
               </div>
               <div className="bg-green-50 dark:bg-green-950 rounded-lg p-3 text-center">
                 <p className="text-xs text-muted-foreground">Total</p>
-                <p className="text-lg font-bold text-foreground">{soleaspayStats.totalAll.toLocaleString()} F</p>
-                <p className="text-xs text-muted-foreground">{soleaspayStats.countAll} depot(s)</p>
+                <p className="text-lg font-bold text-foreground">{formatAmount(soleaspayStats.totalAll)}</p>
+                <p className="text-xs text-muted-foreground">{soleaspayStats.countAll} deposit(s)</p>
               </div>
               <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-3 text-center">
-                <p className="text-xs text-muted-foreground">En attente</p>
-                <p className="text-lg font-bold text-foreground">{soleaspayStats.totalPending.toLocaleString()} F</p>
-                <p className="text-xs text-muted-foreground">{soleaspayStats.countPending} depot(s)</p>
+                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-lg font-bold text-foreground">{formatAmount(soleaspayStats.totalPending)}</p>
+                <p className="text-xs text-muted-foreground">{soleaspayStats.countPending} deposit(s)</p>
               </div>
             </div>
           </CardContent>
@@ -110,7 +112,7 @@ export default function AdminDeposits() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par numéro ou nom..."
+            placeholder="Search by number or name..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-10"
@@ -126,7 +128,7 @@ export default function AdminDeposits() {
             variant={statusFilter === status ? "default" : "outline"}
             onClick={() => setStatusFilter(status)}
           >
-            {status === "all" ? "Tous" : status === "pending" ? "En attente" : status === "approved" ? "Approuvés" : "Rejetés"}
+            {status === "all" ? "All" : status === "pending" ? "Pending" : status === "approved" ? "Approved" : "Rejected"}
           </Button>
         ))}
       </div>
@@ -142,7 +144,7 @@ export default function AdminDeposits() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-foreground">{deposit.user.fullName}</p>
-                      {deposit.user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
+                      {deposit.user.isPromoter && <Badge className="text-xs">Promoter</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{deposit.user.phone}</p>
                   </div>
@@ -153,29 +155,29 @@ export default function AdminDeposits() {
 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Montant</p>
-                    <p className="font-medium text-foreground">{deposit.amount.toLocaleString()} F</p>
+                    <p className="text-muted-foreground">Amount</p>
+                    <p className="font-medium text-foreground">{formatAmount(deposit.amount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Moyen</p>
+                    <p className="text-muted-foreground">Method</p>
                     <p className="font-medium text-foreground">{deposit.paymentMethod}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Numero</p>
+                    <p className="text-muted-foreground">Number</p>
                     <p className="font-medium text-foreground">{deposit.accountNumber}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Pays</p>
+                    <p className="text-muted-foreground">Country</p>
                     <p className="font-medium text-foreground">{deposit.country}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Date et heure</p>
+                    <p className="text-muted-foreground">Date & Time</p>
                     <p className="font-medium text-foreground">
-                      {new Date(deposit.createdAt).toLocaleDateString("fr-FR", {
+                      {new Date(deposit.createdAt).toLocaleDateString("en-GB", {
                         day: "2-digit",
-                        month: "2-digit", 
+                        month: "2-digit",
                         year: "numeric"
-                      })} a {new Date(deposit.createdAt).toLocaleTimeString("fr-FR", {
+                      })} at {new Date(deposit.createdAt).toLocaleTimeString("en-GB", {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
@@ -191,7 +193,7 @@ export default function AdminDeposits() {
                       onClick={() => processMutation.mutate({ id: deposit.id, action: "approve" })}
                       disabled={processMutation.isPending}
                     >
-                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Valider</>}
+                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
                     </Button>
                     <Button
                       size="sm"
@@ -199,7 +201,7 @@ export default function AdminDeposits() {
                       onClick={() => processMutation.mutate({ id: deposit.id, action: "reject" })}
                       disabled={processMutation.isPending}
                     >
-                      <X className="w-4 h-4 mr-1" /> Rejeter
+                      <X className="w-4 h-4 mr-1" /> Reject
                     </Button>
                     <Button
                       size="sm"
@@ -216,7 +218,7 @@ export default function AdminDeposits() {
           ))
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            Aucun dépôt trouvé
+            No deposits found
           </div>
         )}
       </div>

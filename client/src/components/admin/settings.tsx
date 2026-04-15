@@ -12,38 +12,40 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, CreditCard, Zap } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, CreditCard, Zap, DollarSign } from "lucide-react";
 
 const SOLEASPAY_COUNTRIES = [
-  { code: "CM", name: "Cameroun" },
+  { code: "CM", name: "Cameroon" },
   { code: "BF", name: "Burkina Faso" },
   { code: "TG", name: "Togo" },
   { code: "BJ", name: "Benin" },
-  { code: "CI", name: "Cote d'Ivoire" },
+  { code: "CI", name: "Ivory Coast" },
   { code: "CG", name: "Congo Brazzaville" },
-  { code: "CD", name: "RDC" },
+  { code: "CD", name: "DRC" },
 ];
 
 const settingsSchema = z.object({
-  supportLink: z.string().min(5, "Lien requis"),
-  support2Link: z.string().min(5, "Lien requis"),
-  channelLink: z.string().min(5, "Lien requis"),
-  groupLink: z.string().min(5, "Lien requis"),
-  minDeposit: z.string().min(1, "Montant requis"),
-  withdrawalFees: z.string().min(1, "Frais requis"),
-  withdrawalStartHour: z.string().min(1, "Heure requise"),
-  withdrawalEndHour: z.string().min(1, "Heure requise"),
-  level1Commission: z.string().min(1, "Commission requise"),
-  level2Commission: z.string().min(1, "Commission requise"),
-  level3Commission: z.string().min(1, "Commission requise"),
+  supportLink: z.string().min(5, "Link required"),
+  support2Link: z.string().min(5, "Link required"),
+  channelLink: z.string().min(5, "Link required"),
+  groupLink: z.string().min(5, "Link required"),
+  minDeposit: z.string().min(1, "Amount required"),
+  withdrawalFees: z.string().min(1, "Fees required"),
+  withdrawalStartHour: z.string().min(1, "Hour required"),
+  withdrawalEndHour: z.string().min(1, "Hour required"),
+  level1Commission: z.string().min(1, "Commission required"),
+  level2Commission: z.string().min(1, "Commission required"),
+  level3Commission: z.string().min(1, "Commission required"),
   soleaspayEnabled: z.string(),
   soleaspayApiKey: z.string(),
   soleaspayCountries: z.string(),
-  soleaspayChannelName: z.string().min(1, "Nom requis"),
+  soleaspayChannelName: z.string().min(1, "Name required"),
   ashtechpayEnabled: z.string(),
   ashtechpayApiKey: z.string(),
-  ashtechpayChannelName: z.string().min(1, "Nom requis"),
-  congoPaymentLink: z.string().min(5, "Lien requis"),
+  ashtechpayChannelName: z.string().min(1, "Name required"),
+  congoPaymentLink: z.string().min(5, "Link required"),
+  adminCurrency: z.string().min(1, "Currency required"),
+  phpToFcfaRate: z.string().min(1, "Rate required"),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -81,6 +83,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       ashtechpayApiKey: "",
       ashtechpayChannelName: "AshtechPay",
       congoPaymentLink: "https://my.moneyfusion.net/697e3d01869cdbb310f0d3e0",
+      adminCurrency: "PHP",
+      phpToFcfaRate: "10",
     },
   });
 
@@ -106,6 +110,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         ashtechpayApiKey: settings.ashtechpayApiKey || "",
         ashtechpayChannelName: settings.ashtechpayChannelName || "AshtechPay",
         congoPaymentLink: settings.congoPaymentLink || "https://my.moneyfusion.net/697e3d01869cdbb310f0d3e0",
+        adminCurrency: settings.adminCurrency || "PHP",
+        phpToFcfaRate: settings.phpToFcfaRate || "10",
       });
     }
   }, [settings, form]);
@@ -115,7 +121,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       const response = await apiRequest("POST", "/api/admin/settings", data);
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Erreur");
+        throw new Error(result.message || "Error");
       }
       return response.json();
     },
@@ -123,10 +129,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/soleaspay/services"] });
-      toast({ title: "Parametres enregistres!" });
+      toast({ title: "Settings saved!" });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -151,11 +157,57 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((data) => updateMutation.mutate(data))} className="space-y-4">
+
+        {/* Currency Settings */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-primary" />
+              Currency Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="adminCurrency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Admin Display Currency</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="PHP" />
+                  </FormControl>
+                  <FormDescription>Currency symbol shown in admin panel (e.g. PHP, USD, EUR)</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phpToFcfaRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Exchange Rate (1 {form.watch("adminCurrency") || "PHP"} = ? FCFA)</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="number" min="0.01" step="0.01" placeholder="10" />
+                  </FormControl>
+                  <FormDescription>
+                    1 {form.watch("adminCurrency") || "PHP"} = {form.watch("phpToFcfaRate") || "10"} FCFA
+                    &nbsp;|&nbsp;
+                    1 FCFA = {(1 / parseFloat(form.watch("phpToFcfaRate") || "10")).toFixed(4)} {form.watch("adminCurrency") || "PHP"}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Social Links */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Link className="w-5 h-5 text-primary" />
-              Liens sociaux
+              Social Links
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -164,7 +216,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="supportLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Service client 1</FormLabel>
+                  <FormLabel>Customer Service 1</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -178,7 +230,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="support2Link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Service client 2</FormLabel>
+                  <FormLabel>Customer Service 2</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -192,7 +244,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="channelLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chaine officielle</FormLabel>
+                  <FormLabel>Official Channel</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -206,7 +258,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="groupLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Groupe de discussion</FormLabel>
+                  <FormLabel>Discussion Group</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -220,12 +272,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="congoPaymentLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lien MoneyFusion</FormLabel>
+                  <FormLabel>MoneyFusion Link</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://my.moneyfusion.net/..." />
                   </FormControl>
                   <FormDescription>
-                    Lien MoneyFusion pour Congo Brazzaville et Burkina Faso
+                    MoneyFusion link for Congo Brazzaville and Burkina Faso
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -234,11 +286,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
+        {/* Withdrawals */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Retraits
+              Withdrawals
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -247,11 +300,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="minDeposit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dépôt minimum (FCFA)</FormLabel>
+                  <FormLabel>Minimum Deposit (FCFA)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="0" />
                   </FormControl>
-                  <FormDescription>Montant minimum qu'un utilisateur peut déposer.</FormDescription>
+                  <FormDescription>Minimum amount a user can deposit.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -262,7 +315,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="withdrawalFees"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Frais de retrait (%)</FormLabel>
+                  <FormLabel>Withdrawal Fees (%)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" />
                   </FormControl>
@@ -277,7 +330,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="withdrawalStartHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Heure debut</FormLabel>
+                    <FormLabel>Start Hour</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>
@@ -291,7 +344,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="withdrawalEndHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Heure fin</FormLabel>
+                    <FormLabel>End Hour</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>
@@ -303,11 +356,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
+        {/* Soleaspay */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-primary" />
-              Paiement automatique (Soleaspay)
+              Automatic Payment (Soleaspay)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -317,9 +371,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Activer Soleaspay</FormLabel>
+                    <FormLabel className="text-base">Enable Soleaspay</FormLabel>
                     <FormDescription>
-                      Permet le paiement automatique via mobile money
+                      Allows automatic payment via mobile money
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -338,9 +392,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="soleaspayApiKey"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Clé API Soleaspay</FormLabel>
+                  <FormLabel>Soleaspay API Key</FormLabel>
                   <FormControl>
-                    <Input {...field} type="password" placeholder="Clé API fournie par Soleaspay" />
+                    <Input {...field} type="password" placeholder="API key provided by Soleaspay" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -352,11 +406,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="soleaspayChannelName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom du canal (affiché aux utilisateurs)</FormLabel>
+                  <FormLabel>Channel Name (shown to users)</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Ex: Westpay" />
+                    <Input {...field} placeholder="E.g. Westpay" />
                   </FormControl>
-                  <FormDescription>Ce nom apparaît comme option de recharge sur la page dépôt.</FormDescription>
+                  <FormDescription>This name appears as a deposit option on the deposit page.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -365,10 +419,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             {soleaspayEnabled && (
               <div className="rounded-lg border p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">
-                  Pays actives pour Soleaspay
+                  Countries enabled for Soleaspay
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Les utilisateurs de ces pays utiliseront le paiement automatique. Les autres verront les canaux de recharge manuels.
+                  Users from these countries will use automatic payment. Others will see manual deposit channels.
                 </p>
                 <div className="space-y-2">
                   {SOLEASPAY_COUNTRIES.map((country) => (
@@ -390,11 +444,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
+        {/* AshtechPay */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="w-5 h-5 text-green-600" />
-              Paiement automatique (AshtechPay)
+              Automatic Payment (AshtechPay)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -404,8 +459,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Activer AshtechPay</FormLabel>
-                    <FormDescription>Permet les dépôts automatiques via AshtechPay (MTN, Moov, Orange, Wave)</FormDescription>
+                    <FormLabel className="text-base">Enable AshtechPay</FormLabel>
+                    <FormDescription>Allows automatic deposits via AshtechPay (MTN, Moov, Orange, Wave)</FormDescription>
                   </div>
                   <FormControl>
                     <Switch
@@ -422,11 +477,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="ashtechpayChannelName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom du canal (affiché aux utilisateurs)</FormLabel>
+                  <FormLabel>Channel Name (shown to users)</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Ex: Mobile Money" />
+                    <Input {...field} placeholder="E.g. Mobile Money" />
                   </FormControl>
-                  <FormDescription>Ce nom apparaît comme option de recharge sur la page dépôt.</FormDescription>
+                  <FormDescription>This name appears as a deposit option on the deposit page.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -436,12 +491,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="ashtechpayApiKey"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Clé API AshtechPay</FormLabel>
+                  <FormLabel>AshtechPay API Key</FormLabel>
                   <FormControl>
-                    <Input {...field} type="password" placeholder="Bearer token fourni par AshtechPay" />
+                    <Input {...field} type="password" placeholder="Bearer token from AshtechPay" />
                   </FormControl>
                   <FormDescription>
-                    URL webhook à configurer : <strong>{typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/ashtechpay</strong>
+                    Webhook URL to configure: <strong>{typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/ashtechpay</strong>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -450,11 +505,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
+        {/* Referral Commissions */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
-              Commissions de parrainage
+              Referral Commissions
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -464,7 +520,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level1Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Niveau 1 (%)</FormLabel>
+                    <FormLabel>Level 1 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -478,7 +534,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level2Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Niveau 2 (%)</FormLabel>
+                    <FormLabel>Level 2 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -492,7 +548,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level3Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Niveau 3 (%)</FormLabel>
+                    <FormLabel>Level 3 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -510,7 +566,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Enregistrer
+              Save Settings
             </>
           )}
         </Button>

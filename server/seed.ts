@@ -212,6 +212,8 @@ export async function seed() {
     { key: "ashtechpayEnabled", value: "false" },
     { key: "ashtechpayApiKey", value: "" },
     { key: "ashtechpayChannelName", value: "AshtechPay" },
+    { key: "adminCurrency", value: "PHP" },
+    { key: "phpToFcfaRate", value: "10" },
   ];
 
   for (const settingData of requiredSettings) {

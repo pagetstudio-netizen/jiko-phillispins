@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Users, ArrowDownToLine, ArrowUpFromLine, ShoppingCart, Wallet, Clock, TrendingUp, Award, Calendar, RotateCcw, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 
 interface DashboardStats {
   totalUsers: number;
@@ -36,6 +37,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
   const { toast } = useToast();
+  const { formatAmount } = useAdminCurrency();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [appliedDates, setAppliedDates] = useState<{start: string, end: string}>({start: "", end: ""});
@@ -71,17 +73,17 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
       const response = await apiRequest("POST", "/api/admin/reset-stats");
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Erreur lors de la reinitialisation");
+        throw new Error(result.message || "Reset failed");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
       setShowResetDialog(false);
-      toast({ title: "Statistiques reinitialisees avec succes!" });
+      toast({ title: "Statistics reset successfully!" });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -99,17 +101,17 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
   const mainStats = [
     {
-      title: "Utilisateurs totaux",
+      title: "Total Users",
       value: stats.totalUsers,
-      subtitle: `+${stats.todayUsers} aujourd'hui`,
+      subtitle: `+${stats.todayUsers} today`,
       icon: Users,
       color: "text-blue-500",
       bg: "bg-blue-500/20",
     },
     {
-      title: "Investisseurs actifs",
+      title: "Active Investors",
       value: stats.usersWithProducts,
-      subtitle: `${stats.totalActiveProducts} produits actifs`,
+      subtitle: `${stats.totalActiveProducts} active products`,
       icon: ShoppingCart,
       color: "text-purple-500",
       bg: "bg-purple-500/20",
@@ -118,17 +120,17 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
   const depositStats = [
     {
-      title: "Total depots approuves",
-      value: `${stats.totalDeposits.toLocaleString()} F`,
-      subtitle: `+${stats.todayDeposits.toLocaleString()} F aujourd'hui`,
+      title: "Total Approved Deposits",
+      value: formatAmount(stats.totalDeposits),
+      subtitle: `+${formatAmount(stats.todayDeposits)} today`,
       icon: ArrowDownToLine,
       color: "text-green-500",
       bg: "bg-green-500/20",
     },
     {
-      title: "Depots en attente",
-      value: `${stats.pendingDeposits.toLocaleString()} F`,
-      subtitle: `${stats.pendingDepositsCount} demande(s)`,
+      title: "Pending Deposits",
+      value: formatAmount(stats.pendingDeposits),
+      subtitle: `${stats.pendingDepositsCount} request(s)`,
       icon: Clock,
       color: "text-[#2196F3]",
       bg: "bg-blue-500/20",
@@ -137,17 +139,17 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
   const withdrawalStats = [
     {
-      title: "Total retraits approuves",
-      value: `${stats.totalWithdrawals.toLocaleString()} F`,
-      subtitle: `+${stats.todayWithdrawals.toLocaleString()} F aujourd'hui`,
+      title: "Total Approved Withdrawals",
+      value: formatAmount(stats.totalWithdrawals),
+      subtitle: `+${formatAmount(stats.todayWithdrawals)} today`,
       icon: ArrowUpFromLine,
       color: "text-green-500",
       bg: "bg-green-500/20",
     },
     {
-      title: "Retraits en attente",
-      value: `${stats.pendingWithdrawals.toLocaleString()} F`,
-      subtitle: `${stats.pendingWithdrawalsCount} demande(s)`,
+      title: "Pending Withdrawals",
+      value: formatAmount(stats.pendingWithdrawals),
+      subtitle: `${stats.pendingWithdrawalsCount} request(s)`,
       icon: Clock,
       color: "text-[#2196F3]",
       bg: "bg-[#2196F3]/20",
@@ -156,25 +158,25 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
   const financialStats = [
     {
-      title: "Solde total plateforme",
-      value: `${stats.totalBalance.toLocaleString()} F`,
-      subtitle: "Tous les utilisateurs",
+      title: "Total Platform Balance",
+      value: formatAmount(stats.totalBalance),
+      subtitle: "All users",
       icon: Wallet,
       color: "text-primary",
       bg: "bg-primary/20",
     },
     {
-      title: "Gains totaux distribues",
-      value: `${stats.totalEarnings.toLocaleString()} F`,
-      subtitle: "Depuis le debut",
+      title: "Total Earnings Distributed",
+      value: formatAmount(stats.totalEarnings),
+      subtitle: "Since the beginning",
       icon: TrendingUp,
       color: "text-emerald-500",
       bg: "bg-emerald-500/20",
     },
     {
-      title: "Commissions versees",
-      value: `${stats.totalCommissions.toLocaleString()} F`,
-      subtitle: "Parrainages",
+      title: "Commissions Paid",
+      value: formatAmount(stats.totalCommissions),
+      subtitle: "Referrals",
       icon: Award,
       color: "text-indigo-500",
       bg: "bg-indigo-500/20",
@@ -183,25 +185,25 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
   const periodStats = appliedDates.start || appliedDates.end ? [
     {
-      title: "Utilisateurs (periode)",
+      title: "Users (period)",
       value: stats.periodUsers,
-      subtitle: `Du ${appliedDates.start || "debut"} au ${appliedDates.end || "aujourd'hui"}`,
+      subtitle: `From ${appliedDates.start || "beginning"} to ${appliedDates.end || "today"}`,
       icon: Users,
       color: "text-cyan-500",
       bg: "bg-cyan-500/20",
     },
     {
-      title: "Depots (periode)",
-      value: `${stats.periodDeposits.toLocaleString()} F`,
-      subtitle: "Approuves sur la periode",
+      title: "Deposits (period)",
+      value: formatAmount(stats.periodDeposits),
+      subtitle: "Approved in period",
       icon: ArrowDownToLine,
       color: "text-green-600",
       bg: "bg-green-600/20",
     },
     {
-      title: "Retraits (periode)",
-      value: `${stats.periodWithdrawals.toLocaleString()} F`,
-      subtitle: "Approuves sur la periode",
+      title: "Withdrawals (period)",
+      value: formatAmount(stats.periodWithdrawals),
+      subtitle: "Approved in period",
       icon: ArrowUpFromLine,
       color: "text-red-600",
       bg: "bg-red-600/20",
@@ -231,7 +233,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Filtrer par date</span>
+            <span className="text-sm font-medium">Filter by date</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <Input
@@ -239,21 +241,21 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="flex-1 min-w-32"
-              placeholder="Date debut"
+              placeholder="Start date"
             />
             <Input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="flex-1 min-w-32"
-              placeholder="Date fin"
+              placeholder="End date"
             />
             <Button onClick={applyDateFilter} size="sm">
-              Appliquer
+              Apply
             </Button>
             {(appliedDates.start || appliedDates.end) && (
               <Button onClick={clearDateFilter} variant="outline" size="sm">
-                Effacer
+                Clear
               </Button>
             )}
           </div>
@@ -262,7 +264,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
 
       {periodStats.length > 0 && (
         <>
-          <p className="text-sm font-medium text-muted-foreground">Statistiques de la periode</p>
+          <p className="text-sm font-medium text-muted-foreground">Period Statistics</p>
           <div className="grid grid-cols-3 gap-3">
             {periodStats.map((stat, index) => (
               <StatCard key={index} stat={stat} />
@@ -271,28 +273,28 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
         </>
       )}
 
-      <p className="text-sm font-medium text-muted-foreground">Vue generale</p>
+      <p className="text-sm font-medium text-muted-foreground">Overview</p>
       <div className="grid grid-cols-2 gap-3">
         {mainStats.map((stat, index) => (
           <StatCard key={index} stat={stat} />
         ))}
       </div>
 
-      <p className="text-sm font-medium text-muted-foreground">Depots</p>
+      <p className="text-sm font-medium text-muted-foreground">Deposits</p>
       <div className="grid grid-cols-2 gap-3">
         {depositStats.map((stat, index) => (
           <StatCard key={index} stat={stat} />
         ))}
       </div>
 
-      <p className="text-sm font-medium text-muted-foreground">Retraits</p>
+      <p className="text-sm font-medium text-muted-foreground">Withdrawals</p>
       <div className="grid grid-cols-2 gap-3">
         {withdrawalStats.map((stat, index) => (
           <StatCard key={index} stat={stat} />
         ))}
       </div>
 
-      <p className="text-sm font-medium text-muted-foreground">Finances</p>
+      <p className="text-sm font-medium text-muted-foreground">Financials</p>
       <div className="grid grid-cols-1 gap-3">
         {financialStats.map((stat, index) => (
           <StatCard key={index} stat={stat} />
@@ -308,18 +310,18 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
                   <AlertTriangle className="w-5 h-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Reinitialiser les statistiques</p>
-                  <p className="text-xs text-muted-foreground">Remet a zero tous les compteurs</p>
+                  <p className="font-medium text-foreground">Reset Statistics</p>
+                  <p className="text-xs text-muted-foreground">Reset all counters to zero</p>
                 </div>
               </div>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 size="sm"
                 onClick={() => setShowResetDialog(true)}
                 data-testid="button-reset-stats"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Reinitialiser
+                Reset
               </Button>
             </div>
           </CardContent>
@@ -329,19 +331,19 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la reinitialisation</DialogTitle>
+            <DialogTitle>Confirm Reset</DialogTitle>
             <DialogDescription>
-              Cette action va remettre les compteurs de statistiques a zero.
-              Les donnees reelles (depots, retraits, produits, comptes) ne seront PAS supprimees.
-              Les statistiques afficheront uniquement les nouvelles donnees apres cette reinitialisation.
+              This action will reset all statistic counters to zero.
+              Real data (deposits, withdrawals, products, accounts) will NOT be deleted.
+              Statistics will only show new data after this reset.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowResetDialog(false)}>
-              Annuler
+              Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={() => resetStatsMutation.mutate()}
               disabled={resetStatsMutation.isPending}
               data-testid="button-confirm-reset"
@@ -349,7 +351,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
               {resetStatsMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                "Confirmer la reinitialisation"
+                "Confirm Reset"
               )}
             </Button>
           </DialogFooter>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAdminCurrency } from "@/lib/useAdminCurrency";
 import { Check, X, Search, Loader2 } from "lucide-react";
 import type { Withdrawal } from "@shared/schema";
 
@@ -22,6 +23,7 @@ interface WithdrawalWithUser extends Withdrawal {
 
 export default function AdminWithdrawals() {
   const { toast } = useToast();
+  const { formatAmount } = useAdminCurrency();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected" | "processing">("pending");
 
@@ -34,7 +36,7 @@ export default function AdminWithdrawals() {
     },
   });
 
-  const withdrawals = allWithdrawals?.filter(w => 
+  const withdrawals = allWithdrawals?.filter(w =>
     statusFilter === "all" ? true : w.status === statusFilter
   );
 
@@ -43,22 +45,22 @@ export default function AdminWithdrawals() {
       const response = await apiRequest("POST", `/api/admin/withdrawals/${id}/${action}`, {});
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-      toast({ title: "Retrait traité !" });
+      toast({ title: "Withdrawal processed!" });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
-  const filteredWithdrawals = withdrawals?.filter(w => 
-    w.accountNumber.includes(filter) || 
+  const filteredWithdrawals = withdrawals?.filter(w =>
+    w.accountNumber.includes(filter) ||
     w.user.phone.includes(filter) ||
     w.user.fullName.toLowerCase().includes(filter.toLowerCase())
   ) || [];
@@ -69,7 +71,7 @@ export default function AdminWithdrawals() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par numero ou nom..."
+            placeholder="Search by number or name..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-10"
@@ -85,7 +87,7 @@ export default function AdminWithdrawals() {
             variant={statusFilter === status ? "default" : "outline"}
             onClick={() => setStatusFilter(status)}
           >
-            {status === "all" ? "Tous" : status === "pending" ? "En attente" : status === "processing" ? "En cours" : status === "approved" ? "Approuves" : "Rejetes"}
+            {status === "all" ? "All" : status === "pending" ? "Pending" : status === "processing" ? "Processing" : status === "approved" ? "Approved" : "Rejected"}
           </Button>
         ))}
       </div>
@@ -101,49 +103,49 @@ export default function AdminWithdrawals() {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-foreground">{withdrawal.user.fullName}</p>
-                      {withdrawal.user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
+                      {withdrawal.user.isPromoter && <Badge className="text-xs">Promoter</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{withdrawal.user.phone}</p>
-                    <p className="text-sm text-muted-foreground">Pays: {withdrawal.user.country}</p>
+                    <p className="text-sm text-muted-foreground">Country: {withdrawal.user.country}</p>
                   </div>
                   <Badge variant={
-                    withdrawal.status === "pending" ? "secondary" : 
+                    withdrawal.status === "pending" ? "secondary" :
                     withdrawal.status === "processing" ? "secondary" :
                     withdrawal.status === "approved" ? "default" : "destructive"
                   }>
-                    {withdrawal.status === "processing" ? "En cours" : withdrawal.status}
+                    {withdrawal.status === "processing" ? "Processing" : withdrawal.status}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Montant demande</p>
-                    <p className="font-medium text-foreground">{withdrawal.amount.toLocaleString()} F</p>
+                    <p className="text-muted-foreground">Requested Amount</p>
+                    <p className="font-medium text-foreground">{formatAmount(withdrawal.amount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Montant net</p>
-                    <p className="font-medium text-primary">{withdrawal.netAmount.toLocaleString()} F</p>
+                    <p className="text-muted-foreground">Net Amount</p>
+                    <p className="font-medium text-primary">{formatAmount(withdrawal.netAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Frais</p>
-                    <p className="font-medium text-destructive">{withdrawal.fees.toLocaleString()} F</p>
+                    <p className="text-muted-foreground">Fees</p>
+                    <p className="font-medium text-destructive">{formatAmount(withdrawal.fees)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Moyen</p>
+                    <p className="text-muted-foreground">Method</p>
                     <p className="font-medium text-foreground">{withdrawal.paymentMethod}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Numero de reception</p>
+                    <p className="text-muted-foreground">Receiving Number</p>
                     <p className="font-medium text-foreground">{withdrawal.accountNumber} - {withdrawal.accountName}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Date et heure</p>
+                    <p className="text-muted-foreground">Date & Time</p>
                     <p className="font-medium text-foreground">
-                      {new Date(withdrawal.createdAt).toLocaleDateString("fr-FR", {
+                      {new Date(withdrawal.createdAt).toLocaleDateString("en-GB", {
                         day: "2-digit",
-                        month: "2-digit", 
+                        month: "2-digit",
                         year: "numeric"
-                      })} a {new Date(withdrawal.createdAt).toLocaleTimeString("fr-FR", {
+                      })} at {new Date(withdrawal.createdAt).toLocaleTimeString("en-GB", {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
@@ -161,7 +163,7 @@ export default function AdminWithdrawals() {
                       disabled={processMutation.isPending}
                       data-testid={`button-manual-approve-${withdrawal.id}`}
                     >
-                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Valider</>}
+                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
                     </Button>
                     <Button
                       size="sm"
@@ -170,7 +172,7 @@ export default function AdminWithdrawals() {
                       disabled={processMutation.isPending}
                       data-testid={`button-reject-${withdrawal.id}`}
                     >
-                      <X className="w-4 h-4 mr-1" /> Rejeter
+                      <X className="w-4 h-4 mr-1" /> Reject
                     </Button>
                   </div>
                 )}
@@ -179,7 +181,7 @@ export default function AdminWithdrawals() {
           ))
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            Aucun retrait trouve
+            No withdrawals found
           </div>
         )}
       </div>
