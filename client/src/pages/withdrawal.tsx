@@ -8,7 +8,6 @@ import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.pn
 import walletIcon from "@assets/20260410_193054_1775850084890.png";
 import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
 import { Link, useLocation } from "wouter";
-import { getCountryByCode } from "@/lib/countries";
 
 const GREEN = "#3db51d";
 
@@ -30,15 +29,13 @@ interface UserProduct {
 export default function WithdrawalPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Retrait | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Withdrawal | Jinko Solar"; }, []);
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState<number | "">("");
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
   const [, navigate] = useLocation();
 
-  const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "XOF";
-  const minWithdrawal = 1200;
+  const minWithdrawal = 120;
 
   const { data: withdrawalSettings } = useQuery<{
     withdrawalFees: number;
@@ -96,45 +93,45 @@ export default function WithdrawalPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Demande envoyée", description: "Votre demande de retrait a été envoyée." });
+      toast({ title: "Request submitted", description: "Your withdrawal request has been sent." });
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ["/api/withdrawals"] });
       setAmount("");
     },
     onError: (error: Error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = () => {
     if (!isWithinWithdrawalHours) {
       toast({
-        title: "Horaires de retrait",
-        description: `Les retraits sont disponibles de ${withdrawalStartHour}h à ${withdrawalEndHour}h`,
+        title: "Withdrawal hours",
+        description: `Withdrawals are available from ${withdrawalStartHour}:00 to ${withdrawalEndHour}:00`,
         variant: "destructive",
       });
       return;
     }
     if (!hasActiveProduct) {
       toast({
-        title: "Produit requis",
-        description: "Vous devez avoir un produit actif pour effectuer un retrait",
+        title: "Product required",
+        description: "You must have an active product to make a withdrawal",
         variant: "destructive",
       });
       return;
     }
     if (!amount || amount < minWithdrawal) {
       toast({
-        title: "Montant invalide",
-        description: `Le montant minimum est de ${minWithdrawal} ${currency}`,
+        title: "Invalid amount",
+        description: `Minimum withdrawal is ₱${minWithdrawal}`,
         variant: "destructive",
       });
       return;
     }
     if (!selectedWallet) {
       toast({
-        title: "Compte requis",
-        description: "Veuillez sélectionner un compte bancaire",
+        title: "Wallet required",
+        description: "Please select a payment account",
         variant: "destructive",
       });
       return;
@@ -157,85 +154,57 @@ export default function WithdrawalPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#f5f5f5", overflowX: "hidden" }}>
 
-      {/* ── Zone image : en-tête + carte ── */}
       <div style={{ backgroundImage: `url(${jinkoBg})`, backgroundSize: "cover", backgroundPosition: "center", paddingBottom: 32 }}>
 
-      {/* Header sur fond image */}
-      <div className="flex items-center justify-between px-4 pt-10 pb-4">
-        <Link href="/account">
-          <button data-testid="button-back">
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </button>
-        </Link>
-        <h1 className="text-lg font-bold text-white">Retrait</h1>
-        <Link href="/withdrawal-history">
-          <button data-testid="button-history">
-            <img src={historyIcon} alt="Historique" style={{ width: 26, height: 26, objectFit: "contain" }} />
-          </button>
-        </Link>
-      </div>
-
-      {/* Carte blanche principale */}
-      <div className="bg-white shadow-lg overflow-hidden" style={{ marginLeft: 16, marginRight: 0, borderRadius: "24px 0 0 24px" }}>
-
-        {/* Section solde — fond vert clair */}
-        <div
-          className="flex items-center justify-between px-5 py-5"
-          style={{ background: "#e8f8e0" }}
-        >
-          <div>
-            <p className="text-sm font-semibold" style={{ color: GREEN }}>
-              Solde du compte
-            </p>
-            <p
-              className="text-4xl font-extrabold mt-1 leading-tight"
-              style={{ color: GREEN }}
-              data-testid="text-balance"
-            >
-              {balance.toLocaleString("fr-FR", { minimumFractionDigits: 0 })}
-              <span className="text-2xl font-bold ml-1">{currency}</span>
-            </p>
-          </div>
-          {/* Icône portefeuille */}
-          <img
-            src={walletIcon}
-            alt="Portefeuille"
-            style={{ width: 80, height: 80, objectFit: "contain" }}
-          />
+        <div className="flex items-center justify-between px-4 pt-10 pb-4">
+          <Link href="/account">
+            <button data-testid="button-back">
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+          </Link>
+          <h1 className="text-lg font-bold text-white">Withdrawal</h1>
+          <Link href="/withdrawal-history">
+            <button data-testid="button-history">
+              <img src={historyIcon} alt="History" style={{ width: 26, height: 26, objectFit: "contain" }} />
+            </button>
+          </Link>
         </div>
 
-        {/* Section saisie montant */}
-        <div className="px-5 pt-4 pb-5">
-          <p className="text-sm mb-3" style={{ color: GREEN }}>
-            Veuillez saisir le montant de retrait
-          </p>
+        <div className="bg-white shadow-lg overflow-hidden" style={{ marginLeft: 16, marginRight: 0, borderRadius: "24px 0 0 24px" }}>
 
-          {/* Champ montant */}
-          <div
-            className="flex items-center rounded-xl px-4 py-3 border"
-            style={{ borderColor: "#e5e7eb" }}
-          >
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : "")}
-              placeholder="montant"
-              className="flex-1 text-lg text-gray-600 outline-none bg-transparent"
-              data-testid="input-withdrawal-amount"
-            />
-            <span className="text-gray-400 font-semibold ml-2">{currency}</span>
+          <div className="flex items-center justify-between px-5 py-5" style={{ background: "#e8f8e0" }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: GREEN }}>Account Balance</p>
+              <p className="text-4xl font-extrabold mt-1 leading-tight" style={{ color: GREEN }} data-testid="text-balance">
+                ₱{balance.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+              </p>
+            </div>
+            <img src={walletIcon} alt="Wallet" style={{ width: 80, height: 80, objectFit: "contain" }} />
           </div>
 
-          {/* Montant reçu / Taxe */}
-          <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-            <span>Montant reçu : {amountAfterFees.toLocaleString()}</span>
-            <span>Taxe : {withdrawalFee.toFixed(2)}%</span>
+          <div className="px-5 pt-4 pb-5">
+            <p className="text-sm mb-3" style={{ color: GREEN }}>Please enter the withdrawal amount</p>
+
+            <div className="flex items-center rounded-xl px-4 py-3 border" style={{ borderColor: "#e5e7eb" }}>
+              <span className="text-gray-400 font-semibold mr-2">₱</span>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : "")}
+                placeholder="amount"
+                className="flex-1 text-lg text-gray-600 outline-none bg-transparent"
+                data-testid="input-withdrawal-amount"
+              />
+            </div>
+
+            <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+              <span>Amount received: ₱{amountAfterFees.toLocaleString()}</span>
+              <span>Fee: {withdrawalFee.toFixed(2)}%</span>
+            </div>
           </div>
         </div>
       </div>
-      </div>{/* fin zone image */}
 
-      {/* Bouton Choisissez votre portefeuille */}
       <div className="mx-4 mt-4">
         <button
           onClick={() => navigate(hasWallets ? "/wallet?from=withdrawal" : "/wallet")}
@@ -243,7 +212,6 @@ export default function WithdrawalPage() {
           style={{ background: GREEN }}
           data-testid="button-select-wallet"
         >
-          {/* Icône carte */}
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <rect x="1" y="4" width="20" height="14" rx="3" stroke="white" strokeWidth="1.8" />
             <rect x="1" y="8" width="20" height="3" fill="white" />
@@ -252,25 +220,23 @@ export default function WithdrawalPage() {
           <span className="flex-1 text-left">
             {selectedWallet
               ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
-              : "Choisissez votre portefeuille"}
+              : "Choose your wallet"}
           </span>
           <span className="text-white text-lg font-bold">›</span>
         </button>
       </div>
 
-      {/* Warnings */}
       {!isWithinWithdrawalHours && (
         <div className="mx-4 mt-3 bg-white rounded-2xl px-4 py-3 text-sm" style={{ color: GREEN }}>
-          ⏰ Horaires de retrait : {withdrawalStartHour}h00 – {withdrawalEndHour}h00 (Fermé actuellement)
+          ⏰ Withdrawal hours: {withdrawalStartHour}:00 – {withdrawalEndHour}:00 (Currently closed)
         </div>
       )}
       {!hasActiveProduct && (
         <div className="mx-4 mt-3 bg-white rounded-2xl px-4 py-3 text-sm" style={{ color: GREEN }}>
-          ⚠️ Vous devez avoir un produit actif pour effectuer un retrait.
+          ⚠️ You must have an active product to make a withdrawal.
         </div>
       )}
 
-      {/* Bouton Retirer maintenant — pill centré */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: 20, marginBottom: 4 }}>
         <button
           onClick={handleSubmit}
@@ -297,61 +263,42 @@ export default function WithdrawalPage() {
           {withdrawMutation.isPending ? (
             <>
               <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} />
-              Envoi en cours...
+              Sending...
             </>
           ) : (
-            "Retirer maintenant"
+            "Withdraw Now"
           )}
         </button>
       </div>
 
-      {/* Zone instructions — fond gris clair */}
       <div className="flex-1 bg-gray-50 mt-4 px-5 pt-5 pb-10 space-y-4">
         <p className="font-bold text-gray-800 text-sm flex items-center gap-2">
-          💳 Instructions de Retrait :
+          💳 Withdrawal Instructions:
         </p>
-
         <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              <span className="font-bold">Montant minimum de retrait :</span>{" "}
-              {minWithdrawal.toLocaleString()} {currency}
-            </p>
+            <p><span className="font-bold">Minimum withdrawal amount:</span> ₱{minWithdrawal.toLocaleString()}</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              <span className="font-bold">Retraits possibles à tout moment</span>, sans limite de
-              temps, de montant ou de fréquence
-            </p>
+            <p><span className="font-bold">Withdrawals available anytime</span>, with no limit on time, amount, or frequency</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              <span className="font-bold">Frais de retrait :</span> {withdrawalFee}% par transaction
-            </p>
+            <p><span className="font-bold">Withdrawal fee:</span> {withdrawalFee}% per transaction</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              <span className="font-bold">Délai de traitement :</span> généralement dans les 2
-              heures, jusqu'à 24h dans des cas exceptionnels
-            </p>
+            <p><span className="font-bold">Processing time:</span> usually within 2 hours, up to 24h in exceptional cases</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              Si le retrait échoue, vérifiez que vos informations de portefeuille sont correctes
-              et soumettez à nouveau la demande.
-            </p>
+            <p>If the withdrawal fails, check that your wallet information is correct and resubmit the request.</p>
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>
-              Effectuez votre première recharge et activez un produit Jinko Solar pour débloquer
-              la fonction de retrait.
-            </p>
+            <p>Make your first deposit and activate a Jinko Solar product to unlock the withdrawal feature.</p>
           </div>
         </div>
       </div>

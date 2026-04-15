@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCountryByCode } from "@/lib/countries";
 import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Loader2, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
@@ -17,6 +16,8 @@ interface Deposit {
   createdAt: string;
   soleaspayReference?: string;
   soleaspayOrderId?: string;
+  omnipayReference?: string;
+  omnipayId?: string;
 }
 
 interface Withdrawal {
@@ -36,7 +37,7 @@ export default function HistoryPage() {
   const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
   const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "FCFA";
+  const currency = countryInfo?.currency || "PHP";
 
   const { data: deposits = [], isLoading: depositsLoading } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],
@@ -50,13 +51,13 @@ export default function HistoryPage() {
     switch (status) {
       case "completed":
       case "approved":
-        return "Reussi";
+        return "Successful";
       case "rejected":
-        return "Rejete";
+        return "Rejected";
       case "processing":
-        return "En traitement";
+        return "Processing";
       case "pending":
-        return "En attente";
+        return "Pending";
       default:
         return status;
     }
@@ -68,7 +69,7 @@ export default function HistoryPage() {
       case "approved":
         return "text-green-500";
       case "rejected":
-        return "text-green-500";
+        return "text-red-500";
       default:
         return "text-[#FF9800]";
     }
@@ -76,11 +77,11 @@ export default function HistoryPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString("en-PH", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }) + " " + date.toLocaleTimeString("fr-FR", {
+    }) + " " + date.toLocaleTimeString("en-PH", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
@@ -107,17 +108,17 @@ export default function HistoryPage() {
       const data = await res.json();
 
       if (data.status === "approved") {
-        toast({ title: "Paiement confirme", description: "Votre compte a ete credite" });
+        toast({ title: "Payment confirmed", description: "Your account has been credited" });
         refreshUser();
         queryClient.invalidateQueries({ queryKey: ["/api/deposits/history"] });
       } else if (data.status === "rejected") {
-        toast({ title: "Paiement echoue", description: "Le paiement a ete refuse", variant: "destructive" });
+        toast({ title: "Payment failed", description: "The payment was rejected", variant: "destructive" });
         queryClient.invalidateQueries({ queryKey: ["/api/deposits/history"] });
       } else {
-        toast({ title: "En cours", description: "Le paiement est toujours en attente de confirmation" });
+        toast({ title: "Processing", description: "The payment is still awaiting confirmation" });
       }
     } catch {
-      toast({ title: "Erreur", description: "Impossible de verifier le paiement", variant: "destructive" });
+      toast({ title: "Error", description: "Unable to verify the payment", variant: "destructive" });
     } finally {
       setVerifyingId(null);
     }
@@ -133,7 +134,7 @@ export default function HistoryPage() {
             <ArrowLeft className="w-5 h-5 text-[#3db51d]" />
           </button>
         </Link>
-        <h1 className="text-lg font-semibold text-gray-800">Historique</h1>
+        <h1 className="text-lg font-semibold text-gray-800">History</h1>
         <div className="w-9" />
       </header>
 
@@ -141,29 +142,25 @@ export default function HistoryPage() {
         <button
           onClick={() => setActiveTab("deposits")}
           className={`flex-1 py-2.5 text-center font-medium text-sm rounded-full transition-colors ${
-            activeTab === "deposits"
-              ? "bg-[#3db51d] text-white"
-              : "text-gray-500"
+            activeTab === "deposits" ? "bg-[#3db51d] text-white" : "text-gray-500"
           }`}
           data-testid="tab-deposits"
         >
           <div className="flex items-center justify-center gap-2">
             <ArrowDownToLine className="w-4 h-4" />
-            Depots
+            Deposits
           </div>
         </button>
         <button
           onClick={() => setActiveTab("withdrawals")}
           className={`flex-1 py-2.5 text-center font-medium text-sm rounded-full transition-colors ${
-            activeTab === "withdrawals"
-              ? "bg-[#3db51d] text-white"
-              : "text-gray-500"
+            activeTab === "withdrawals" ? "bg-[#3db51d] text-white" : "text-gray-500"
           }`}
           data-testid="tab-withdrawals"
         >
           <div className="flex items-center justify-center gap-2">
             <ArrowUpFromLine className="w-4 h-4" />
-            Retraits
+            Withdrawals
           </div>
         </button>
       </div>
@@ -173,10 +170,10 @@ export default function HistoryPage() {
           <div className="space-y-3">
             {depositsLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-[#2196F3]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#3db51d]" />
               </div>
             ) : deposits.length === 0 ? (
-              <EmptyState message="Aucun dépôt pour le moment" />
+              <EmptyState message="No deposits yet" />
             ) : (
               deposits.map((deposit) => (
                 <div
@@ -193,13 +190,13 @@ export default function HistoryPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 w-20">Montant</span>
-                      <span className="text-sm text-gray-800 font-semibold">: {currency} {parseFloat(deposit.amount).toLocaleString()}</span>
+                      <span className="text-sm text-gray-500 w-20">Amount</span>
+                      <span className="text-sm text-gray-800 font-semibold">: ₱{parseFloat(deposit.amount).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 w-20">Recu</span>
+                      <span className="text-sm text-gray-500 w-20">Received</span>
                       <span className="text-sm text-gray-800 font-semibold">
-                        : {currency} {deposit.status === "approved" ? parseFloat(deposit.amount).toLocaleString() : "0"}
+                        : ₱{deposit.status === "approved" ? parseFloat(deposit.amount).toLocaleString() : "0"}
                       </span>
                     </div>
                     <div className="flex items-center">
@@ -212,7 +209,7 @@ export default function HistoryPage() {
                     <button
                       onClick={() => handleVerify(deposit.id)}
                       disabled={verifyingId === deposit.id}
-                      className="mt-3 w-full py-2 bg-[#2196F3] text-white text-xs font-semibold rounded-full flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="mt-3 w-full py-2 bg-[#3db51d] text-white text-xs font-semibold rounded-full flex items-center justify-center gap-2 disabled:opacity-50"
                       data-testid={`button-verify-${deposit.id}`}
                     >
                       {verifyingId === deposit.id ? (
@@ -220,7 +217,7 @@ export default function HistoryPage() {
                       ) : (
                         <RefreshCw className="w-3.5 h-3.5" />
                       )}
-                      Verifier la transaction
+                      Verify transaction
                     </button>
                   )}
                 </div>
@@ -233,10 +230,10 @@ export default function HistoryPage() {
           <div className="space-y-3">
             {withdrawalsLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-[#2196F3]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#3db51d]" />
               </div>
             ) : withdrawals.length === 0 ? (
-              <EmptyState message="Aucun retrait pour le moment" />
+              <EmptyState message="No withdrawals yet" />
             ) : (
               withdrawals.map((withdrawal) => (
                 <div
@@ -245,7 +242,7 @@ export default function HistoryPage() {
                   data-testid={`withdrawal-item-${withdrawal.id}`}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <p className="text-sm font-bold text-gray-800">RET{withdrawal.id.toString().padStart(10, "0")}</p>
+                    <p className="text-sm font-bold text-gray-800">WIT{withdrawal.id.toString().padStart(10, "0")}</p>
                     <span className={`text-sm font-bold ${getStatusColor(withdrawal.status)}`}>
                       {getStatusText(withdrawal.status)}
                     </span>
@@ -253,13 +250,13 @@ export default function HistoryPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 w-20">Montant</span>
-                      <span className="text-sm text-gray-800 font-semibold">: {currency} {parseFloat(withdrawal.amount).toLocaleString()}</span>
+                      <span className="text-sm text-gray-500 w-20">Amount</span>
+                      <span className="text-sm text-gray-800 font-semibold">: ₱{parseFloat(withdrawal.amount).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 w-20">Recu</span>
+                      <span className="text-sm text-gray-500 w-20">Received</span>
                       <span className="text-sm text-gray-800 font-semibold">
-                        : {currency} {withdrawal.status === "approved" ? parseFloat(withdrawal.netAmount).toLocaleString() : "0"}
+                        : ₱{withdrawal.status === "approved" ? parseFloat(withdrawal.netAmount).toLocaleString() : "0"}
                       </span>
                     </div>
                     <div className="flex items-center">

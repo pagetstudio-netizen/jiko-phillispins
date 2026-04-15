@@ -1,7 +1,6 @@
 import { useAuth } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
 import { useQuery } from "@tanstack/react-query";
-import { getCountryByCode } from "@/lib/countries";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -32,9 +31,6 @@ export default function MyProductsPage() {
 
   if (!user) return null;
 
-  const country = getCountryByCode(user.country);
-  const currency = country?.currency || "FCFA";
-
   const allProducts = userProducts || [];
 
   const totalEarned = allProducts.reduce((sum: number, p: any) => {
@@ -57,7 +53,6 @@ export default function MyProductsPage() {
     <div className="flex flex-col min-h-full bg-gray-100">
       <div className="flex-1 overflow-y-auto pb-24">
 
-        {/* Header */}
         <div className="relative pt-10 pb-8 px-4 text-center" style={{ background: `linear-gradient(135deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}>
           <div className="absolute top-3 left-3">
             <Link href="/account">
@@ -67,29 +62,27 @@ export default function MyProductsPage() {
             </Link>
           </div>
           <p className="text-white text-4xl font-black tracking-tight">
-            {currency} {totalEarned.toLocaleString()}
+            ₱{totalEarned.toLocaleString()}
           </p>
-          <p className="text-white/80 text-sm mt-1">Revenus totaux</p>
+          <p className="text-white/80 text-sm mt-1">Total Earnings</p>
         </div>
 
-        {/* Info notice */}
         <div className="bg-white border-b border-gray-100 px-4 py-3 text-center">
           <p className="text-gray-500 text-xs">
-            ℹ️ Les revenus des produits sont réglés toutes les 24 heures
+            ℹ️ Product earnings are settled every 24 hours
           </p>
           <p className="text-gray-400 text-xs mt-0.5">
-            Vous pouvez acheter plusieurs appareils pour augmenter vos revenus
+            You can purchase multiple products to increase your earnings
           </p>
         </div>
 
-        {/* Product cards */}
         <div className="px-4 mt-4 space-y-4">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin" style={{ color: GREEN }} />
             </div>
           ) : allProducts.length === 0 ? (
-            <EmptyState message="Aucun produit pour le moment" />
+            <EmptyState message="No products yet" />
           ) : (
             allProducts.map((up: any) => {
               const productId = up.product?.id;
@@ -108,49 +101,45 @@ export default function MyProductsPage() {
                   className="bg-white rounded-2xl shadow-sm overflow-hidden"
                   data-testid={`product-card-${up.id}`}
                 >
-                  {/* Product name */}
                   <p className="text-center text-gray-900 font-bold text-base pt-4 pb-2 px-4">
-                    {up.product?.name || "Produit"}
+                    {up.product?.name || "Product"}
                   </p>
 
-                  {/* Image + details row */}
                   <div className="flex items-start gap-4 px-4 pb-3">
-                    {/* Product image */}
                     <img
                       src={imgSrc}
-                      alt={up.product?.name || "Produit"}
+                      alt={up.product?.name || "Product"}
                       className="rounded-xl object-cover shrink-0"
                       style={{ width: 90, height: 90 }}
                     />
 
-                    {/* Info rows */}
                     <div className="flex-1 space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700 text-sm">Prix :</span>
+                        <span className="text-gray-700 text-sm">Price:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          {currency} {Number(price).toLocaleString()}
+                          ₱{Number(price).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700 text-sm">Revenus quotidiens :</span>
+                        <span className="text-gray-700 text-sm">Daily Income:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          {currency} {Number(dailyEarnings).toLocaleString()}
+                          ₱{Number(dailyEarnings).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700 text-sm">Revenus totaux :</span>
+                        <span className="text-gray-700 text-sm">Total Earnings:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          {currency} {Number(totalRevenue).toLocaleString()}
+                          ₱{Number(totalRevenue).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700 text-sm">Revenus perçus :</span>
+                        <span className="text-gray-700 text-sm">Earned so far:</span>
                         <span className="font-semibold text-sm" style={{ color: GREEN }}>
-                          {currency} {earnedSoFar.toLocaleString()}
+                          ₱{earnedSoFar.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700 text-sm">Acheté le :</span>
+                        <span className="text-gray-700 text-sm">Purchased on:</span>
                         <span className="font-semibold text-xs" style={{ color: GREEN }}>
                           {formatDateTime(up.purchasedAt)}
                         </span>
@@ -158,13 +147,12 @@ export default function MyProductsPage() {
                     </div>
                   </div>
 
-                  {/* Durée button */}
                   <div className="px-4 pb-4">
                     <div
                       className="w-full py-2.5 rounded-full text-center text-white text-sm font-bold"
                       style={{ background: `linear-gradient(90deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}
                     >
-                      Durée : {daysCompleted}/{cycleDays}
+                      Duration: {daysCompleted}/{cycleDays}
                     </div>
                   </div>
                 </div>

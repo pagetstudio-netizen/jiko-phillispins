@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { formatCurrency, getCountryByCode } from "@/lib/countries";
+import { formatCurrency } from "@/lib/countries";
 import { Loader2, AlertTriangle, Settings } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
@@ -24,7 +24,7 @@ export default function InvestPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Investir | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Invest | Jinko Solar"; }, []);
   const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
   const [showContactSheet, setShowContactSheet] = useState(false);
 
@@ -37,7 +37,7 @@ export default function InvestPage() {
       const response = await apiRequest("POST", `/api/products/${productId}/purchase`, {});
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
@@ -46,19 +46,17 @@ export default function InvestPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/user/products"] });
       refreshUser();
       setConfirmProduct(null);
-      toast({ title: "Produit achete!", description: "Vous commencerez a recevoir des gains demain." });
+      toast({ title: "Product purchased!", description: "You will start receiving earnings tomorrow." });
     },
     onError: (error: any) => {
       setConfirmProduct(null);
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
   const balance = parseFloat(user.balance || "0");
-  const country = getCountryByCode(user.country);
-  const currency = country?.currency || "FCFA";
 
   const handleBuyClick = (product: ProductWithOwnership) => {
     setConfirmProduct(product);
@@ -82,7 +80,7 @@ export default function InvestPage() {
           className="flex items-center justify-center"
           data-testid="button-service"
         >
-          <img src={serviceIcon} alt="Service client" className="w-8 h-8 object-contain" />
+          <img src={serviceIcon} alt="Customer Service" className="w-8 h-8 object-contain" />
         </button>
       </div>
 
@@ -121,15 +119,15 @@ export default function InvestPage() {
 
                   <div className="px-4 pb-4 pt-2 space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Cycle(Jours)</span>
+                      <span className="text-sm text-white/90">Cycle (Days)</span>
                       <span className="text-sm font-bold text-white">{product.cycleDays}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Revenu quotidien({currency})</span>
+                      <span className="text-sm text-white/90">Daily Income (₱)</span>
                       <span className="text-sm font-bold text-white">{product.dailyEarnings.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Revenu total({currency})</span>
+                      <span className="text-sm text-white/90">Total Return (₱)</span>
                       <span className="text-sm font-bold text-white">
                         {product.price.toLocaleString()}+{product.totalReturn.toLocaleString()}
                       </span>
@@ -139,7 +137,7 @@ export default function InvestPage() {
 
                 <div className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <span className="text-xs text-gray-400">Prix({currency})</span>
+                    <span className="text-xs text-gray-400">Price (₱)</span>
                     <p className="text-base font-bold text-orange-500">{product.price.toLocaleString()}</p>
                   </div>
                   <button
@@ -148,7 +146,7 @@ export default function InvestPage() {
                     style={{ background: "#3db51d" }}
                     data-testid={`button-purchase-${product.id}`}
                   >
-                    Investir
+                    Invest
                   </button>
                 </div>
               </div>
@@ -157,22 +155,19 @@ export default function InvestPage() {
         ) : (
           <div className="text-center py-12">
             <Settings className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-400">Aucun produit disponible</p>
+            <p className="text-gray-400">No products available</p>
           </div>
         )}
       </div>
 
-      {/* Custom purchase popup */}
       {confirmProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/50" onClick={() => setConfirmProduct(null)}>
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
 
-            {/* Product name title */}
             <div className="pt-6 pb-2 text-center">
               <h3 className="text-xl font-bold text-gray-900">{confirmProduct.name}</h3>
             </div>
 
-            {/* Product image */}
             <div className="flex justify-center px-6 py-3">
               <img
                 src={productHeroImg}
@@ -181,48 +176,45 @@ export default function InvestPage() {
               />
             </div>
 
-            {/* Subtitle */}
             <p className="text-center text-sm text-gray-500 px-6 pb-3">
               Settlement income every 24 hours
             </p>
 
-            {/* Details */}
             <div className="px-6 pb-2 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Prix :</span>
-                <span className="text-[#3db51d] font-bold text-sm">{currency} {confirmProduct.price.toLocaleString()}</span>
+                <span className="text-gray-700 text-sm">Price:</span>
+                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.price.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Revenu quotidien :</span>
-                <span className="text-[#3db51d] font-bold text-sm">{currency} {confirmProduct.dailyEarnings.toLocaleString()}</span>
+                <span className="text-gray-700 text-sm">Daily Income:</span>
+                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.dailyEarnings.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Revenu total :</span>
-                <span className="text-[#3db51d] font-bold text-sm">{currency} {confirmProduct.totalReturn.toLocaleString()}</span>
+                <span className="text-gray-700 text-sm">Total Return:</span>
+                <span className="text-[#3db51d] font-bold text-sm">₱{confirmProduct.totalReturn.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Période de validité :</span>
-                <span className="text-gray-900 font-bold text-sm">{confirmProduct.cycleDays} jour</span>
+                <span className="text-gray-700 text-sm">Duration:</span>
+                <span className="text-gray-900 font-bold text-sm">{confirmProduct.cycleDays} days</span>
               </div>
 
               {balance < confirmProduct.price && (
                 <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-red-200 rounded-xl mt-1">
                   <AlertTriangle className="w-4 h-4 text-green-500 flex-shrink-0" />
                   <p className="text-xs text-green-500">
-                    Solde insuffisant. Il vous manque {formatCurrency(confirmProduct.price - balance, user.country)}.
+                    Insufficient balance. You need {formatCurrency(confirmProduct.price - balance, user.country)}.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3 px-6 py-5">
               <button
                 onClick={() => setConfirmProduct(null)}
                 className="flex-1 py-3 rounded-full bg-gray-100 text-gray-600 font-semibold text-sm"
                 data-testid="button-cancel-purchase"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={confirmPurchase}
@@ -232,7 +224,7 @@ export default function InvestPage() {
                 data-testid="button-confirm-purchase"
               >
                 {purchaseMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>

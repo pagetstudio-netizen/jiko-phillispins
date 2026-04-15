@@ -19,30 +19,10 @@ interface TeamStats {
 const GREEN = "#3db51d";
 const GREEN_DARK = "#2a8d13";
 
-const pageBg: React.CSSProperties = {
-  backgroundColor: "#111111",
-  backgroundImage: `
-    repeating-linear-gradient(
-      45deg,
-      rgba(255,255,255,0.035) 0px,
-      rgba(255,255,255,0.035) 1px,
-      transparent 1px,
-      transparent 8px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(255,255,255,0.035) 0px,
-      rgba(255,255,255,0.035) 1px,
-      transparent 1px,
-      transparent 8px
-    )
-  `,
-};
-
 export default function TeamPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Équipe | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Team | Jinko Solar"; }, []);
   const [, navigate] = useLocation();
 
   const { data: stats } = useQuery<TeamStats>({
@@ -53,20 +33,20 @@ export default function TeamPage() {
 
   const referralLink = `${window.location.origin}/register?start=${user.referralCode}`;
   const totalCommission = stats?.totalCommission || 0;
-  const totalFilleuls =
+  const totalReferrals =
     (stats?.level1Count || 0) + (stats?.level2Count || 0) + (stats?.level3Count || 0);
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
-    toast({ title: "Lien copié !" });
+    toast({ title: "Link copied!" });
   };
 
   const shareLink = () => {
     if (navigator.share) {
-      navigator.share({ title: "Rejoins Jinko Solar", url: referralLink });
+      navigator.share({ title: "Join Jinko Solar", url: referralLink });
     } else {
       navigator.clipboard.writeText(referralLink);
-      toast({ title: "Lien copié !" });
+      toast({ title: "Link copied!" });
     }
   };
 
@@ -81,31 +61,16 @@ export default function TeamPage() {
       <div className="flex-1 overflow-y-auto pb-24 px-4 pt-5 space-y-4">
 
         {/* Referral card */}
-        <div
-          className="rounded-2xl overflow-hidden shadow-md"
-          style={{ position: "relative" }}
-        >
-          {/* Background image */}
+        <div className="rounded-2xl overflow-hidden shadow-md" style={{ position: "relative" }}>
           <img
             src={jinkoBg}
             alt=""
-            style={{
-              position: "absolute", inset: 0,
-              width: "100%", height: "100%",
-              objectFit: "cover",
-            }}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
           />
-          {/* Dark overlay */}
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.55) 100%)",
-            }}
-          />
-          {/* Content */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.55) 100%)" }} />
           <div className="relative p-4">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-white/70 text-xs font-medium">Lien de partage</p>
+              <p className="text-white/70 text-xs font-medium">Referral Link</p>
               <button
                 onClick={copyLink}
                 className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-bold"
@@ -113,12 +78,12 @@ export default function TeamPage() {
                 data-testid="button-copy-link"
               >
                 <Copy size={11} />
-                Copier
+                Copy
               </button>
             </div>
 
             <p className="font-extrabold text-white text-[17px] leading-snug mb-2">
-              Invitez vos amis pour gagner<br />de l'argent gratuit !
+              Invite your friends and earn<br />free money!
             </p>
 
             <div className="flex items-end justify-between gap-2">
@@ -132,69 +97,53 @@ export default function TeamPage() {
                 data-testid="button-share-link"
               >
                 <Share2 size={11} />
-                Partager
+                Share
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mon cashback */}
+        {/* My cashback */}
         <div>
-          <h2 className="text-gray-900 font-bold text-base mb-3">Mon cashback</h2>
+          <h2 className="text-gray-900 font-bold text-base mb-3">My Cashback</h2>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Mes filleuls */}
+            {/* My referrals */}
             <div
               className="rounded-2xl p-4"
               style={{
                 backgroundColor: "#1e1e1e",
                 backgroundImage: `
-                  repeating-linear-gradient(
-                    45deg,
-                    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
-                    transparent 1px, transparent 8px
-                  ),
-                  repeating-linear-gradient(
-                    -45deg,
-                    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
-                    transparent 1px, transparent 8px
-                  )
+                  repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px),
+                  repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px)
                 `,
               }}
               data-testid="card-filleuls"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Users size={16} color={GREEN} />
-                <span className="text-gray-400 text-xs font-medium">Mes filleuls</span>
+                <span className="text-gray-400 text-xs font-medium">My Referrals</span>
               </div>
               <p className="text-white text-3xl font-extrabold" data-testid="text-filleuls-count">
-                {totalFilleuls}
+                {totalReferrals}
               </p>
             </div>
 
-            {/* Bonus de parrainage */}
+            {/* Referral bonus */}
             <div
               className="rounded-2xl p-4"
               style={{
                 backgroundColor: "#1e1e1e",
                 backgroundImage: `
-                  repeating-linear-gradient(
-                    45deg,
-                    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
-                    transparent 1px, transparent 8px
-                  ),
-                  repeating-linear-gradient(
-                    -45deg,
-                    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
-                    transparent 1px, transparent 8px
-                  )
+                  repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px),
+                  repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px)
                 `,
               }}
               data-testid="card-bonus"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Coins size={16} color={GREEN} />
-                <span className="text-gray-400 text-xs font-medium">Bonus de parrainage</span>
+                <span className="text-gray-400 text-xs font-medium">Referral Bonus</span>
               </div>
               <p className="text-white text-3xl font-extrabold mb-3" data-testid="text-bonus-amount">
                 {totalCommission.toFixed(0)}
@@ -205,13 +154,13 @@ export default function TeamPage() {
                 style={{ background: `linear-gradient(90deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}
                 data-testid="button-retrait-bonus"
               >
-                Retrait
+                Withdraw
               </button>
             </div>
           </div>
         </div>
 
-        {/* Level cards — each separate block, dark left / white right */}
+        {/* Level cards */}
         <div className="space-y-3">
           {levels.map((level) => (
             <div
@@ -219,27 +168,19 @@ export default function TeamPage() {
               className="rounded-2xl overflow-hidden flex shadow-md"
               data-testid={`card-level-${level.num}`}
             >
-              {/* Left: dark with carbon texture */}
+              {/* Left: dark */}
               <div
                 className="flex flex-col items-center justify-center py-5 px-4 min-w-[88px]"
                 style={{
                   backgroundColor: "#111111",
                   backgroundImage: `
-                    repeating-linear-gradient(
-                      45deg,
-                      rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px,
-                      transparent 1px, transparent 8px
-                    ),
-                    repeating-linear-gradient(
-                      -45deg,
-                      rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px,
-                      transparent 1px, transparent 8px
-                    )
+                    repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 8px),
+                    repeating-linear-gradient(-45deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 8px)
                   `,
                 }}
               >
                 <span className="text-gray-400 text-[11px] font-semibold mb-1 tracking-wide">
-                  Niveau {level.num}
+                  Level {level.num}
                 </span>
                 <span className="font-extrabold text-2xl" style={{ color: GREEN }}>
                   {level.rate}
@@ -249,22 +190,14 @@ export default function TeamPage() {
               {/* Right: white */}
               <div className="flex-1 bg-white flex flex-col justify-center px-5 py-5 gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 text-sm">Filleuls</span>
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: GREEN }}
-                    data-testid={`text-level${level.num}-count`}
-                  >
+                  <span className="text-gray-600 text-sm">Referrals</span>
+                  <span className="text-sm font-bold" style={{ color: GREEN }} data-testid={`text-level${level.num}-count`}>
                     {level.count}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 text-sm">Remboursement du dépôt</span>
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: GREEN }}
-                    data-testid={`text-level${level.num}-commission`}
-                  >
+                  <span className="text-gray-600 text-sm">Deposit commission</span>
+                  <span className="text-sm font-bold" style={{ color: GREEN }} data-testid={`text-level${level.num}-commission`}>
                     {level.commission.toFixed(0)}
                   </span>
                 </div>

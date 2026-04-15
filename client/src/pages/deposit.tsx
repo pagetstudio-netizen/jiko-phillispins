@@ -3,35 +3,30 @@ import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { getCountryByCode } from "@/lib/countries";
 import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 
 const GREEN = "#3db51d";
-const PRESET_AMOUNTS = [3500, 8000, 15000];
+const PRESET_AMOUNTS = [300, 500, 1000];
 
 export default function DepositPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Dépôt | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Deposit | Jinko Solar"; }, []);
   const [amount, setAmount] = useState<number | "">("");
-
-  const countryInfo = getCountryByCode(user?.country || "");
-  const currency = countryInfo?.currency || "XOF";
-  const userCountry = user?.country || "BJ";
 
   const { data: platformSettings } = useQuery<Record<string, string>>({
     queryKey: ["/api/settings"],
   });
-  const MIN_DEPOSIT = parseInt(platformSettings?.minDeposit || "3500");
+  const MIN_DEPOSIT = parseInt(platformSettings?.minDeposit || "300");
 
-  const handleRecharge = () => {
+  const handleDeposit = () => {
     const amt = typeof amount === "number" ? amount : 0;
     if (!amt || amt < MIN_DEPOSIT) {
-      alert(`Le montant minimum est de ${MIN_DEPOSIT.toLocaleString()} ${currency}`);
+      alert(`Minimum deposit amount is ₱${MIN_DEPOSIT.toLocaleString()}`);
       return;
     }
-    navigate(`/pay?amount=${amt}&country=${userCountry}`);
+    navigate(`/pay?amount=${amt}&country=${user?.country || "PH"}`);
   };
 
   if (!user) return null;
@@ -39,7 +34,6 @@ export default function DepositPage() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5f5f5", overflowX: "hidden" }}>
 
-      {/* ── Zone image : en-tête + carte ── */}
       <div
         style={{
           backgroundImage: `url(${jinkoBg})`,
@@ -48,20 +42,18 @@ export default function DepositPage() {
           paddingBottom: 32,
         }}
       >
-        {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 16px 16px" }}>
           <button onClick={() => navigate("/")} data-testid="button-back" style={{ padding: 4 }}>
             <ChevronLeft style={{ width: 24, height: 24, color: "white" }} />
           </button>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Recharger</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Deposit</h1>
           <Link href="/deposit-orders">
             <button data-testid="button-history" style={{ padding: 4 }}>
-              <img src={historyIcon} alt="Historique" style={{ width: 26, height: 26, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+              <img src={historyIcon} alt="History" style={{ width: 26, height: 26, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
             </button>
           </Link>
         </div>
 
-        {/* Carte blanche */}
         <div
           style={{
             width: "calc(100% - 16px)",
@@ -74,7 +66,6 @@ export default function DepositPage() {
             padding: "20px 16px 20px",
           }}
         >
-          {/* 3 boutons montants */}
           <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
             {PRESET_AMOUNTS.map((p) => (
               <button
@@ -96,18 +87,17 @@ export default function DepositPage() {
                   whiteSpace: "nowrap" as const,
                 }}
               >
-                {p.toLocaleString()}
+                ₱{p.toLocaleString()}
               </button>
             ))}
           </div>
 
-          {/* Label */}
           <p style={{ fontSize: 13, color: GREEN, marginBottom: 10, margin: "0 0 10px 0" }}>
-            Veuillez saisir le montant de recharge
+            Please enter the deposit amount
           </p>
 
-          {/* Champ montant */}
           <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px" }}>
+            <span style={{ fontSize: 15, color: "#9ca3af", fontWeight: 600, marginRight: 8 }}>₱</span>
             <input
               type="number"
               value={amount}
@@ -116,18 +106,15 @@ export default function DepositPage() {
               data-testid="input-deposit-amount"
               style={{ flex: 1, fontSize: 16, color: "#6b7280", border: "none", outline: "none", background: "transparent" }}
             />
-            <span style={{ fontSize: 15, color: "#9ca3af", fontWeight: 600, marginLeft: 8 }}>{currency}</span>
           </div>
         </div>
       </div>
 
-      {/* ── Zone grise : bouton + instructions ── */}
       <div style={{ flex: 1, background: "#f5f5f5", padding: "24px 20px 40px" }}>
 
-        {/* Bouton Recharger maintenant */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
           <button
-            onClick={handleRecharge}
+            onClick={handleDeposit}
             data-testid="button-submit-deposit"
             style={{
               width: 220,
@@ -142,21 +129,20 @@ export default function DepositPage() {
               boxShadow: "0 4px 12px rgba(61,181,29,0.35)",
             }}
           >
-            Recharger maintenant
+            Deposit Now
           </button>
         </div>
 
-        {/* Instructions */}
         <p style={{ fontWeight: 700, fontSize: 14, color: "#111827", marginBottom: 16 }}>
-          💳 Instructions de Recharge :
+          💳 Deposit Instructions:
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[
-            { bold: "Montant minimum de recharge :", text: ` ${MIN_DEPOSIT.toLocaleString()} ${currency}` },
-            { bold: "Vérifiez attentivement vos informations de compte", text: " lors du virement pour éviter toute erreur de paiement" },
-            { bold: "Chaque commande possède ses propres informations de paiement", text: " ; ne réutilisez pas les informations précédentes pour un second paiement" },
-            { bold: "Après un virement réussi", text: ", veuillez patienter 10 à 30 minutes. Si le montant n'est pas crédité après ce délai, contactez le service client." },
+            { bold: "Minimum deposit amount:", text: ` ₱${MIN_DEPOSIT.toLocaleString()}` },
+            { bold: "Carefully verify your account information", text: " when making a transfer to avoid payment errors" },
+            { bold: "Each order has its own payment information", text: "; do not reuse previous information for a second payment" },
+            { bold: "After a successful transfer", text: ", please wait 10 to 30 minutes. If the amount is not credited after this time, contact customer service." },
           ].map((item, i) => (
             <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
               <span style={{ color: "#1565C0", fontWeight: 700, fontSize: 14, marginTop: 1, flexShrink: 0 }}>◆</span>

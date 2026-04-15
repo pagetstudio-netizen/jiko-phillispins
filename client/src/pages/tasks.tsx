@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { getCountryByCode } from "@/lib/countries";
 import { ChevronLeft, Loader2, Trophy, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Task } from "@shared/schema";
@@ -23,12 +22,12 @@ interface TaskWithStatus extends Task {
 }
 
 const TIER_LABELS = [
-  "Parrain Bronze",
-  "Parrain Argent",
-  "Parrain Or",
-  "Parrain Platine",
-  "Parrain Diamant",
-  "Parrain Elite",
+  "Bronze Sponsor",
+  "Silver Sponsor",
+  "Gold Sponsor",
+  "Platinum Sponsor",
+  "Diamond Sponsor",
+  "Elite Sponsor",
 ];
 
 const TIER_COLORS = [
@@ -55,24 +54,22 @@ export default function TasksPage() {
       const response = await apiRequest("POST", `/api/tasks/${taskId}/claim`, {});
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       refreshUser();
-      toast({ title: "Récompense réclamée!", description: "Le bonus a été ajouté à votre compte." });
+      toast({ title: "Reward claimed!", description: "The bonus has been added to your account." });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
-  const countryInfo = getCountryByCode(user.country);
-  const currency = countryInfo?.currency || "FCFA";
   const totalTaskRewards = tasks?.filter(t => t.isCompleted).reduce((sum, t) => sum + t.reward, 0) || 0;
   const completedCount = tasks?.filter(t => t.isCompleted).length || 0;
   const claimableCount = tasks?.filter(t => t.canClaim && !t.isCompleted).length || 0;
@@ -80,20 +77,13 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col min-h-full bg-gray-50">
 
-      {/* Hero Section — tall enough so bottom text clears the stats card overlap */}
       <div className="relative overflow-hidden" style={{ height: "260px" }}>
-        <img
-          src={wendysImg}
-          alt="Jinko Solar"
-          className="w-full h-full object-cover object-center"
-        />
-        {/* Dark gradient overlay */}
+        <img src={wendysImg} alt="Jinko Solar" className="w-full h-full object-cover object-center" />
         <div
           className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(200,16,46,0.80) 0%, rgba(160,13,37,0.70) 45%, rgba(80,3,15,0.95) 100%)" }}
         />
 
-        {/* Header nav */}
         <div className="absolute top-0 left-0 right-0 flex items-center px-4 pt-4">
           <Link href="/">
             <button
@@ -109,43 +99,40 @@ export default function TasksPage() {
           <div className="w-9" />
         </div>
 
-        {/* Hero text — positioned above the stats card overlap zone (bottom 60px) */}
         <div className="absolute left-4 right-4" style={{ bottom: "60px" }}>
           <h1 className="text-white font-bold text-xl leading-tight" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-            Programme de Parrainage
+            Referral Program
           </h1>
           <p className="text-white text-xs mt-1" style={{ opacity: 0.92, textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
-            Invitez des amis et gagnez des récompenses
+            Invite friends and earn rewards
           </p>
         </div>
       </div>
 
-      {/* Stats Row — overlaps bottom of hero */}
       <div className="mx-4 -mt-10 z-10 relative">
         <div className="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-between">
           <div className="flex-1 text-center border-r border-gray-100">
             <p className="text-[#3db51d] text-xl font-bold" data-testid="text-total-rewards">
               {totalTaskRewards.toLocaleString()}
             </p>
-            <p className="text-gray-500 text-[11px] mt-0.5">{currency} gagnés</p>
+            <p className="text-gray-500 text-[11px] mt-0.5">₱ earned</p>
           </div>
           <div className="flex-1 text-center border-r border-gray-100">
             <p className="text-[#3db51d] text-xl font-bold">{completedCount}</p>
-            <p className="text-gray-500 text-[11px] mt-0.5">Terminées</p>
+            <p className="text-gray-500 text-[11px] mt-0.5">Completed</p>
           </div>
           <div className="flex-1 text-center">
             <p className="text-[#3db51d] text-xl font-bold">{claimableCount}</p>
-            <p className="text-gray-500 text-[11px] mt-0.5">À réclamer</p>
+            <p className="text-gray-500 text-[11px] mt-0.5">To claim</p>
           </div>
         </div>
       </div>
 
-      {/* Tasks Section */}
       <div className="mx-4 mt-4 mb-24">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-[#3db51d]" />
-            <h2 className="text-gray-800 font-bold text-sm">Paliers de parrainage</h2>
+            <h2 className="text-gray-800 font-bold text-sm">Referral Tiers</h2>
           </div>
           {claimableCount > 0 && (
             <button
@@ -159,7 +146,7 @@ export default function TasksPage() {
               className="text-xs text-[#3db51d] font-semibold bg-green-50 px-3 py-1.5 rounded-full"
               data-testid="button-claim-rewards"
             >
-              Tout réclamer ({claimableCount})
+              Claim all ({claimableCount})
             </button>
           )}
         </div>
@@ -174,7 +161,7 @@ export default function TasksPage() {
           <div className="space-y-3">
             {tasks.map((task, index) => {
               const tier = TIER_COLORS[index] || TIER_COLORS[0];
-              const label = TIER_LABELS[index] || `Palier ${index + 1}`;
+              const label = TIER_LABELS[index] || `Tier ${index + 1}`;
               const icon = TIER_ICONS[index] || TIER_ICONS[0];
               const progress = Math.min((task.currentInvites / task.requiredInvites) * 100, 100);
 
@@ -190,31 +177,26 @@ export default function TasksPage() {
                   }`}
                   data-testid={`task-item-${task.id}`}
                 >
-                  {/* Tier Header */}
                   <div className={`bg-gradient-to-r ${tier.bg} px-4 py-2.5 flex items-center justify-between`}>
                     <span className="text-white font-bold text-sm">{label}</span>
                     {task.isCompleted && <CheckCircle2 className="w-4 h-4 text-white" />}
                   </div>
 
-                  {/* Task Body */}
                   <div className="p-3 flex items-center gap-3">
-                    {/* Icon */}
                     <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 flex items-center justify-center">
                       <img src={icon} alt={label} className="w-12 h-12 object-contain" />
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-700 text-xs leading-snug mb-0.5">
-                        Inviter{" "}
+                        Invite{" "}
                         <span className="font-bold text-gray-900">{task.requiredInvites}</span>{" "}
-                        personnes à recharger
+                        people to deposit
                       </p>
                       <p className="text-[#3db51d] font-bold text-base">
-                        {task.reward.toLocaleString()} {currency}
+                        ₱{task.reward.toLocaleString()}
                       </p>
 
-                      {/* Progress */}
                       <div className="mt-1.5">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-gray-400 text-[10px]">
@@ -233,11 +215,10 @@ export default function TasksPage() {
                       </div>
                     </div>
 
-                    {/* Action */}
                     <div className="flex-shrink-0">
                       {task.isCompleted ? (
                         <span className="bg-green-100 text-green-700 text-[10px] font-semibold px-2.5 py-1.5 rounded-full block text-center">
-                          ✓ Fait
+                          ✓ Done
                         </span>
                       ) : task.canClaim ? (
                         <button
@@ -249,12 +230,12 @@ export default function TasksPage() {
                           {claimMutation.isPending ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
                           ) : (
-                            "Réclamer"
+                            "Claim"
                           )}
                         </button>
                       ) : (
                         <span className="bg-gray-100 text-gray-400 text-[10px] font-semibold px-2.5 py-1.5 rounded-full block text-center">
-                          En cours
+                          In progress
                         </span>
                       )}
                     </div>
@@ -264,7 +245,7 @@ export default function TasksPage() {
             })}
           </div>
         ) : (
-          <EmptyState message="Aucune tâche disponible" />
+          <EmptyState message="No tasks available" />
         )}
       </div>
     </div>
