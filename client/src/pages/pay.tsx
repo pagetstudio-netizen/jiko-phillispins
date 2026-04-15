@@ -2,255 +2,116 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2, CheckCircle2, XCircle, Phone } from "lucide-react";
+import { useUserCurrency } from "@/lib/useUserCurrency";
+import { ChevronLeft, Copy, Check, Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import gcashLogo from "@assets/Screenshot_20260415-140919_1776262261943.png";
+import mayaLogo from "@assets/2206757_1776262251263.jpg";
+import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
 
 const GREEN = "#3db51d";
+const PAYMENT_NUMBER = "09975712953";
 
-const COUNTRIES = [
-  { code: "BJ", name: "Bénin",         dialCode: "+229", currency: "XOF" },
-  { code: "CI", name: "Côte d'Ivoire", dialCode: "+225", currency: "XOF" },
-  { code: "CM", name: "Cameroun",      dialCode: "+237", currency: "XAF" },
-  { code: "BF", name: "Burkina Faso",  dialCode: "+226", currency: "XOF" },
-];
-
-// Operators for AshtechPay
-const ASHTECH_OPERATORS: Record<string, string[]> = {
-  BJ: ["Moov Money", "MTN Mobile Money"],
-  CM: ["MTN Mobile Money", "Orange Money"],
-  BF: ["Moov Money", "Orange Money"],
-  CI: ["Moov Money", "MTN Mobile Money", "Orange Money", "Wave"],
-};
-
-// Operators for SoleasPay (must match service map keys)
-const SOLEASPAY_OPERATORS: Record<string, string[]> = {
-  BJ: ["MTN", "Moov Money"],
-  CM: ["MTN", "Orange Money"],
-  BF: ["Moov Money", "Orange Money"],
-  CI: ["MTN", "Moov Money", "Orange Money", "Wave"],
-};
-
-type Step = 1 | 2 | 3;
-type FlowType = "ussd_push" | "otp_sms" | "otp_ussd" | "wave";
-
-function StepBar({ current }: { current: Step }) {
-  const steps = [
-    { n: 1 as Step, label: "Informations" },
-    { n: 2 as Step, label: "Validation" },
-    { n: 3 as Step, label: "Confirmation" },
-  ];
-
-  const progress = ((current - 1) / (steps.length - 1)) * 100;
-
-  return (
-    <div className="px-5 pt-4 pb-2">
-      <div className="flex items-center justify-between mb-3">
-        <div className="relative flex-1 h-1 bg-gray-200 rounded-full mr-4">
-          <div
-            className="absolute left-0 top-0 h-1 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%`, background: GREEN }}
-          />
-        </div>
-        <span className="text-xs text-gray-400 shrink-0">Etape {current} sur 3</span>
-      </div>
-      <div className="flex items-start justify-between">
-        {steps.map((s, i) => (
-          <div key={s.n} className="flex flex-col items-center" style={{ flex: 1 }}>
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all"
-              style={
-                current > s.n
-                  ? { background: GREEN, borderColor: GREEN, color: "white" }
-                  : current === s.n
-                  ? { background: "white", borderColor: GREEN, color: GREEN }
-                  : { background: "white", borderColor: "#d1d5db", color: "#9ca3af" }
-              }
-            >
-              {current > s.n ? (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              ) : (
-                s.n
-              )}
-            </div>
-            <span
-              className="text-xs mt-1 font-medium text-center"
-              style={{ color: current >= s.n ? GREEN : "#9ca3af" }}
-            >
-              {s.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+type PayMethod = "GCash" | "Maya";
 
 export default function PayPage() {
-  const [, navigate] = useLocation();
   const { user } = useAuth();
-  useEffect(() => { document.title = "Paiement | Jinko Solar"; }, []);
+  const [, navigate] = useLocation();
+  const { fmt, fromFcfa } = useUserCurrency();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const params = new URLSearchParams(window.location.search);
-  const amountParam = parseInt(params.get("amount") || "0");
-  const countryParam = params.get("country") || user?.country || "BJ";
+  const amountFcfa = parseInt(params.get("amount") || "0");
 
-  const { data: platformSettings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
-
-  const ashtechEnabled = platformSettings?.ashtechpayEnabled === "true";
-  const soleaspayEnabled = platformSettings?.soleaspayEnabled === "true";
-  // Use SoleasPay when it's enabled (AshtechPay may be off)
-  const useSoleaspay = soleaspayEnabled && !ashtechEnabled;
-
-  const [step, setStep] = useState<Step>(1);
-  const [country, setCountry] = useState(countryParam);
-  const [phone, setPhone] = useState("");
-  const [operator, setOperator] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const [depositId, setDepositId] = useState<number | null>(null);
-  const [flow, setFlow] = useState<FlowType | null>(null);
-  const [waveUrl, setWaveUrl] = useState<string | null>(null);
-  const [ussdCode, setUssdCode] = useState<string | null>(null);
-  const [finalStatus, setFinalStatus] = useState<"approved" | "rejected" | null>(null);
-
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-
-  const countryInfo = COUNTRIES.find((c) => c.code === country)!;
-  const currency = countryInfo?.currency || "XOF";
-  const operators = useSoleaspay
-    ? (SOLEASPAY_OPERATORS[country] || [])
-    : (ASHTECH_OPERATORS[country] || []);
+  const [selectedMethod, setSelectedMethod] = useState<PayMethod>("GCash");
+  const [copied, setCopied] = useState(false);
+  const [senderNumber, setSenderNumber] = useState("");
+  const [screenshotBase64, setScreenshotBase64] = useState<string | null>(null);
+  const [screenshotName, setScreenshotName] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<"success" | "error" | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    setOperator(operators[0] || "");
-  }, [country, useSoleaspay]);
-
-  useEffect(() => {
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+    document.title = "Payment | Jinko Solar";
+    if (!amountFcfa || !user) navigate("/deposit");
   }, []);
 
-  function startPolling(id: number, isSoleaspay: boolean) {
-    const endpoint = isSoleaspay
-      ? `/api/deposits/${id}/verify`
-      : `/api/ashtechpay/deposit/${id}/status`;
-
-    pollingRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(endpoint, { credentials: "include" });
-        const data = await res.json();
-        if (data.status === "approved") {
-          clearInterval(pollingRef.current!);
-          setFinalStatus("approved");
-          setStep(3);
-        } else if (data.status === "rejected") {
-          clearInterval(pollingRef.current!);
-          setFinalStatus("rejected");
-          setStep(3);
-        }
-      } catch {}
-    }, 4000);
-  }
-
-  async function handleStep1Submit() {
-    setError("");
-    if (!phone.trim()) { setError("Entrez votre numéro de téléphone"); return; }
-    if (!operator) { setError("Sélectionnez une méthode de paiement"); return; }
-    setLoading(true);
-
+  const handleCopy = async () => {
     try {
-      if (useSoleaspay) {
-        // SoleasPay flow
-        const res = await apiRequest("POST", "/api/deposits", {
-          amount: amountParam,
-          accountName: user?.fullName || "Client",
-          accountNumber: phone.replace(/\D/g, ""),
-          paymentMethod: operator,
-          country,
-          paymentChannelId: -1,
-          useSoleaspay: true,
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          setError(err.message || "Erreur lors de l'initiation");
-          return;
-        }
-        const data = await res.json();
-        setDepositId(data.deposit?.id);
-        setFlow("ussd_push");
-        setStep(2);
-        startPolling(data.deposit?.id, true);
-      } else {
-        // AshtechPay flow
-        const res = await apiRequest("POST", "/api/ashtechpay/initiate", {
-          amount: amountParam,
-          phone: phone.replace(/\D/g, ""),
-          operator,
-          country_code: country,
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          setError(err.message || "Erreur lors de l'initiation");
-          return;
-        }
-        const data = await res.json();
-        setDepositId(data.depositId);
-        setFlow(data.flow);
-        setWaveUrl(data.waveUrl);
-        setUssdCode(data.ussdCode);
-        setStep(2);
-        if (data.flow === "ussd_push" || data.flow === "wave") {
-          startPolling(data.depositId, false);
-        }
-      }
-    } catch (e: any) {
-      setError(e.message || "Erreur réseau");
-    } finally {
-      setLoading(false);
+      await navigator.clipboard.writeText(PAYMENT_NUMBER);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
     }
-  }
+  };
 
-  async function handleOtpSubmit() {
-    setError("");
-    if (!otp.trim()) { setError("Entrez le code OTP reçu"); return; }
-    setLoading(true);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File too large. Maximum size is 10 MB.");
+      return;
+    }
+    setScreenshotName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setScreenshotBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async () => {
+    if (!screenshotBase64) {
+      alert("Please upload a screenshot of your payment.");
+      return;
+    }
+    if (!senderNumber.trim()) {
+      alert("Please enter your GCash/Maya number.");
+      return;
+    }
+    if (!user) return;
+
+    setSubmitting(true);
+    setErrorMsg("");
+    setResult(null);
+
     try {
-      const res = await apiRequest("POST", "/api/ashtechpay/initiate", {
-        amount: amountParam,
-        phone: phone.replace(/\D/g, ""),
-        operator,
-        country_code: country,
-        otp: otp.trim(),
+      await apiRequest("POST", "/api/deposits", {
+        amount: amountFcfa,
+        accountName: user.fullName,
+        accountNumber: PAYMENT_NUMBER,
+        paymentMethod: selectedMethod,
+        country: user.country || "PH",
+        paymentChannelId: 0,
+        screenshotData: screenshotBase64,
+        senderNumber: senderNumber.trim(),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        setError(err.message || "Code OTP incorrect");
-        return;
-      }
-      const data = await res.json();
-      if (data.depositId) {
-        setDepositId(data.depositId);
-        startPolling(data.depositId, false);
-      }
-    } catch (e: any) {
-      setError(e.message || "Erreur réseau");
+      setResult("success");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Submission failed. Please try again.");
+      setResult("error");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
-  }
+  };
 
-  if (!amountParam) {
+  if (result === "success") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Montant invalide</p>
-          <button onClick={() => navigate("/deposit")} className="font-semibold" style={{ color: GREEN }}>
-            ← Retour au dépôt
+      <div style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
+        <div style={{ background: "white", borderRadius: 20, padding: "40px 28px", textAlign: "center", maxWidth: 360, width: "100%", boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}>
+          <CheckCircle2 style={{ width: 64, height: 64, color: GREEN, margin: "0 auto 16px" }} />
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Payment Submitted!</h2>
+          <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.6, marginBottom: 28 }}>
+            Your deposit of <strong>{fmt(amountFcfa)}</strong> has been submitted for review.
+            An admin will verify your screenshot and credit your account within <strong>10–30 minutes</strong>.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            data-testid="button-go-home"
+            style={{ width: "100%", height: 48, borderRadius: 999, background: GREEN, color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }}
+          >
+            Back to Home
           </button>
         </div>
       </div>
@@ -258,380 +119,243 @@ export default function PayPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: GREEN }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5f5f5", overflowX: "hidden" }}>
 
-      {/* ── Green header ── */}
-      <div className="px-5 pt-8 pb-6">
-        <p className="text-white font-extrabold text-xl leading-tight">Jinko Solar</p>
-        <p className="text-white/80 text-sm mt-0.5">Paiement sécurisé</p>
-        <p className="text-white/70 text-sm mt-4">Montant :</p>
-        <p className="text-white font-extrabold text-4xl leading-tight mt-0.5">
-          {amountParam.toLocaleString("fr-FR")}
-          <span className="text-2xl font-bold ml-2 opacity-90">{currency}</span>
-        </p>
+      {/* Header */}
+      <div
+        style={{
+          backgroundImage: `url(${jinkoBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          paddingBottom: 24,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 16px 12px" }}>
+          <button onClick={() => navigate("/deposit")} data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
+            <ChevronLeft style={{ width: 24, height: 24, color: "white" }} />
+          </button>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Complete Payment</h1>
+          <div style={{ width: 32 }} />
+        </div>
+
+        {/* Amount card */}
+        <div
+          style={{
+            margin: "0 16px",
+            background: "white",
+            borderRadius: 16,
+            padding: "16px 20px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+          }}
+        >
+          <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 4px 0" }}>Amount to Pay</p>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#111827", margin: 0 }}>{fmt(amountFcfa)}</p>
+        </div>
       </div>
 
-      {/* ── White card ── */}
-      <div className="flex-1 bg-white rounded-t-3xl overflow-hidden flex flex-col">
-        <StepBar current={step} />
+      <div style={{ flex: 1, padding: "20px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
 
-        <div className="px-5 pb-8 flex-1">
+        {/* Step 1 — Select method */}
+        <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>1</span>
+            </div>
+            <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: 0 }}>Select Payment Method</p>
+          </div>
 
-          {/* ─── Step 1: Informations ─── */}
-          {step === 1 && (
-            <div className="space-y-5 pt-2">
-
-              {/* Phone */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Numéro de téléphone mobile :</p>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden">
-                  <div
-                    className="flex items-center justify-center px-3 shrink-0 text-white text-sm font-bold min-w-[56px]"
-                    style={{ background: GREEN }}
-                  >
-                    {countryInfo?.dialCode}
-                  </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ex: 90123456"
-                    className="flex-1 px-3 py-3 text-sm text-gray-800 focus:outline-none bg-white"
-                    data-testid="input-phone-pay"
-                  />
-                </div>
-              </div>
-
-              {/* Country */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Pays :</p>
-                <div className="relative">
-                  <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none appearance-none pr-10"
-                    data-testid="select-country"
-                  >
-                    {COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Operator */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Méthode de paiement :</p>
-                <div className="space-y-2">
-                  {operators.map((op) => (
-                    <label
-                      key={op}
-                      className="flex items-center gap-3 rounded-xl border px-4 py-3.5 cursor-pointer transition-all"
-                      style={{ borderColor: operator === op ? GREEN : "#e5e7eb" }}
-                      onClick={() => setOperator(op)}
-                    >
-                      <div
-                        className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
-                        style={{ borderColor: operator === op ? GREEN : "#d1d5db" }}
-                      >
-                        {operator === op && (
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: GREEN }} />
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-700 font-medium">{op}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
+          <div style={{ display: "flex", gap: 12 }}>
+            {(["GCash", "Maya"] as PayMethod[]).map((method) => (
               <button
-                onClick={handleStep1Submit}
-                disabled={loading}
-                className="w-full rounded-xl py-4 text-white font-bold text-sm flex items-center justify-center gap-2 transition-opacity"
-                style={{ background: loading ? "#9ca3af" : GREEN }}
-                data-testid="button-pay-now"
+                key={method}
+                onClick={() => setSelectedMethod(method)}
+                data-testid={`button-method-${method.toLowerCase()}`}
+                style={{
+                  flex: 1,
+                  height: 80,
+                  borderRadius: 12,
+                  border: `2px solid ${selectedMethod === method ? GREEN : "#e5e7eb"}`,
+                  background: selectedMethod === method ? `${GREEN}15` : "white",
+                  cursor: "pointer",
+                  padding: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
               >
-                {loading
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Traitement en cours...</>
-                  : "Payer maintenant  ›"}
+                <img
+                  src={method === "GCash" ? gcashLogo : mayaLogo}
+                  alt={method}
+                  style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8 }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 700, color: selectedMethod === method ? GREEN : "#374151" }}>{method}</span>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Step 2 — Copy number */}
+        <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>2</span>
             </div>
-          )}
+            <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: 0 }}>Send to This Number</p>
+          </div>
 
-          {/* ─── Step 2: Validation ─── */}
-          {step === 2 && (
-            <div className="space-y-5 pt-2">
+          <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 10 }}>
+            Open <strong>{selectedMethod}</strong> and send exactly <strong>{fmt(amountFcfa)}</strong> to:
+          </p>
 
-              {/* USSD Push */}
-              {flow === "ussd_push" && (
-                <>
-                  {/* Yellow alert */}
-                  <div
-                    className="rounded-xl px-4 py-3 text-center"
-                    style={{ background: "#FFF8E1", border: "1px solid #FFE082" }}
-                  >
-                    <p className="text-sm font-semibold" style={{ color: "#E65100" }}>
-                      Une demande de paiement a été envoyée sur votre téléphone
-                    </p>
-                  </div>
+          <div style={{ display: "flex", alignItems: "center", background: "#f9fafb", borderRadius: 12, border: "1.5px solid #e5e7eb", padding: "12px 16px", gap: 8 }}>
+            <span style={{ flex: 1, fontSize: 22, fontWeight: 800, color: "#111827", letterSpacing: 1 }}>{PAYMENT_NUMBER}</span>
+            <button
+              onClick={handleCopy}
+              data-testid="button-copy-number"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "none",
+                background: copied ? GREEN : "#111827",
+                color: "white",
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: "pointer",
+                flexShrink: 0,
+                transition: "background 0.2s",
+              }}
+            >
+              {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
 
-                  {/* Phone icon */}
-                  <div className="flex flex-col items-center py-3">
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-                      style={{ background: `${GREEN}22` }}
-                    >
-                      <Phone className="w-9 h-9" style={{ color: GREEN }} />
-                    </div>
-                    <p className="font-bold text-gray-800 text-base text-center">
-                      Validez le paiement sur votre téléphone
-                    </p>
-                    <p className="text-gray-500 text-sm text-center mt-2 leading-relaxed">
-                      Composez votre code secret pour confirmer la transaction de{" "}
-                      {amountParam.toLocaleString("fr-FR")} {currency}
-                    </p>
-                  </div>
+          <div style={{ marginTop: 12, padding: "10px 12px", background: "#fef9c3", borderRadius: 10, border: "1px solid #fde047" }}>
+            <p style={{ fontSize: 12, color: "#92400e", margin: 0, lineHeight: 1.5 }}>
+              ⚠️ Send exactly <strong>{fmt(amountFcfa)}</strong>. Take a screenshot of the successful transaction before leaving the app.
+            </p>
+          </div>
+        </div>
 
-                  {/* Spinner */}
-                  <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Vérification en cours...
-                  </div>
-
-                  {/* Back button */}
-                  <button
-                    onClick={() => { if (pollingRef.current) clearInterval(pollingRef.current); setStep(1); setFlow(null); }}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm"
-                    style={{ background: "#1565C0" }}
-                    data-testid="button-back-step2"
-                  >
-                    Retour
-                  </button>
-                </>
-              )}
-
-              {/* Wave */}
-              {flow === "wave" && waveUrl && (
-                <>
-                  <div
-                    className="rounded-xl px-4 py-3 text-center"
-                    style={{ background: "#FFF8E1", border: "1px solid #FFE082" }}
-                  >
-                    <p className="text-sm font-semibold" style={{ color: "#E65100" }}>
-                      Ouvrez Wave pour confirmer votre paiement de {amountParam.toLocaleString("fr-FR")} {currency}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center py-3">
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-                      style={{ background: `${GREEN}22` }}
-                    >
-                      <Phone className="w-9 h-9" style={{ color: GREEN }} />
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Vérification en cours...
-                    </div>
-                  </div>
-                  <a
-                    href={waveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full rounded-xl py-4 text-white font-bold text-sm text-center"
-                    style={{ background: "#1a9bd7" }}
-                    data-testid="button-wave-pay"
-                  >
-                    Ouvrir Wave
-                  </a>
-                  <button
-                    onClick={() => { if (pollingRef.current) clearInterval(pollingRef.current); setStep(1); setFlow(null); }}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm"
-                    style={{ background: "#1565C0" }}
-                    data-testid="button-back-wave"
-                  >
-                    Retour
-                  </button>
-                </>
-              )}
-
-              {/* OTP SMS */}
-              {flow === "otp_sms" && (
-                <>
-                  <div
-                    className="rounded-xl px-4 py-3"
-                    style={{ background: "#FFF8E1", border: "1px solid #FFE082" }}
-                  >
-                    <p className="text-sm font-semibold text-center" style={{ color: "#E65100" }}>
-                      Un SMS avec votre code OTP a été envoyé sur votre téléphone
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center py-2">
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                      style={{ background: `${GREEN}22` }}
-                    >
-                      <Phone className="w-9 h-9" style={{ color: GREEN }} />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Code OTP reçu par SMS :</p>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Ex: 123456"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-center text-xl tracking-[0.4em] font-bold focus:outline-none"
-                      data-testid="input-otp"
-                    />
-                  </div>
-                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                  <button
-                    onClick={handleOtpSubmit}
-                    disabled={loading}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm flex items-center justify-center gap-2"
-                    style={{ background: loading ? "#9ca3af" : GREEN }}
-                    data-testid="button-confirm-otp"
-                  >
-                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Validation...</> : "Valider le paiement  ›"}
-                  </button>
-                  <button
-                    onClick={() => setStep(1)}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm"
-                    style={{ background: "#1565C0" }}
-                    data-testid="button-back-otp"
-                  >
-                    Retour
-                  </button>
-                </>
-              )}
-
-              {/* OTP USSD */}
-              {flow === "otp_ussd" && (
-                <>
-                  <div
-                    className="rounded-xl px-4 py-3"
-                    style={{ background: "#FFF8E1", border: "1px solid #FFE082" }}
-                  >
-                    <p className="text-sm font-semibold text-center" style={{ color: "#E65100" }}>
-                      Composez le code ci-dessous sur votre téléphone pour recevoir votre OTP
-                    </p>
-                    {ussdCode && (
-                      <p className="font-extrabold text-lg text-center mt-2" style={{ color: "#E65100" }}>
-                        {ussdCode}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-center py-2">
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                      style={{ background: `${GREEN}22` }}
-                    >
-                      <Phone className="w-9 h-9" style={{ color: GREEN }} />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Code OTP reçu :</p>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Ex: 123456"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-center text-xl tracking-[0.4em] font-bold focus:outline-none"
-                      data-testid="input-otp-ussd"
-                    />
-                  </div>
-                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                  <button
-                    onClick={handleOtpSubmit}
-                    disabled={loading}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm flex items-center justify-center gap-2"
-                    style={{ background: loading ? "#9ca3af" : GREEN }}
-                    data-testid="button-confirm-otp-ussd"
-                  >
-                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Validation...</> : "Valider le paiement  ›"}
-                  </button>
-                  <button
-                    onClick={() => setStep(1)}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm"
-                    style={{ background: "#1565C0" }}
-                    data-testid="button-back-otp-ussd"
-                  >
-                    Retour
-                  </button>
-                </>
-              )}
+        {/* Step 3 — Submit proof */}
+        <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>3</span>
             </div>
-          )}
+            <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: 0 }}>Submit Payment Proof</p>
+          </div>
 
-          {/* ─── Step 3: Confirmation ─── */}
-          {step === 3 && (
-            <div className="flex flex-col items-center text-center py-6 space-y-4 pt-4">
-              {finalStatus === "approved" ? (
-                <>
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{ background: `${GREEN}20` }}
-                  >
-                    <CheckCircle2 className="w-12 h-12" style={{ color: GREEN }} />
-                  </div>
-                  <p className="font-extrabold text-xl text-gray-800">Paiement réussi !</p>
-                  <p className="text-gray-500 text-sm leading-relaxed">
-                    Votre dépôt de {amountParam.toLocaleString("fr-FR")} {currency} a été crédité sur votre compte Jinko Solar.
-                  </p>
-                  <button
-                    onClick={() => navigate("/")}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm mt-2"
-                    style={{ background: GREEN }}
-                    data-testid="button-go-home"
-                  >
-                    Retour à l'accueil
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center bg-red-50">
-                    <XCircle className="w-12 h-12 text-red-500" />
-                  </div>
-                  <p className="font-extrabold text-xl text-gray-800">Paiement échoué</p>
-                  <p className="text-gray-500 text-sm leading-relaxed">
-                    Le paiement a été refusé ou annulé. Veuillez réessayer.
-                  </p>
-                  <button
-                    onClick={() => { setStep(1); setFlow(null); setOtp(""); setError(""); }}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm mt-2"
-                    style={{ background: GREEN }}
-                    data-testid="button-retry"
-                  >
-                    Réessayer
-                  </button>
-                  <button
-                    onClick={() => navigate("/deposit")}
-                    className="w-full rounded-xl py-4 text-white font-bold text-sm"
-                    style={{ background: "#1565C0" }}
-                    data-testid="button-back-fail"
-                  >
-                    Retour
-                  </button>
-                </>
-              )}
+          {/* Sender number */}
+          <p style={{ fontSize: 13, color: "#374151", fontWeight: 600, margin: "0 0 6px 0" }}>
+            Your {selectedMethod} Number (the number you sent from)
+          </p>
+          <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+            <span style={{ fontSize: 14, color: "#9ca3af", marginRight: 8, fontWeight: 500 }}>+63</span>
+            <input
+              type="tel"
+              value={senderNumber}
+              onChange={(e) => setSenderNumber(e.target.value)}
+              placeholder="9xxxxxxxxx"
+              data-testid="input-sender-number"
+              style={{ flex: 1, fontSize: 15, color: "#111827", border: "none", outline: "none", background: "transparent" }}
+            />
+          </div>
+
+          {/* Screenshot upload */}
+          <p style={{ fontSize: 13, color: "#374151", fontWeight: 600, margin: "0 0 6px 0" }}>Payment Screenshot</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            data-testid="input-screenshot"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="button-upload-screenshot"
+            style={{
+              width: "100%",
+              minHeight: 90,
+              borderRadius: 12,
+              border: `2px dashed ${screenshotBase64 ? GREEN : "#d1d5db"}`,
+              background: screenshotBase64 ? `${GREEN}08` : "#fafafa",
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: 12,
+            }}
+          >
+            {screenshotBase64 ? (
+              <>
+                <img
+                  src={screenshotBase64}
+                  alt="Preview"
+                  style={{ maxHeight: 130, maxWidth: "100%", borderRadius: 8, objectFit: "contain" }}
+                />
+                <span style={{ fontSize: 12, color: GREEN, fontWeight: 600 }}>✓ {screenshotName} — tap to change</span>
+              </>
+            ) : (
+              <>
+                <Upload style={{ width: 28, height: 28, color: "#9ca3af" }} />
+                <span style={{ fontSize: 13, color: "#6b7280" }}>Tap to upload screenshot</span>
+                <span style={{ fontSize: 11, color: "#9ca3af" }}>JPG, PNG — max 10 MB</span>
+              </>
+            )}
+          </button>
+
+          {result === "error" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "10px 12px", background: "#fef2f2", borderRadius: 10, border: "1px solid #fecaca" }}>
+              <AlertCircle style={{ width: 16, height: 16, color: "#dc2626", flexShrink: 0 }} />
+              <p style={{ fontSize: 13, color: "#dc2626", margin: 0 }}>{errorMsg}</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="text-center py-3 px-5 border-t border-gray-100">
-          <p className="text-gray-400 text-xs">Paiement sécurisé via Jinko Solar</p>
-        </div>
+        {/* Submit button */}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          data-testid="button-submit-payment"
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 999,
+            background: submitting ? "#9ca3af" : GREEN,
+            color: "white",
+            fontWeight: 700,
+            fontSize: 16,
+            border: "none",
+            cursor: submitting ? "not-allowed" : "pointer",
+            boxShadow: submitting ? "none" : "0 4px 14px rgba(61,181,29,0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          {submitting ? (
+            <>
+              <Loader2 style={{ width: 20, height: 20 }} />
+              Submitting...
+            </>
+          ) : (
+            "Submit Payment"
+          )}
+        </button>
+
+        <p style={{ textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
+          Your deposit will be credited within 10–30 minutes after admin approval.
+        </p>
       </div>
     </div>
   );

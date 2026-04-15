@@ -465,7 +465,7 @@ export async function registerRoutes(
   // Deposits
   app.post("/api/deposits", requireAuth, async (req, res) => {
     try {
-      const { amount, accountName, accountNumber, paymentMethod, country, paymentChannelId, useSoleaspay, otpCode } = req.body;
+      const { amount, accountName, accountNumber, paymentMethod, country, paymentChannelId, useSoleaspay, otpCode, screenshotData, senderNumber } = req.body;
       const user = await storage.getUser(req.session.userId!);
       
       if (!user) {
@@ -553,6 +553,8 @@ export async function registerRoutes(
         paymentMethod,
         paymentChannelId: paymentChannelId > 0 ? paymentChannelId : null,
         status: "pending",
+        screenshotData: screenshotData || null,
+        senderNumber: senderNumber || null,
       });
 
       res.json({ deposit, soleaspay: false });

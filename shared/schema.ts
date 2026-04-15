@@ -100,6 +100,8 @@ export const deposits = pgTable("deposits", {
   inpayOutTradeNo: text("inpay_out_trade_no"),
   ashtechpayTransactionId: text("ashtechpay_transaction_id"),
   ashtechpayReference: text("ashtechpay_reference"),
+  screenshotData: text("screenshot_data"),
+  senderNumber: text("sender_number"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   processedAt: timestamp("processed_at"),
   processedBy: integer("processed_by"),

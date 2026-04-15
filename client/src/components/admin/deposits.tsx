@@ -122,12 +122,12 @@ export default function AdminDeposits() {
                     <p className="font-medium text-foreground">{deposit.paymentMethod}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Number</p>
+                    <p className="text-muted-foreground">Sent to</p>
                     <p className="font-medium text-foreground">{deposit.accountNumber}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Country</p>
-                    <p className="font-medium text-foreground">{deposit.country}</p>
+                    <p className="text-muted-foreground">Sender Number</p>
+                    <p className="font-medium text-foreground">{(deposit as any).senderNumber || "—"}</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Date & Time</p>
@@ -143,6 +143,20 @@ export default function AdminDeposits() {
                     </p>
                   </div>
                 </div>
+
+                {(deposit as any).screenshotData && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payment Screenshot</p>
+                    <a href={(deposit as any).screenshotData} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={(deposit as any).screenshotData}
+                        alt="Payment proof"
+                        className="w-full max-h-64 object-contain rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                      />
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-1">Tap image to open full size</p>
+                  </div>
+                )}
 
                 {deposit.status === "pending" && (
                   <div className="flex gap-2">
