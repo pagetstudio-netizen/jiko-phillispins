@@ -44,5 +44,5 @@ integrations = ["javascript_database:1.0.0"]
 [userenv]
 
 [userenv.shared]
-SUPABASE_DATABASE_URL = ""
-SUPABASE_ANON_KEY = ""
+SUPABASE_DATABASE_URL = "postgresql://postgres.xjxgpuzhakgermwkpfxl:RgBJ5KVybsuScmfl@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqeGdwdXpoYWtnZXJtd2twZnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDk0MTEsImV4cCI6MjA5MTgyNTQxMX0.7PflxSIIY-EC_cqBVvJ95TgkvKlYrcrlH_7aoUikrRU"
