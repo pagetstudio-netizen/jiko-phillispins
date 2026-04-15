@@ -122,15 +122,12 @@ export default function RegisterPage() {
                 <div style={{ paddingLeft: 14, paddingRight: 10, color: "#9ca3af", display: "flex", alignItems: "center" }}>
                   <Phone size={18} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setCountryModalOpen(true)}
-                  data-testid="button-select-country"
-                  style={{ fontSize: 14, fontWeight: 700, color: "#374151", paddingRight: 10, height: "100%", display: "flex", alignItems: "center", gap: 2, background: "transparent", border: "none", borderRight: "1.5px solid #e5e7eb", cursor: "pointer" }}
+                <span
+                  data-testid="label-country-prefix"
+                  style={{ fontSize: 14, fontWeight: 700, color: "#374151", paddingRight: 10, height: "100%", display: "flex", alignItems: "center", gap: 2, borderRight: "1.5px solid #e5e7eb" }}
                 >
-                  {countryData ? `+${countryData.phonePrefix}` : "+"}
-                  <ChevronDown size={14} style={{ color: "#9ca3af" }} />
-                </button>
+                  +63
+                </span>
                 <input
                   {...form.register("phone")}
                   type="tel"
