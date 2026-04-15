@@ -306,16 +306,16 @@ export const loginSchema = z.object({
 });
 
 export const depositSchema = z.object({
-  amount: z.number().min(3000, "Le montant minimum est de 3000 FCFA"),
-  accountName: z.string().min(2, "Le nom du compte est requis"),
-  accountNumber: z.string().min(8, "Le numéro de paiement est requis"),
-  country: z.string().min(2, "Le pays est requis"),
-  paymentMethod: z.string().min(2, "Le moyen de paiement est requis"),
+  amount: z.number().min(300, "Minimum deposit is ₱300"),
+  accountName: z.string().min(2, "Account name is required"),
+  accountNumber: z.string().min(8, "Payment number is required"),
+  country: z.string().min(2, "Country is required"),
+  paymentMethod: z.string().min(2, "Payment method is required"),
   paymentChannelId: z.number(),
 });
 
 export const withdrawalSchema = z.object({
-  amount: z.number().min(1200, "Le montant minimum est de 1200 FCFA"),
+  amount: z.number().min(120, "Minimum withdrawal is ₱120"),
 });
 
 export const walletSchema = z.object({

@@ -103,9 +103,9 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Retrait</DialogTitle>
+          <DialogTitle>Withdrawal</DialogTitle>
           <DialogDescription>
-            Minimum: {formatCurrency(1200, user.country)} | Frais: {fees}%
+            Minimum: {formatCurrency(120, user.country)} | Fees: {fees}%
           </DialogDescription>
         </DialogHeader>
 
@@ -114,13 +114,13 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-destructive">Retrait non disponible</p>
+                <p className="font-medium text-destructive">Withdrawal not available</p>
                 <ul className="mt-2 space-y-1 text-muted-foreground">
-                  {!user.hasDeposited && <li>- Effectuez un dépôt</li>}
-                  {!user.hasActiveProduct && <li>- Achetez un produit</li>}
-                  {!defaultWallet && <li>- Enregistrez un portefeuille de retrait</li>}
-                  {user.isWithdrawalBlocked && <li>- Votre retrait est bloqué</li>}
-                  {user.mustInviteToWithdraw && <li>- Invitez quelqu'un qui investit</li>}
+                  {!user.hasDeposited && <li>- Make a deposit first</li>}
+                  {!user.hasActiveProduct && <li>- Purchase a product</li>}
+                  {!defaultWallet && <li>- Register a withdrawal wallet</li>}
+                  {user.isWithdrawalBlocked && <li>- Your withdrawal is blocked</li>}
+                  {user.mustInviteToWithdraw && <li>- Invite someone who invests</li>}
                 </ul>
               </div>
             </div>
@@ -130,10 +130,9 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3">
               <Clock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-foreground">Hors des heures de retrait</p>
+                <p className="font-medium text-foreground">Outside withdrawal hours</p>
                 <p className="text-muted-foreground mt-1">
-                  Les retraits sont disponibles de {actualStartHour}h à {actualEndHour}h
-                  {isCameroonOrBenin && " (Cameroun et Bénin)"}
+                  Withdrawals are available from {actualStartHour}:00 to {actualEndHour}:00
                 </p>
               </div>
             </div>
@@ -144,14 +143,14 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
               <div className="bg-secondary rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Wallet className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">Portefeuille de retrait</span>
+                  <span className="text-sm text-muted-foreground">Withdrawal Wallet</span>
                 </div>
                 <p className="font-medium text-foreground">{defaultWallet?.accountName}</p>
                 <p className="text-sm text-muted-foreground">{defaultWallet?.accountNumber} - {defaultWallet?.paymentMethod}</p>
               </div>
 
               <div className="bg-secondary rounded-lg p-3 text-center">
-                <p className="text-sm text-muted-foreground">Solde disponible</p>
+                <p className="text-sm text-muted-foreground">Available Balance</p>
                 <p className="text-xl font-bold text-foreground">{formatCurrency(balance, user.country)}</p>
               </div>
 
@@ -160,12 +159,12 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Montant à retirer</FormLabel>
+                    <FormLabel>Amount to Withdraw</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="number"
-                        placeholder="Minimum 1200"
+                        placeholder="Minimum ₱120"
                         data-testid="input-withdraw-amount"
                       />
                     </FormControl>
@@ -174,18 +173,18 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
                 )}
               />
 
-              {amount >= 1200 && (
+              {amount >= 120 && (
                 <div className="bg-muted rounded-lg p-3 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Montant</span>
+                    <span className="text-muted-foreground">Amount</span>
                     <span className="text-foreground">{formatCurrency(amount, user.country)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Frais ({fees}%)</span>
+                    <span className="text-muted-foreground">Fees ({fees}%)</span>
                     <span className="text-destructive">-{formatCurrency(feeAmount, user.country)}</span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
-                    <span className="font-medium text-foreground">Net à recevoir</span>
+                    <span className="font-medium text-foreground">Net to receive</span>
                     <span className="font-bold text-primary">{formatCurrency(netAmount, user.country)}</span>
                   </div>
                 </div>
@@ -194,13 +193,13 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={withdrawMutation.isPending || amount < 1200 || amount > balance}
+                disabled={withdrawMutation.isPending || amount < 120 || amount > balance}
                 data-testid="button-submit-withdraw"
               >
                 {withdrawMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  "Demander le retrait"
+                  "Request Withdrawal"
                 )}
               </Button>
             </form>

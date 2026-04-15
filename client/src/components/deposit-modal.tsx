@@ -97,11 +97,11 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
 
   const handleCustomAmount = () => {
     const amount = parseInt(form.getValues("amount"));
-    if (amount >= 3000) {
+    if (amount >= 300) {
       setSelectedAmount(amount);
       setStep("details");
     } else {
-      toast({ title: "Montant invalide", description: "Le montant minimum est de 3000 FCFA", variant: "destructive" });
+      toast({ title: "Invalid amount", description: "Minimum deposit is ₱300", variant: "destructive" });
     }
   };
 
@@ -109,21 +109,21 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
 
   const paymentMethods = getPaymentMethodsForCountry(user.country);
   const activeChannels = channels?.filter(c => c.isActive) || [];
-  const presetAmounts = [3000, 5000, 10000, 20000, 50000, 100000];
+  const presetAmounts = [300, 500, 1000, 2000, 5000, 10000];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {step === "amount" ? "Recharger" : "Informations de paiement"}
+            {step === "amount" ? "Deposit" : "Payment Information"}
           </DialogTitle>
         </DialogHeader>
 
         {step === "amount" ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Minimum: {formatCurrency(3000, user.country)}
+              Minimum: {formatCurrency(300, user.country)}
             </p>
 
             <div className="grid grid-cols-3 gap-2">
@@ -142,13 +142,13 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder="Montant personnalisé"
+                placeholder="Custom amount"
                 value={form.watch("amount")}
                 onChange={(e) => form.setValue("amount", e.target.value)}
                 data-testid="input-custom-amount"
               />
               <Button onClick={handleCustomAmount} data-testid="button-custom-amount">
-                Continuer
+                Continue
               </Button>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => depositMutation.mutate(data))} className="space-y-4">
               <div className="bg-secondary rounded-lg p-3 text-center">
-                <p className="text-sm text-muted-foreground">Montant</p>
+                <p className="text-sm text-muted-foreground">Amount</p>
                 <p className="text-2xl font-bold text-primary">
                   {formatCurrency(selectedAmount || 0, user.country)}
                 </p>
@@ -167,11 +167,11 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
                 name="paymentChannelId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Canal de recharge</FormLabel>
+                    <FormLabel>Payment Channel</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-channel">
-                          <SelectValue placeholder="Choisir un canal" />
+                          <SelectValue placeholder="Choose a channel" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -192,9 +192,9 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
                 name="accountName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du compte de paiement</FormLabel>
+                    <FormLabel>Account Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Votre nom complet" data-testid="input-account-name" />
+                      <Input {...field} placeholder="Your full name" data-testid="input-account-name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -206,9 +206,9 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
                 name="accountNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Numéro de paiement</FormLabel>
+                    <FormLabel>Payment Number</FormLabel>
                     <FormControl>
-                      <Input {...field} type="tel" placeholder="Votre numéro" data-testid="input-account-number" />
+                      <Input {...field} type="tel" placeholder="Your number" data-testid="input-account-number" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -220,11 +220,11 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
                 name="paymentMethod"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Moyen de paiement</FormLabel>
+                    <FormLabel>Payment Method</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-payment-method">
-                          <SelectValue placeholder="Choisir" />
+                          <SelectValue placeholder="Choose" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -242,13 +242,13 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
 
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setStep("amount")} className="flex-1">
-                  Retour
+                  Back
                 </Button>
                 <Button type="submit" className="flex-1" disabled={depositMutation.isPending} data-testid="button-submit-deposit">
                   {depositMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Procéder au paiement"
+                    "Proceed to Payment"
                   )}
                 </Button>
               </div>

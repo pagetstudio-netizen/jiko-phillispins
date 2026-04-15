@@ -82,7 +82,7 @@ export default function HomePage() {
   if (!user) return <div className="min-h-screen bg-gray-100" />;
 
   const country = getCountryByCode(user.country);
-  const currency = country?.currency || "FCFA";
+  const currency = country?.currency || "PHP";
   const paidProducts = products?.filter(p => !p.isFree) || [];
 
   const quickActions = [
@@ -298,9 +298,9 @@ export default function HomePage() {
                       <p className="text-gray-400 text-xs mt-0.5">cycles {product.cycleDays}</p>
                     </div>
                     <div>
-                      <span className="text-cyan-400 text-xs font-semibold">Prix </span>
+                      <span className="text-cyan-400 text-xs font-semibold">Price </span>
                       <span className="font-extrabold text-base" style={{ color: "#f59e0b" }}>
-                        {price.toLocaleString("fr-FR")} {currency}
+                        ₱{price.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -312,17 +312,17 @@ export default function HomePage() {
                 {/* Stats row */}
                 <div className="flex items-center justify-between px-3 py-2.5">
                   <div className="flex-1">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Revenu quotidien</p>
-                    <p className="text-white font-bold text-sm">{daily.toLocaleString("fr-FR")} {currency}</p>
+                    <p className="text-gray-500 text-[10px] mb-0.5">Daily Income</p>
+                    <p className="text-white font-bold text-sm">₱{daily.toLocaleString()}</p>
                   </div>
                   <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
                   <div className="flex-1 text-center">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Total des gains</p>
-                    <p className="text-white font-bold text-sm">{total.toLocaleString("fr-FR")} {currency}</p>
+                    <p className="text-gray-500 text-[10px] mb-0.5">Total Earnings</p>
+                    <p className="text-white font-bold text-sm">₱{total.toLocaleString()}</p>
                   </div>
                   <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
                   <div className="flex-1 text-right">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Taux de réponse</p>
+                    <p className="text-gray-500 text-[10px] mb-0.5">Return Rate</p>
                     <p className="font-bold text-sm" style={{ color: "#3db51d" }}>{taux}%</p>
                   </div>
                 </div>
@@ -347,7 +347,7 @@ export default function HomePage() {
             {/* Title */}
             <div className="px-6 pb-2 pt-1">
               <h2 className="text-white font-extrabold text-2xl italic leading-tight">
-                Recevez de<br />l'argent gratuit
+                Receive<br />Free Money
               </h2>
             </div>
 
@@ -362,7 +362,7 @@ export default function HomePage() {
                 type="text"
                 value={giftCode}
                 onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
-                placeholder="Votre code bonus"
+                placeholder="Your bonus code"
                 className="w-full px-4 py-3.5 rounded-xl text-center font-mono tracking-widest text-gray-800 text-sm outline-none"
                 style={{ borderWidth: 2.5, borderStyle: "solid", borderColor: giftCode ? "#1a5c0a" : "white", background: "white" }}
                 data-testid="input-gift-code-modal"
@@ -373,7 +373,7 @@ export default function HomePage() {
             <div className="px-6 pb-5">
               <button
                 onClick={() => {
-                  if (!giftCode.trim()) { toast({ title: "Erreur", description: "Veuillez saisir un code", variant: "destructive" }); return; }
+                  if (!giftCode.trim()) { toast({ title: "Error", description: "Please enter a code", variant: "destructive" }); return; }
                   claimMutation.mutate(giftCode.trim());
                 }}
                 disabled={claimMutation.isPending}
@@ -390,14 +390,14 @@ export default function HomePage() {
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs font-medium leading-relaxed">
-                  <span className="font-bold">Récompenses Cash!</span><br />
-                  Entrez le code bonus pour recevoir un montant aléatoire! Jusqu'à 10 000 FCFA!
+                  <span className="font-bold">Cash Rewards!</span><br />
+                  Enter the bonus code to receive a random amount! Up to ₱1,000!
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs leading-relaxed">
-                  Les codes bonus seront publiés sur la chaîne officielle Telegram tous les jours à 11h30 et 18h00. Suivez notre chaîne pour ne rien manquer!
+                  Bonus codes are published on the official Telegram channel every day at 11:30 and 18:00. Follow our channel so you don't miss any!
                 </p>
               </div>
             </div>

@@ -473,13 +473,13 @@ export async function registerRoutes(
       }
 
       const settings = await storage.getSettings();
-      const minDeposit = parseInt(settings.minDeposit || "3500");
+      const minDeposit = parseInt(settings.minDeposit || "300");
       if (amount < minDeposit) {
-        return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} FCFA` });
+        return res.status(400).json({ message: `Minimum deposit: ₱${minDeposit.toLocaleString()}` });
       }
 
       if (!accountName || !accountNumber || !paymentMethod || !country) {
-        return res.status(400).json({ message: "Tous les champs sont requis" });
+        return res.status(400).json({ message: "All fields are required" });
       }
 
       const soleaspayEnabled = settings.soleaspayEnabled === "true";
@@ -674,8 +674,8 @@ export async function registerRoutes(
       const user = await storage.getUser(req.session.userId!);
       if (!user) return res.status(401).json({ message: "Non authentifié" });
 
-      const minDeposit = parseInt(settings.minDeposit || "3500");
-      if (amount < minDeposit) return res.status(400).json({ message: `Montant minimum: ${minDeposit} FCFA` });
+      const minDeposit = parseInt(settings.minDeposit || "300");
+      if (amount < minDeposit) return res.status(400).json({ message: `Minimum deposit: ₱${minDeposit}` });
 
       const currency = ashtech.ASHTECH_CURRENCIES[country_code] || "XOF";
       const reference = `JINKO-${user.id}-${Date.now()}`;
@@ -822,8 +822,8 @@ export async function registerRoutes(
         return res.status(401).json({ message: "Non authentifié" });
       }
 
-      if (amount < 1200) {
-        return res.status(400).json({ message: "Montant minimum: 1200 FCFA" });
+      if (amount < 120) {
+        return res.status(400).json({ message: "Minimum withdrawal: ₱120" });
       }
 
       if (!user.hasActiveProduct) {

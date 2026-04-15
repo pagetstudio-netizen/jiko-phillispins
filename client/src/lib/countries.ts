@@ -25,6 +25,13 @@ export function getPaymentMethodsForCountry(code: string): string[] {
 
 export function formatCurrency(amount: number, countryCode: string): string {
   const country = getCountryByCode(countryCode);
-  const currency = country?.currency || "FCFA";
+  const currency = country?.currency || "PHP";
+  if (currency === "PHP") {
+    return `₱${amount.toLocaleString()}`;
+  }
   return `${amount.toLocaleString()} ${currency}`;
+}
+
+export function formatAmount(amount: number): string {
+  return `₱${amount.toLocaleString()}`;
 }
