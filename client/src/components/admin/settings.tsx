@@ -7,22 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, CreditCard, Zap, DollarSign } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, DollarSign } from "lucide-react";
 
-const SOLEASPAY_COUNTRIES = [
-  { code: "CM", name: "Cameroon" },
-  { code: "BF", name: "Burkina Faso" },
-  { code: "TG", name: "Togo" },
-  { code: "BJ", name: "Benin" },
-  { code: "CI", name: "Ivory Coast" },
-  { code: "CG", name: "Congo Brazzaville" },
-  { code: "CD", name: "DRC" },
-];
 
 const settingsSchema = z.object({
   supportLink: z.string().min(5, "Link required"),
@@ -36,14 +25,6 @@ const settingsSchema = z.object({
   level1Commission: z.string().min(1, "Commission required"),
   level2Commission: z.string().min(1, "Commission required"),
   level3Commission: z.string().min(1, "Commission required"),
-  soleaspayEnabled: z.string(),
-  soleaspayApiKey: z.string(),
-  soleaspayCountries: z.string(),
-  soleaspayChannelName: z.string().min(1, "Name required"),
-  ashtechpayEnabled: z.string(),
-  ashtechpayApiKey: z.string(),
-  ashtechpayChannelName: z.string().min(1, "Name required"),
-  congoPaymentLink: z.string().min(5, "Link required"),
   adminCurrency: z.string().min(1, "Currency required"),
   phpToFcfaRate: z.string().min(1, "Rate required"),
 });
@@ -75,14 +56,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level1Commission: "27",
       level2Commission: "2",
       level3Commission: "1",
-      soleaspayEnabled: "false",
-      soleaspayApiKey: "",
-      soleaspayCountries: "",
-      soleaspayChannelName: "Westpay",
-      ashtechpayEnabled: "false",
-      ashtechpayApiKey: "",
-      ashtechpayChannelName: "AshtechPay",
-      congoPaymentLink: "https://my.moneyfusion.net/697e3d01869cdbb310f0d3e0",
       adminCurrency: "PHP",
       phpToFcfaRate: "10",
     },
@@ -102,14 +75,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         level1Commission: settings.level1Commission || "27",
         level2Commission: settings.level2Commission || "2",
         level3Commission: settings.level3Commission || "1",
-        soleaspayEnabled: settings.soleaspayEnabled || "false",
-        soleaspayApiKey: settings.soleaspayApiKey || "",
-        soleaspayCountries: settings.soleaspayCountries || "",
-        soleaspayChannelName: settings.soleaspayChannelName || "Westpay",
-        ashtechpayEnabled: settings.ashtechpayEnabled || "false",
-        ashtechpayApiKey: settings.ashtechpayApiKey || "",
-        ashtechpayChannelName: settings.ashtechpayChannelName || "AshtechPay",
-        congoPaymentLink: settings.congoPaymentLink || "https://my.moneyfusion.net/697e3d01869cdbb310f0d3e0",
         adminCurrency: settings.adminCurrency || "PHP",
         phpToFcfaRate: settings.phpToFcfaRate || "10",
       });
@@ -128,27 +93,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/soleaspay/services"] });
       toast({ title: "Settings saved!" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
-
-  const soleaspayEnabled = form.watch("soleaspayEnabled") === "true";
-  const soleaspayCountriesValue = form.watch("soleaspayCountries") || "";
-  const selectedCountries = soleaspayCountriesValue ? soleaspayCountriesValue.split(",").filter(Boolean) : [];
-
-  const toggleCountry = (code: string) => {
-    let updated: string[];
-    if (selectedCountries.includes(code)) {
-      updated = selectedCountries.filter(c => c !== code);
-    } else {
-      updated = [...selectedCountries, code];
-    }
-    form.setValue("soleaspayCountries", updated.join(","), { shouldDirty: true });
-  };
 
   if (isLoading) {
     return <Skeleton className="h-96" />;
@@ -267,22 +217,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="congoPaymentLink"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>MoneyFusion Link</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="https://my.moneyfusion.net/..." />
-                  </FormControl>
-                  <FormDescription>
-                    MoneyFusion link for Congo Brazzaville and Burkina Faso
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </CardContent>
         </Card>
 
@@ -353,155 +287,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 )}
               />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Soleaspay */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              Automatic Payment (Soleaspay)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="soleaspayEnabled"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Enable Soleaspay</FormLabel>
-                    <FormDescription>
-                      Allows automatic payment via mobile money
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value === "true"}
-                      onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
-                      data-testid="switch-soleaspay"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="soleaspayApiKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Soleaspay API Key</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="API key provided by Soleaspay" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="soleaspayChannelName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Channel Name (shown to users)</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="E.g. Westpay" />
-                  </FormControl>
-                  <FormDescription>This name appears as a deposit option on the deposit page.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {soleaspayEnabled && (
-              <div className="rounded-lg border p-4 space-y-3">
-                <p className="text-sm font-medium text-foreground">
-                  Countries enabled for Soleaspay
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Users from these countries will use automatic payment. Others will see manual deposit channels.
-                </p>
-                <div className="space-y-2">
-                  {SOLEASPAY_COUNTRIES.map((country) => (
-                    <label
-                      key={country.code}
-                      className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover-elevate"
-                      data-testid={`checkbox-soleaspay-${country.code}`}
-                    >
-                      <Checkbox
-                        checked={selectedCountries.includes(country.code)}
-                        onCheckedChange={() => toggleCountry(country.code)}
-                      />
-                      <span className="text-sm">{country.name} ({country.code})</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* AshtechPay */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="w-5 h-5 text-green-600" />
-              Automatic Payment (AshtechPay)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="ashtechpayEnabled"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Enable AshtechPay</FormLabel>
-                    <FormDescription>Allows automatic deposits via AshtechPay (MTN, Moov, Orange, Wave)</FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value === "true"}
-                      onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
-                      data-testid="switch-ashtechpay"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="ashtechpayChannelName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Channel Name (shown to users)</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="E.g. Mobile Money" />
-                  </FormControl>
-                  <FormDescription>This name appears as a deposit option on the deposit page.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="ashtechpayApiKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>AshtechPay API Key</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="Bearer token from AshtechPay" />
-                  </FormControl>
-                  <FormDescription>
-                    Webhook URL to configure: <strong>{typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/ashtechpay</strong>
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </CardContent>
         </Card>
 
