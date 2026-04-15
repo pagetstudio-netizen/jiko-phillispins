@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation, useParams } from "wouter";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import type { InfoArticle } from "@shared/schema";
+import { useLang } from "@/lib/i18n";
 
 function renderArticleBody(content: string, extraImages: string[]) {
   // Split content by "---" on its own line to create sections
@@ -24,12 +25,14 @@ function renderArticleBody(content: string, extraImages: string[]) {
 export default function InfoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  const { t } = useLang();
+  const tr = t.info;
 
   const { data: article, isLoading } = useQuery<InfoArticle>({
     queryKey: ["/api/info-articles", id],
     queryFn: async () => {
       const res = await fetch(`/api/info-articles/${id}`, { credentials: "include" });
-      if (!res.ok) throw new Error("Article introuvable");
+      if (!res.ok) throw new Error(tr.notFound);
       return res.json();
     },
   });
@@ -50,7 +53,7 @@ export default function InfoDetailPage() {
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
         <h1 className="flex-1 text-center text-white font-bold text-base pr-8 truncate">
-          {isLoading ? "Chargement..." : article?.title || "Article"}
+          {isLoading ? tr.loading : article?.title || "Article"}
         </h1>
       </div>
 
@@ -60,7 +63,7 @@ export default function InfoDetailPage() {
         </div>
       ) : !article ? (
         <div className="flex justify-center py-20">
-          <p className="text-gray-500">Article introuvable.</p>
+          <p className="text-gray-500">{tr.notFound}</p>
         </div>
       ) : (
         <div className="pb-12">

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, X } from "lucide-react";
 import telegramIcon from "@assets/telegram-6896827_1280_1775837360062.png";
+import { useLang } from "@/lib/i18n";
 
 interface ContactSheetProps {
   open: boolean;
@@ -8,6 +9,9 @@ interface ContactSheetProps {
 }
 
 export default function ContactSheet({ open, onClose }: ContactSheetProps) {
+  const { t } = useLang();
+  const tr = t.contact;
+
   const { data: settings } = useQuery<{
     supportLink: string;
     support2Link: string;
@@ -24,20 +28,20 @@ export default function ContactSheet({ open, onClose }: ContactSheetProps) {
 
   const items = [
     {
-      label: "Chaîne officielle",
-      sublabel: "Rejoignez notre chaîne officielle",
+      label: tr.channel,
+      sublabel: tr.channelSub,
       url: settings?.channelLink || "https://t.me/Jinkosolarr",
       testId: "button-contact-channel",
     },
     {
-      label: "Groupe de discussion",
-      sublabel: "Rejoignez notre groupe Telegram",
+      label: tr.group,
+      sublabel: tr.groupSub,
       url: settings?.groupLink || "https://t.me/Jinkosolarr",
       testId: "button-contact-group",
     },
     {
-      label: "Service client",
-      sublabel: "Disponible de 09h00 à 20h00",
+      label: tr.support,
+      sublabel: tr.supportSub,
       url: settings?.supportLink || "https://t.me/Jinkosolarr",
       testId: "button-contact-support",
     },
@@ -63,7 +67,7 @@ export default function ContactSheet({ open, onClose }: ContactSheetProps) {
 
         {/* Title row */}
         <div className="flex items-center justify-between px-5 pt-2 pb-4">
-          <p className="font-bold text-gray-800 text-base">Nous contacter</p>
+          <p className="font-bold text-gray-800 text-base">{tr.title}</p>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center"

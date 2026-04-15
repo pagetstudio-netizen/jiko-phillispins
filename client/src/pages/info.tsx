@@ -2,9 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ChevronLeft } from "lucide-react";
 import type { InfoArticle } from "@shared/schema";
+import { useLang } from "@/lib/i18n";
 
 export default function InfoPage() {
   const [, navigate] = useLocation();
+  const { t } = useLang();
+  const tr = t.info;
 
   const { data: articles, isLoading } = useQuery<InfoArticle[]>({
     queryKey: ["/api/info-articles"],
@@ -26,7 +29,7 @@ export default function InfoPage() {
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
         <h1 className="flex-1 text-center text-white font-bold text-base pr-8">
-          Être informé
+          {tr.header}
         </h1>
       </div>
 
@@ -67,7 +70,7 @@ export default function InfoPage() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: "#e5e5ea" }}>
               <ChevronLeft className="w-8 h-8 text-gray-400" style={{ transform: "rotate(180deg)" }} />
             </div>
-            <p className="text-gray-500 text-sm text-center">Aucune information disponible pour le moment.</p>
+            <p className="text-gray-500 text-sm text-center">{tr.empty}</p>
           </div>
         )}
       </div>

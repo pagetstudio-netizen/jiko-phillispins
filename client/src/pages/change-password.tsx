@@ -4,13 +4,17 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useLang } from "@/lib/i18n";
 
 const GREEN = "#3db51d";
 
 export default function ChangePasswordPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Sécurité | Jinko Solar"; }, []);
+  const { t } = useLang();
+  const tr = t.changePassword;
+
+  useEffect(() => { document.title = tr.title; }, [tr.title]);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,31 +27,31 @@ export default function ChangePasswordPage() {
       const res = await apiRequest("POST", "/api/change-password", data);
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Erreur lors du changement de mot de passe");
+        throw new Error(err.message || tr.errorMismatch);
       }
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Succès", description: "Mot de passe modifié avec succès" });
+      toast({ title: tr.successTitle, description: tr.successDesc });
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
       navigate("/account");
     },
     onError: (e: Error) => {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      toast({ title: tr.errorTitle, description: e.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({ title: "Champs requis", description: "Veuillez remplir tous les champs", variant: "destructive" });
+      toast({ title: tr.requiredFields, description: tr.requiredFieldsDesc, variant: "destructive" });
       return;
     }
     if (newPassword.length < 6) {
-      toast({ title: "Mot de passe trop court", description: "Au moins 6 caractères", variant: "destructive" });
+      toast({ title: tr.tooShort, description: tr.tooShortDesc, variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: "Erreur", description: "Les mots de passe ne correspondent pas", variant: "destructive" });
+      toast({ title: tr.errorTitle, description: tr.errorMismatch, variant: "destructive" });
       return;
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
@@ -67,11 +71,11 @@ export default function ChangePasswordPage() {
             data-testid="button-back"
           >
             <ChevronLeft className="w-5 h-5" />
-            Retour
+            {tr.back}
           </button>
         </Link>
         <h1 className="flex-1 text-center text-white font-bold text-base mr-16">
-          Changer le mot de passe
+          {tr.header}
         </h1>
       </div>
 
@@ -79,9 +83,9 @@ export default function ChangePasswordPage() {
       <div className="mx-4 mt-6 bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="p-5 space-y-5">
 
-          {/* Ancien mot de passe */}
+          {/* Current password */}
           <div>
-            <p className="text-sm text-gray-600 mb-2">Ancien mot de passe</p>
+            <p className="text-sm text-gray-600 mb-2">{tr.currentPassword}</p>
             <div
               className="flex items-center rounded-xl overflow-hidden"
               style={{ border: "1px solid #e0e0e0", height: 52 }}
@@ -104,9 +108,9 @@ export default function ChangePasswordPage() {
             </div>
           </div>
 
-          {/* Nouveau mot de passe */}
+          {/* New password */}
           <div>
-            <p className="text-sm text-gray-600 mb-2">Nouveau mot de passe</p>
+            <p className="text-sm text-gray-600 mb-2">{tr.newPassword}</p>
             <div
               className="flex items-center rounded-xl overflow-hidden"
               style={{ border: "1px solid #e0e0e0", height: 52 }}
@@ -129,9 +133,9 @@ export default function ChangePasswordPage() {
             </div>
           </div>
 
-          {/* Re-mot de passe */}
+          {/* Confirm password */}
           <div>
-            <p className="text-sm text-gray-600 mb-2">Re-mot de passe</p>
+            <p className="text-sm text-gray-600 mb-2">{tr.confirmPassword}</p>
             <div
               className="flex items-center rounded-xl overflow-hidden"
               style={{ border: "1px solid #e0e0e0", height: 52 }}
@@ -153,11 +157,11 @@ export default function ChangePasswordPage() {
               </button>
             </div>
             {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-              <p className="text-xs mt-1 text-red-500">Les mots de passe ne correspondent pas</p>
+              <p className="text-xs mt-1 text-red-500">{tr.mismatch}</p>
             )}
           </div>
 
-          {/* Confirmer button */}
+          {/* Submit button */}
           <button
             onClick={handleSubmit}
             disabled={changePasswordMutation.isPending}
@@ -168,9 +172,9 @@ export default function ChangePasswordPage() {
             {changePasswordMutation.isPending ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Modification...
+                {tr.submitting}
               </span>
-            ) : "Confirmer"}
+            ) : tr.submit}
           </button>
 
         </div>
