@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { ELIGIBLE_COUNTRIES } from "@/lib/countries";
-import { CountrySelector } from "@/components/country-selector";
 import ContactSheet from "@/components/contact-sheet";
 import { Loader2, Eye, EyeOff, Phone, Lock, UserPlus, ChevronDown, Globe } from "lucide-react";
 import { useLang, translations } from "@/lib/i18n";
@@ -34,7 +32,6 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [countryModalOpen, setCountryModalOpen] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
@@ -50,9 +47,6 @@ export default function RegisterPage() {
       invitationCode: refCode,
     },
   });
-
-  const selectedCountry = form.watch("country");
-  const countryData = ELIGIBLE_COUNTRIES.find(c => c.code === selectedCountry);
 
   async function onSubmit(data: RegisterForm) {
     setIsLoading(true);
@@ -263,11 +257,6 @@ export default function RegisterPage() {
         />
       </button>
 
-      <CountrySelector
-        open={countryModalOpen}
-        onClose={() => setCountryModalOpen(false)}
-        onSelect={(code) => form.setValue("country", code, { shouldValidate: true })}
-      />
       <ContactSheet open={showContact} onClose={() => setShowContact(false)} />
     </div>
   );
