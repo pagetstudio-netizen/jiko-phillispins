@@ -14,7 +14,7 @@ import iconPreuve from "@assets/20260409_174658_1775756828223.png";
 import iconRecharger from "@assets/20260409_133235_1775749369916.png";
 import iconRetrait from "@assets/20260409_133935_1775749370458.png";
 import iconContact from "@assets/20260409_152753_1775749370488.png";
-import popupCharacters from "@assets/20260411_151613_1775920729926.png";
+import popupCharacters from "@assets/20260415_134352_1776260827812.png";
 import popupTelegramBtn from "@assets/20260411_144546_1775920729992.png";
 import popupCloseBtn from "@assets/20260411_144711_1775920729969.png";
 import type { Product } from "@shared/schema";
