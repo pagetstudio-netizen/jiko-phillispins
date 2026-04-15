@@ -3,7 +3,6 @@ import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Link } from "wouter";
-import { getCountryByCode } from "@/lib/countries";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import historyIcon from "@assets/20260409_133235_1775847886254.png";
@@ -17,9 +16,9 @@ interface Withdrawal {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  approved: { label: "Succès",     color: "#3db51d" },
-  pending:  { label: "En attente", color: "#f97316" },
-  rejected: { label: "Rejeté",     color: "#ef4444" },
+  approved: { label: "Successful", color: "#3db51d" },
+  pending:  { label: "Pending",    color: "#f97316" },
+  rejected: { label: "Rejected",   color: "#ef4444" },
 };
 
 function formatDate(iso: string) {
@@ -29,10 +28,8 @@ function formatDate(iso: string) {
 }
 
 export default function WithdrawalHistoryPage() {
-  useEffect(() => { document.title = "Historique des retraits | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Withdrawal History | Jinko Solar"; }, []);
   const { user } = useAuth();
-  const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = countryInfo?.currency || "FCFA";
 
   const { data: withdrawals = [], isLoading } = useQuery<Withdrawal[]>({
     queryKey: ["/api/withdrawals/history"],
@@ -41,7 +38,6 @@ export default function WithdrawalHistoryPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#f3f4f6" }}>
 
-      {/* Header */}
       <header style={{ display: "flex", alignItems: "center", padding: "12px 16px", background: "white", borderBottom: "1px solid #e5e7eb" }}>
         <Link href="/account">
           <button style={{ padding: 4, marginRight: 8, background: "transparent", border: "none", cursor: "pointer" }} data-testid="button-back">
@@ -49,7 +45,7 @@ export default function WithdrawalHistoryPage() {
           </button>
         </Link>
         <h1 style={{ flex: 1, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#111827", paddingRight: 30 }}>
-          Historique des retraits
+          Withdrawal History
         </h1>
       </header>
 
@@ -59,7 +55,7 @@ export default function WithdrawalHistoryPage() {
             <Skeleton key={i} className="h-20 w-full rounded-2xl" />
           ))
         ) : withdrawals.length === 0 ? (
-          <EmptyState message="Aucun retrait pour le moment" />
+          <EmptyState message="No withdrawals yet" />
         ) : (
           withdrawals.map((w) => {
             const cfg = STATUS_CONFIG[w.status] || { label: w.status, color: "#6b7280" };
@@ -73,21 +69,19 @@ export default function WithdrawalHistoryPage() {
                 style={{ background: "white", borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.07)", border: "1px solid #f0f0f0", display: "flex", alignItems: "stretch" }}
                 data-testid={`card-withdrawal-${w.id}`}
               >
-                {/* Logo à gauche */}
                 <div style={{ width: 76, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 10, background: "#f9fafb" }}>
                   <img
                     src={historyIcon}
-                    alt="Retrait"
+                    alt="Withdrawal"
                     style={{ width: 56, height: 56, objectFit: "contain", borderRadius: 12 }}
                   />
                 </div>
 
-                {/* Contenu à droite */}
                 <div style={{ flex: 1, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>Retrait</span>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>Withdrawal</span>
                     <span style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>
-                      {displayAmount} <span style={{ fontSize: 12, fontWeight: 600 }}>{currency}</span>
+                      ₱{displayAmount}
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

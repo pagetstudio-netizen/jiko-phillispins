@@ -44,7 +44,7 @@ export default function HomePage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [location, navigate] = useLocation();
-  useEffect(() => { document.title = "Accueil | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Home | Jinko Solar"; }, []);
   const [showPopup, setShowPopup] = useState(true);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showContactSheet, setShowContactSheet] = useState(false);
@@ -63,10 +63,10 @@ export default function HomePage() {
       refreshUser();
       setGiftCode("");
       setShowGiftModal(false);
-      toast({ title: "Félicitations !", description: data.message });
+      toast({ title: "Congratulations!", description: data.message });
     },
     onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -86,11 +86,11 @@ export default function HomePage() {
   const paidProducts = products?.filter(p => !p.isFree) || [];
 
   const quickActions = [
-    { label: "Recharger", img: iconRecharger, onClick: () => navigate("/deposit") },
-    { label: "Retrait", img: iconRetrait, onClick: () => navigate("/withdrawal") },
-    { label: "Nous contacter", img: iconContact, onClick: () => setShowContactSheet(true) },
-    { label: "Argent gratuit", img: iconGratuit, onClick: () => { setGiftCode(""); setShowGiftModal(true); } },
-    { label: "Être informé", img: iconPreuve, onClick: () => navigate("/info") },
+    { label: "Deposit", img: iconRecharger, onClick: () => navigate("/deposit") },
+    { label: "Withdraw", img: iconRetrait, onClick: () => navigate("/withdrawal") },
+    { label: "Contact Us", img: iconContact, onClick: () => setShowContactSheet(true) },
+    { label: "Free Money", img: iconGratuit, onClick: () => { setGiftCode(""); setShowGiftModal(true); } },
+    { label: "Stay Informed", img: iconPreuve, onClick: () => navigate("/info") },
   ];
 
   return (
@@ -197,7 +197,7 @@ export default function HomePage() {
             data-testid="button-hero-recharger"
           >
             <img src={iconRecharger} alt="" style={{ width: 20, height: 20, objectFit: "contain" }} />
-            Recharger
+            Deposit
           </button>
 
           <button
@@ -228,7 +228,7 @@ export default function HomePage() {
             }}>
               <img src={iconRetrait} alt="" style={{ width: 14, height: 14, objectFit: "contain" }} />
             </span>
-            Retrait
+            Withdraw
           </button>
         </div>
       </div>
@@ -381,7 +381,7 @@ export default function HomePage() {
                 style={{ background: "#111827", color: "#f59e0b" }}
                 data-testid="button-confirm-gift"
               >
-                {claimMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin text-yellow-400" /> : "CONFIRMER"}
+                {claimMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin text-yellow-400" /> : "CONFIRM"}
               </button>
             </div>
 

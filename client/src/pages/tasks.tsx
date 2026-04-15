@@ -191,7 +191,7 @@ export default function TasksPage() {
                       <p className="text-gray-700 text-xs leading-snug mb-0.5">
                         Invite{" "}
                         <span className="font-bold text-gray-900">{task.requiredInvites}</span>{" "}
-                        people to deposit
+                        people to deposit (min. ₱300)
                       </p>
                       <p className="text-[#3db51d] font-bold text-base">
                         ₱{task.reward.toLocaleString()}
