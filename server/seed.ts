@@ -197,7 +197,7 @@ export async function seed() {
     { key: "supportLink", value: "https://t.me/Jinkosolarr" },
     { key: "support2Link", value: "https://t.me/Jinkosolarr" },
     { key: "channelLink", value: "https://t.me/Jinkosolarr" },
-    { key: "groupLink", value: "https://t.me/Jinkosolarr" },
+    { key: "groupLink", value: "https://t.me/+R9SFSGneBkg3NTFh" },
     { key: "minDeposit", value: "3000" },
     { key: "minWithdrawal", value: "1200" },
     { key: "withdrawalFees", value: "17" },
@@ -218,7 +218,7 @@ export async function seed() {
   ];
 
   // Settings that should always be updated to the required value (critical platform config)
-  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal"]);
+  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "groupLink"]);
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);
