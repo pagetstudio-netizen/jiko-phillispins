@@ -4,14 +4,15 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL must be defined.");
+  throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL must be defined.");
 }
 
 export const pool = new Pool({
   connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
 });
 
 export const db = drizzle(pool, { schema });
