@@ -18,6 +18,7 @@ export default function DepositPage() {
 
   const [amount, setAmount] = useState<number | "">("");
   const [selectedChannelId, setSelectedChannelId] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<"GCash" | "Maya">("GCash");
   const [cloudpayResult, setCloudpayResult] = useState<{
     redirectUrl?: string | null;
     qrcodeUrl?: string | null;
@@ -50,7 +51,7 @@ export default function DepositPage() {
     mutationFn: async (amtFcfa: number) => {
       const response = await apiRequest("POST", "/api/cloudpay/deposit", {
         amount: amtFcfa,
-        paymentMethod: "GCash",
+        paymentMethod,
       });
       if (!response.ok) {
         const err = await response.json();
@@ -238,6 +239,30 @@ export default function DepositPage() {
                         {isSelected && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "white" }} />}
                       </div>
                     </div>
+                    {isSelected && channel.gateway === "cloudpay" && (
+                      <div style={{ padding: "0 14px 14px", display: "flex", gap: 10 }}>
+                        {(["GCash", "Maya"] as const).map((m) => (
+                          <button
+                            key={m}
+                            onClick={(e) => { e.stopPropagation(); setPaymentMethod(m); }}
+                            data-testid={`button-method-${m.toLowerCase()}`}
+                            style={{
+                              flex: 1,
+                              height: 40,
+                              borderRadius: 10,
+                              border: `2px solid ${paymentMethod === m ? GREEN : "#e5e7eb"}`,
+                              background: paymentMethod === m ? GREEN : "white",
+                              color: paymentMethod === m ? "white" : "#374151",
+                              fontWeight: 700,
+                              fontSize: 14,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}

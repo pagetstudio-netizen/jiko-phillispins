@@ -874,12 +874,18 @@ export async function registerRoutes(
         soleaspayOrderId: orderId,
       });
 
+      const methodMap: Record<string, { payment_type: string; bank_code: string }> = {
+        "Maya": { payment_type: "3", bank_code: "PMP" },
+        "GCash": { payment_type: "7", bank_code: "mya" },
+      };
+      const method = methodMap[paymentMethod] || methodMap["GCash"];
+
       const result = await cloudpay.initiateDeposit(domain, merchantId, secretKey, {
         merchant: merchantId,
-        payment_type: "7",
+        payment_type: method.payment_type,
         amount,
         order_id: orderId,
-        bank_code: "mya",
+        bank_code: method.bank_code,
         callback_url: callbackUrl,
         return_url: returnUrl,
       });
