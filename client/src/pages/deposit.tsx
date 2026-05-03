@@ -109,11 +109,42 @@ export default function DepositPage() {
           </Link>
         </div>
 
-        {/* Amount input */}
+        {/* White card: method selector + amount input */}
         <div style={{ width: "calc(100% - 16px)", marginLeft: 16, boxSizing: "border-box" as const, background: "white", borderRadius: "24px 0 0 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", padding: "20px 16px" }}>
-          <p style={{ fontSize: 12, color: GREEN, marginBottom: 10, fontWeight: 600 }}>
+          <p style={{ fontSize: 12, color: GREEN, marginBottom: 14, fontWeight: 600 }}>
             Minimum deposit: {fmt(minDepositFcfa)}
           </p>
+
+          {/* GCash / Maya logos */}
+          <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
+            {METHODS.map((m) => {
+              const isSelected = pendingMethod === m.key || (!pendingMethod && m.key === "GCash");
+              return (
+                <button
+                  key={m.key}
+                  onClick={() => setPendingMethod(m.key)}
+                  data-testid={`button-method-${m.key.toLowerCase()}`}
+                  style={{
+                    flex: 1,
+                    borderRadius: 14,
+                    border: `2px solid ${isSelected ? m.bg : "#e5e7eb"}`,
+                    background: isSelected ? `${m.bg}12` : "white",
+                    cursor: "pointer",
+                    padding: "14px 10px",
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    alignItems: "center",
+                    gap: 8,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {m.logo}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: m.bg }}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           <p style={{ fontSize: 13, color: GREEN, margin: "0 0 8px 0" }}>Enter amount</p>
           <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px" }}>
             <input
@@ -128,47 +159,34 @@ export default function DepositPage() {
         </div>
       </div>
 
-      {/* Payment methods */}
-      <div style={{ flex: 1, background: "#f5f5f5", padding: "24px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ flex: 1, background: "#f5f5f5", padding: "20px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
 
-        <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: "0 0 16px 0" }}>Payment Method</p>
-          <div style={{ display: "flex", gap: 12 }}>
-            {METHODS.map((m) => {
-              const isLoading = cloudpayMutation.isPending && pendingMethod === m.key;
-              return (
-                <button
-                  key={m.key}
-                  onClick={() => handleMethodClick(m.key)}
-                  disabled={cloudpayMutation.isPending}
-                  data-testid={`button-method-${m.key.toLowerCase()}`}
-                  style={{
-                    flex: 1,
-                    borderRadius: 16,
-                    border: `2px solid ${m.bg}`,
-                    background: "white",
-                    cursor: cloudpayMutation.isPending ? "not-allowed" : "pointer",
-                    padding: "18px 12px",
-                    display: "flex",
-                    flexDirection: "column" as const,
-                    alignItems: "center",
-                    gap: 10,
-                    opacity: cloudpayMutation.isPending && pendingMethod !== m.key ? 0.5 : 1,
-                    boxShadow: `0 4px 14px ${m.bg}33`,
-                    transition: "opacity 0.2s",
-                  }}
-                >
-                  {isLoading ? (
-                    <Loader2 style={{ width: 42, height: 42, color: m.bg, animation: "spin 1s linear infinite" }} />
-                  ) : (
-                    m.logo
-                  )}
-                  <span style={{ fontSize: 15, fontWeight: 700, color: m.bg }}>{m.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Deposit Now button */}
+        <button
+          onClick={() => handleMethodClick(pendingMethod ?? "GCash")}
+          disabled={cloudpayMutation.isPending}
+          data-testid="button-submit-deposit"
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 999,
+            background: cloudpayMutation.isPending ? "#9ca3af" : GREEN,
+            color: "white",
+            fontWeight: 700,
+            fontSize: 16,
+            border: "none",
+            cursor: cloudpayMutation.isPending ? "not-allowed" : "pointer",
+            boxShadow: cloudpayMutation.isPending ? "none" : "0 4px 12px rgba(61,181,29,0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          {cloudpayMutation.isPending ? (
+            <><Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite" }} /> Processing...</>
+          ) : "Deposit Now"}
+        </button>
 
         {/* Instructions */}
         <div>
