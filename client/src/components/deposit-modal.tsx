@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getPaymentMethodsForCountry, formatCurrency } from "@/lib/countries";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Loader2, ExternalLink } from "lucide-react";
 import type { PaymentChannel } from "@shared/schema";
 
@@ -33,6 +34,7 @@ interface DepositModalProps {
 export default function DepositModal({ open, onClose }: DepositModalProps) {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
+  const { fmt, fromFcfa } = useUserCurrency();
   const [step, setStep] = useState<"amount" | "details" | "cloudpay-result">("amount");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [cloudpayResult, setCloudpayResult] = useState<{
@@ -42,10 +44,25 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
     depositId?: number;
   } | null>(null);
 
+  const { data: platformSettings } = useQuery<Record<string, string>>({
+    queryKey: ["/api/settings"],
+    enabled: open,
+  });
+
   const { data: channels } = useQuery<PaymentChannel[]>({
     queryKey: ["/api/payment-channels"],
     enabled: open,
   });
+
+  const minDepositFcfa = parseInt(platformSettings?.minDeposit || "3000");
+  const minDeposit = fromFcfa(minDepositFcfa);
+
+  const generatePresets = (minFcfa: number): number[] => {
+    const min = fromFcfa(minFcfa);
+    const steps = [1, 2, 3, 5, 10, 20].map(m => Math.round(min * m));
+    return steps;
+  };
+  const presetAmounts = generatePresets(minDepositFcfa);
 
   const form = useForm<DepositForm>({
     resolver: zodResolver(depositSchema),
@@ -132,11 +149,11 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
 
   const handleCustomAmount = () => {
     const amount = parseInt(form.getValues("amount"));
-    if (amount >= 300) {
+    if (amount >= minDeposit) {
       setSelectedAmount(amount);
       setStep("details");
     } else {
-      toast({ title: "Invalid amount", description: "Minimum deposit is ₱300", variant: "destructive" });
+      toast({ title: "Montant invalide", description: `Dépôt minimum : ${fmt(minDepositFcfa)}`, variant: "destructive" });
     }
   };
 
@@ -144,7 +161,6 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
 
   const paymentMethods = getPaymentMethodsForCountry(user.country);
   const activeChannels = channels?.filter(c => c.isActive) || [];
-  const presetAmounts = [300, 500, 1000, 2000, 5000, 10000];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -199,7 +215,7 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
         ) : step === "amount" ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Minimum: {formatCurrency(300, user.country)}
+              Minimum : {fmt(minDepositFcfa)}
             </p>
 
             <div className="grid grid-cols-3 gap-2">
@@ -210,7 +226,7 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
                   onClick={() => handleAmountSelect(amount)}
                   data-testid={`button-amount-${amount}`}
                 >
-                  {formatCurrency(amount, user.country)}
+                  {fmt(amount)}
                 </Button>
               ))}
             </div>
@@ -232,9 +248,9 @@ export default function DepositModal({ open, onClose }: DepositModalProps) {
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => depositMutation.mutate(data))} className="space-y-4">
               <div className="bg-secondary rounded-lg p-3 text-center">
-                <p className="text-sm text-muted-foreground">Amount</p>
+                <p className="text-sm text-muted-foreground">Montant</p>
                 <p className="text-2xl font-bold text-primary">
-                  {formatCurrency(selectedAmount || 0, user.country)}
+                  {fmt(selectedAmount || 0)}
                 </p>
               </div>
 
