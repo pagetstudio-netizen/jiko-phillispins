@@ -37,11 +37,11 @@ export default function DepositPage() {
 
   const activeChannels = (channels as any[]).filter((c: any) => c.isActive);
 
-  const generatePresets = (minFcfa: number): number[] => {
-    const min = fromFcfa(minFcfa);
-    return [1, 2, 3, 5, 10, 20].map(m => Math.round(min * m));
+  const generatePresets = (min: number): number[] => {
+    const multipliers = [1, 2, 5, 10, 20];
+    return multipliers.map(m => Math.round(min * m));
   };
-  const presetAmounts = generatePresets(minDepositFcfa);
+  const presetAmounts = generatePresets(minDeposit);
 
   const selectedChannel = activeChannels.find((c: any) => c.id.toString() === selectedChannelId);
   const isCloudpay = selectedChannel?.gateway === "cloudpay";
@@ -54,7 +54,7 @@ export default function DepositPage() {
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || "Erreur CloudPay");
+        throw new Error(err.message || "CloudPay error");
       }
       return response.json();
     },
@@ -66,18 +66,18 @@ export default function DepositPage() {
       });
     },
     onError: (err: any) => {
-      alert(err.message || "Erreur CloudPay");
+      alert(err.message || "CloudPay error");
     },
   });
 
   const handleDeposit = () => {
     const amt = typeof amount === "number" ? amount : 0;
     if (!amt || amt < minDeposit) {
-      alert(`Dépôt minimum : ${fmt(minDepositFcfa)}`);
+      alert(`Minimum deposit: ${fmt(minDepositFcfa)}`);
       return;
     }
     if (!selectedChannelId) {
-      alert("Veuillez choisir un canal de paiement.");
+      alert("Please select a payment channel.");
       return;
     }
     const amtFcfa = toFcfa(amt);
@@ -95,14 +95,14 @@ export default function DepositPage() {
       <div style={{ minHeight: "100vh", background: "#f5f5f5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
         <div style={{ background: "white", borderRadius: 20, padding: "40px 28px", textAlign: "center", maxWidth: 360, width: "100%", boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}>
           <CheckCircle2 style={{ width: 56, height: 56, color: GREEN, margin: "0 auto 16px" }} />
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Paiement initié</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Payment Initiated</h2>
           <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.6, marginBottom: 24 }}>
-            Complétez le paiement pour créditer votre compte automatiquement.
+            Complete the payment to credit your account automatically.
           </p>
 
           {cloudpayResult.qrcodeUrl && (
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>Scannez le QR Code pour payer</p>
+              <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>Scan QR Code to pay</p>
               <img
                 src={cloudpayResult.qrcodeUrl}
                 alt="QR Code"
@@ -113,7 +113,7 @@ export default function DepositPage() {
 
           {cloudpayResult.bankAccount && (
             <div style={{ background: "#f9fafb", borderRadius: 12, padding: "12px 16px", marginBottom: 20, textAlign: "left" }}>
-              <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 4px 0" }}>Transférer vers le compte</p>
+              <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 4px 0" }}>Transfer to account</p>
               <p style={{ fontSize: 16, fontWeight: 700, color: "#111827", fontFamily: "monospace", margin: 0 }}>{cloudpayResult.bankAccount}</p>
             </div>
           )}
@@ -125,7 +125,7 @@ export default function DepositPage() {
               style={{ width: "100%", height: 48, borderRadius: 999, background: GREEN, color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
             >
               <ExternalLink style={{ width: 18, height: 18 }} />
-              Ouvrir la page de paiement
+              Open Payment Page
             </button>
           )}
 
@@ -134,7 +134,7 @@ export default function DepositPage() {
             data-testid="button-go-home"
             style={{ width: "100%", height: 48, borderRadius: 999, background: "#f3f4f6", color: "#374151", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer" }}
           >
-            Retour à l'accueil
+            Back to Home
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function DepositPage() {
           <button onClick={() => navigate("/")} data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
             <ChevronLeft style={{ width: 24, height: 24, color: "white" }} />
           </button>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Dépôt</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Deposit</h1>
           <Link href="/deposit-orders">
             <button data-testid="button-history" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
               <img src={historyIcon} alt="History" style={{ width: 26, height: 26, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
@@ -157,11 +157,11 @@ export default function DepositPage() {
           </Link>
         </div>
 
-        {/* Saisie du montant */}
+        {/* Amount input */}
         <div style={{ width: "calc(100% - 16px)", marginLeft: 16, boxSizing: "border-box" as const, background: "white", borderRadius: "24px 0 0 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", padding: "20px 16px" }}>
-          <p style={{ fontSize: 12, color: GREEN, marginBottom: 8, fontWeight: 600 }}>Montant minimum : {fmt(minDepositFcfa)}</p>
+          <p style={{ fontSize: 12, color: GREEN, marginBottom: 8, fontWeight: 600 }}>Minimum deposit: {fmt(minDepositFcfa)}</p>
 
-          {/* Montants rapides */}
+          {/* Preset amounts — 5 buttons */}
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, marginBottom: 14 }}>
             {presetAmounts.map((p) => (
               <button
@@ -169,10 +169,8 @@ export default function DepositPage() {
                 onClick={() => setAmount(p)}
                 data-testid={`button-preset-${p}`}
                 style={{
-                  flex: "0 0 auto",
+                  flex: "1 1 calc(33% - 8px)",
                   height: 36,
-                  paddingLeft: 14,
-                  paddingRight: 14,
                   borderRadius: 8,
                   border: `1.5px solid ${amount === p ? GREEN : "#d1d5db"}`,
                   background: amount === p ? GREEN : "white",
@@ -188,7 +186,7 @@ export default function DepositPage() {
             ))}
           </div>
 
-          <p style={{ fontSize: 13, color: GREEN, margin: "0 0 8px 0" }}>Saisissez le montant</p>
+          <p style={{ fontSize: 13, color: GREEN, margin: "0 0 8px 0" }}>Enter amount</p>
           <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px" }}>
             <input
               type="number"
@@ -204,14 +202,13 @@ export default function DepositPage() {
 
       <div style={{ flex: 1, background: "#f5f5f5", padding: "20px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
 
-        {/* Sélection du canal */}
+        {/* Payment channel selection */}
         {activeChannels.length > 0 && (
           <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: "0 0 14px 0" }}>Canal de paiement</p>
+            <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: "0 0 14px 0" }}>Payment Channel</p>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
               {activeChannels.map((channel: any) => {
                 const isSelected = selectedChannelId === channel.id.toString();
-                const isCP = channel.gateway === "cloudpay";
                 return (
                   <div
                     key={channel.id}
@@ -223,16 +220,10 @@ export default function DepositPage() {
                       border: `2px solid ${isSelected ? GREEN : "#e5e7eb"}`,
                       background: isSelected ? `${GREEN}10` : "white",
                       cursor: "pointer",
-                      overflow: "hidden",
                     }}
                   >
                     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>{channel.name}</p>
-                        <p style={{ fontSize: 12, color: "#6b7280", margin: "2px 0 0 0" }}>
-                          {isCP ? "Paiement automatique instantané" : "Paiement manuel"}
-                        </p>
-                      </div>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>{channel.name}</p>
                       <div style={{
                         width: 20, height: 20, borderRadius: "50%",
                         border: `2px solid ${isSelected ? GREEN : "#d1d5db"}`,
@@ -243,13 +234,6 @@ export default function DepositPage() {
                         {isSelected && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "white" }} />}
                       </div>
                     </div>
-                    {isSelected && isCP && (
-                      <div style={{ margin: "0 14px 14px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px" }}>
-                        <p style={{ fontSize: 13, color: "#1e40af", margin: 0, lineHeight: 1.6 }}>
-                          ✅ Votre dépôt sera traité <strong>automatiquement</strong>. Vous recevrez un lien ou QR code pour finaliser le paiement.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -257,7 +241,7 @@ export default function DepositPage() {
           </div>
         )}
 
-        {/* Bouton */}
+        {/* Submit button */}
         <button
           onClick={handleDeposit}
           disabled={cloudpayMutation.isPending}
@@ -282,22 +266,22 @@ export default function DepositPage() {
           {cloudpayMutation.isPending ? (
             <>
               <Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite" }} />
-              Traitement...
+              Processing...
             </>
-          ) : "Déposer maintenant"}
+          ) : "Deposit Now"}
         </button>
 
         {/* Instructions */}
         <div>
           <p style={{ fontWeight: 700, fontSize: 14, color: "#111827", marginBottom: 12 }}>
-            💳 Instructions de dépôt :
+            💳 Deposit Instructions:
           </p>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
             {[
-              { bold: "Montant minimum :", text: ` ${fmt(minDepositFcfa)}` },
-              { bold: "Vérifiez vos informations", text: " avant d'effectuer un transfert pour éviter toute erreur" },
-              { bold: "Chaque ordre a ses propres informations de paiement", text: " ; ne réutilisez pas les informations précédentes" },
-              { bold: "Après un transfert réussi", text: ", attendez 10 à 30 minutes. Si le montant n'est pas crédité, contactez le support." },
+              { bold: "Minimum deposit amount:", text: ` ${fmt(minDepositFcfa)}` },
+              { bold: "Carefully verify your account information", text: " when making a transfer to avoid payment errors" },
+              { bold: "Each order has its own payment information", text: "; do not reuse previous information for a second payment" },
+              { bold: "After a successful transfer", text: ", please wait 10 to 30 minutes. If the amount is not credited, contact customer service." },
             ].map((item, i) => (
               <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <span style={{ color: "#1565C0", fontWeight: 700, fontSize: 14, marginTop: 1, flexShrink: 0 }}>◆</span>
