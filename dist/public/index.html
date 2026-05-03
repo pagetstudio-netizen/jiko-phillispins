@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr" translate="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#3db51d" />
+    <meta name="description" content="晶科太阳能 - 全球太阳能领域的领导者。投资太阳能产品，每日获取稳定收益。" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Jinko Solar" />
+    <meta property="og:description" content="全球太阳能领域的领导者。投资太阳能产品，每日获取稳定收益。" />
+    <meta property="og:url" content="https://jinkosolar.replit.app" />
+    <meta property="og:image" content="https://jinkosolar.replit.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Jinko Solar" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Jinko Solar" />
+    <meta name="twitter:description" content="全球太阳能领域的领导者。投资太阳能产品，每日获取稳定收益。" />
+    <meta name="twitter:image" content="https://jinkosolar.replit.app/og-image.png" />
+    
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      // Capture install prompt as early as possible before React mounts
+      window._installPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window._installPrompt = e;
+      });
+      window.addEventListener('appinstalled', function() {
+        window._appInstalled = true;
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Jinko Solar</title>
+    <script type="module" crossorigin src="/assets/index-DTADBqt3.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B5gb6F9j.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

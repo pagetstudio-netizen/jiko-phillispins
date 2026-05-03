@@ -1,0 +1,24 @@
+{
+  "name": "Jinko Solar",
+  "short_name": "Jinko Solar",
+  "description": "Leader mondial du panneau solaire. Investissez et générez des revenus quotidiens.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3db51d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
