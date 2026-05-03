@@ -7,6 +7,7 @@ import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_17758333
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { apiRequest } from "@/lib/queryClient";
+import mayaLogo from "@assets/2206757_1777781237200.jpg";
 
 const GREEN = "#3db51d";
 
@@ -29,10 +30,7 @@ const METHODS = [
     bg: "#00AC4F",
     textColor: "white",
     logo: (
-      <svg viewBox="0 0 48 48" width="42" height="42" fill="none">
-        <circle cx="24" cy="24" r="24" fill="#00AC4F" />
-        <text x="24" y="32" textAnchor="middle" fontSize="22" fontWeight="900" fontFamily="Arial,sans-serif" fill="white">M</text>
-      </svg>
+      <img src={mayaLogo} alt="Maya" style={{ width: 42, height: 42, borderRadius: 10, objectFit: "cover" }} />
     ),
   },
 ];
