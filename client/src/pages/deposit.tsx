@@ -59,6 +59,10 @@ export default function DepositPage() {
       return response.json();
     },
     onSuccess: (data) => {
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       setCloudpayResult({
         redirectUrl: data.redirectUrl,
         qrcodeUrl: data.qrcodeUrl,
