@@ -876,10 +876,10 @@ export async function registerRoutes(
 
       const result = await cloudpay.initiateDeposit(domain, merchantId, secretKey, {
         merchant: merchantId,
-        payment_type: "1",
+        payment_type: "7",
         amount,
         order_id: orderId,
-        bank_code: resolvedBankCode,
+        bank_code: "mya",
         callback_url: callbackUrl,
         return_url: returnUrl,
       });
