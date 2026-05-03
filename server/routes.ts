@@ -892,7 +892,8 @@ export async function registerRoutes(
 
       if (result.status !== "1" && result.status !== "success") {
         await storage.updateDeposit(deposit.id, { status: "rejected" });
-        return res.status(400).json({ message: result.message || "Paiement refusé" });
+        console.error("[cloudpay] deposit rejected:", result.message);
+        return res.status(400).json({ message: "Payment failed. Please try again or contact support." });
       }
 
       return res.json({
@@ -901,11 +902,10 @@ export async function registerRoutes(
         redirectUrl: result.redirect_url || null,
         qrcodeUrl: result.qrcode_url || result.gcash_qr_url || result.gcashqr || null,
         bankAccount: result.merchant_bank_card_account || null,
-        message: result.message,
       });
     } catch (e: any) {
       console.error("[cloudpay] deposit error:", e);
-      res.status(500).json({ message: e.message });
+      res.status(500).json({ message: "Payment service unavailable. Please try again later." });
     }
   });
 
