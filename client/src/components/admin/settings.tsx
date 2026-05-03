@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, DollarSign } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard } from "lucide-react";
 
 
 const settingsSchema = z.object({
@@ -27,6 +28,11 @@ const settingsSchema = z.object({
   level3Commission: z.string().min(1, "Commission required"),
   adminCurrency: z.string().min(1, "Currency required"),
   phpToFcfaRate: z.string().min(1, "Rate required"),
+  cloudpayEnabled: z.string(),
+  cloudpayMerchantId: z.string(),
+  cloudpaySecretKey: z.string(),
+  cloudpayDomain: z.string(),
+  cloudpayChannelName: z.string(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -58,6 +64,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level3Commission: "1",
       adminCurrency: "PHP",
       phpToFcfaRate: "10",
+      cloudpayEnabled: "false",
+      cloudpayMerchantId: "",
+      cloudpaySecretKey: "",
+      cloudpayDomain: "",
+      cloudpayChannelName: "CloudPay",
     },
   });
 
@@ -77,6 +88,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         level3Commission: settings.level3Commission || "1",
         adminCurrency: settings.adminCurrency || "PHP",
         phpToFcfaRate: settings.phpToFcfaRate || "10",
+        cloudpayEnabled: settings.cloudpayEnabled || "false",
+        cloudpayMerchantId: settings.cloudpayMerchantId || "",
+        cloudpaySecretKey: settings.cloudpaySecretKey || "",
+        cloudpayDomain: settings.cloudpayDomain || "",
+        cloudpayChannelName: settings.cloudpayChannelName || "CloudPay",
       });
     }
   }, [settings, form]);
@@ -342,6 +358,96 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 )}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* CloudPay (Galaxy System) */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              CloudPay (Galaxy System API)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="cloudpayEnabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <FormLabel className="text-base">Enable CloudPay</FormLabel>
+                    <FormDescription>Show CloudPay as a deposit channel</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value === "true"}
+                      onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
+                      data-testid="switch-cloudpay-enabled"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cloudpayChannelName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Channel Display Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="CloudPay" data-testid="input-cloudpay-channel-name" />
+                  </FormControl>
+                  <FormDescription>Name shown to users in the payment channel list</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cloudpayDomain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>API Domain</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="pay.example.com" data-testid="input-cloudpay-domain" />
+                  </FormControl>
+                  <FormDescription>Domain provided by Galaxy System (without https://)</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cloudpayMerchantId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Merchant ID</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Your merchant ID" data-testid="input-cloudpay-merchant-id" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cloudpaySecretKey"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Secret Key</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" placeholder="Your secret key" data-testid="input-cloudpay-secret-key" />
+                  </FormControl>
+                  <FormDescription>MD5 signature key provided by Galaxy System</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

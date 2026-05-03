@@ -43,6 +43,7 @@ export interface IStorage {
   
   // Withdrawals
   createWithdrawal(data: Partial<Withdrawal>): Promise<Withdrawal>;
+  getWithdrawal(id: number): Promise<Withdrawal | undefined>;
   getWithdrawals(status?: string): Promise<(Withdrawal & { user: User })[]>;
   getUserWithdrawals(userId: number): Promise<Withdrawal[]>;
   updateWithdrawal(id: number, data: Partial<Withdrawal>): Promise<Withdrawal>;
@@ -557,6 +558,11 @@ export class DatabaseStorage implements IStorage {
   // Withdrawals
   async createWithdrawal(data: Partial<Withdrawal>): Promise<Withdrawal> {
     const [withdrawal] = await db.insert(withdrawals).values(data as any).returning();
+    return withdrawal;
+  }
+
+  async getWithdrawal(id: number): Promise<Withdrawal | undefined> {
+    const [withdrawal] = await db.select().from(withdrawals).where(eq(withdrawals.id, id));
     return withdrawal;
   }
 

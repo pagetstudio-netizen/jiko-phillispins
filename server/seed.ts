@@ -213,6 +213,11 @@ export async function seed() {
     { key: "ashtechpayEnabled", value: "false" },
     { key: "ashtechpayApiKey", value: "" },
     { key: "ashtechpayChannelName", value: "AshtechPay" },
+    { key: "cloudpayEnabled", value: "false" },
+    { key: "cloudpayMerchantId", value: "" },
+    { key: "cloudpaySecretKey", value: "" },
+    { key: "cloudpayDomain", value: "" },
+    { key: "cloudpayChannelName", value: "CloudPay" },
     { key: "adminCurrency", value: "PHP" },
     { key: "phpToFcfaRate", value: "10" },
   ];

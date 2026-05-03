@@ -14,6 +14,7 @@ import {
   SOLEASPAY_SERVICE_MAP 
 } from "./soleaspay";
 import * as ashtech from "./ashtechpay";
+import * as cloudpay from "./cloudpay";
 
 declare module "express-session" {
   interface SessionData {
@@ -437,6 +438,19 @@ export async function registerRoutes(
         });
       }
 
+      const cloudpayEnabled = settings.cloudpayEnabled === "true";
+      const cloudpayChannelName = settings.cloudpayChannelName || "CloudPay";
+      if (cloudpayEnabled) {
+        virtualChannels.push({
+          id: -5,
+          name: cloudpayChannelName,
+          redirectUrl: "",
+          isApi: true,
+          isActive: true,
+          gateway: "cloudpay",
+        });
+      }
+
       // Manual channels created by admin (no gateway auto-processing)
       const manualChannels = channels.map((ch) => ({ ...ch, gateway: null }));
 
@@ -813,6 +827,284 @@ export async function registerRoutes(
   });
 
   // ─── End AshtechPay ───────────────────────────────────────────────
+
+  // ─── CloudPay (Galaxy System API) ─────────────────────────────────
+
+  // Initiate CloudPay deposit
+  app.post("/api/cloudpay/deposit", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const merchantId = settings.cloudpayMerchantId || "";
+      const secretKey = settings.cloudpaySecretKey || "";
+      const domain = settings.cloudpayDomain || "";
+      const enabled = settings.cloudpayEnabled === "true";
+
+      if (!enabled || !merchantId || !secretKey || !domain) {
+        return res.status(400).json({ message: "CloudPay non configuré" });
+      }
+
+      const { amount, paymentMethod, bankCode } = req.body;
+      if (!amount) {
+        return res.status(400).json({ message: "Champs requis: amount" });
+      }
+
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(401).json({ message: "Non authentifié" });
+
+      const minDeposit = parseInt(settings.minDeposit || "300");
+      if (amount < minDeposit) {
+        return res.status(400).json({ message: `Minimum deposit: ${minDeposit}` });
+      }
+
+      const orderId = `CP-${user.id}-${Date.now()}`;
+      const host = `${req.protocol}://${req.get("host")}`;
+      const callbackUrl = `${host}/api/webhooks/cloudpay`;
+      const returnUrl = `${host}/deposit-orders`;
+
+      const resolvedBankCode = bankCode || cloudpay.getBankCode(paymentMethod || "GCash");
+
+      const deposit = await storage.createDeposit({
+        userId: user.id,
+        amount,
+        accountName: user.fullName,
+        accountNumber: merchantId,
+        country: user.country || "PH",
+        paymentMethod: paymentMethod || "CloudPay",
+        status: "processing",
+        soleaspayOrderId: orderId,
+      });
+
+      const result = await cloudpay.initiateDeposit(domain, merchantId, secretKey, {
+        merchant: merchantId,
+        payment_type: "1",
+        amount,
+        order_id: orderId,
+        bank_code: resolvedBankCode,
+        callback_url: callbackUrl,
+        return_url: returnUrl,
+      });
+
+      if (result.status !== "1" && result.status !== "success") {
+        await storage.updateDeposit(deposit.id, { status: "rejected" });
+        return res.status(400).json({ message: result.message || "Paiement refusé" });
+      }
+
+      return res.json({
+        depositId: deposit.id,
+        orderId,
+        redirectUrl: result.redirect_url || null,
+        qrcodeUrl: result.qrcode_url || result.gcash_qr_url || result.gcashqr || null,
+        bankAccount: result.merchant_bank_card_account || null,
+        message: result.message,
+      });
+    } catch (e: any) {
+      console.error("[cloudpay] deposit error:", e);
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Poll CloudPay deposit status
+  app.get("/api/cloudpay/deposit/:id/status", requireAuth, async (req, res) => {
+    try {
+      const deposit = await storage.getDeposit(parseInt(req.params.id));
+      if (!deposit || deposit.userId !== req.session.userId) {
+        return res.status(404).json({ message: "Dépôt introuvable" });
+      }
+
+      if (deposit.status === "approved") return res.json({ status: "approved" });
+      if (deposit.status === "rejected") return res.json({ status: "rejected" });
+
+      const orderId = deposit.soleaspayOrderId;
+      if (orderId) {
+        const settings = await storage.getSettings();
+        const merchantId = settings.cloudpayMerchantId || "";
+        const secretKey = settings.cloudpaySecretKey || "";
+        const domain = settings.cloudpayDomain || "";
+
+        const queryResult = await cloudpay.queryTransaction(domain, merchantId, secretKey, orderId);
+        const newStatus = cloudpay.mapCloudpayStatus(queryResult.status);
+
+        if (newStatus === "approved") {
+          await storage.updateDeposit(deposit.id, { status: "approved", processedAt: new Date() });
+          const user = await storage.getUser(deposit.userId);
+          if (user) {
+            const newBalance = parseFloat(user.balance) + deposit.amount;
+            await storage.updateUser(user.id, { balance: newBalance.toFixed(2), hasDeposited: true });
+            await storage.createTransaction({
+              userId: user.id,
+              type: "deposit",
+              amount: deposit.amount.toString(),
+              description: `Dépôt CloudPay #${deposit.id}`,
+            });
+            await storage.processDepositReferralCommissions(user.id, deposit.amount);
+          }
+          return res.json({ status: "approved" });
+        } else if (newStatus === "rejected") {
+          await storage.updateDeposit(deposit.id, { status: "rejected", processedAt: new Date() });
+          return res.json({ status: "rejected" });
+        }
+      }
+
+      res.json({ status: "processing" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // CloudPay deposit webhook callback
+  app.post("/api/webhooks/cloudpay", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const secretKey = settings.cloudpaySecretKey || "";
+      const merchantId = settings.cloudpayMerchantId || "";
+
+      const { order_id, amount, status, sign, merchant } = req.body;
+
+      if (!order_id || !sign) {
+        return res.status(400).send("FAIL");
+      }
+
+      const params: Record<string, string | number> = {
+        merchant: merchant || merchantId,
+        order_id,
+        amount,
+        status,
+      };
+      const isValid = cloudpay.verifySign(params, secretKey);
+      if (!isValid) {
+        console.error("[cloudpay] webhook invalid signature for order:", order_id);
+        return res.status(400).send("FAIL");
+      }
+
+      const deposits = await storage.getDeposits();
+      const deposit = deposits.find((d: any) => d.soleaspayOrderId === order_id);
+      if (!deposit) {
+        console.warn("[cloudpay] webhook: deposit not found for order:", order_id);
+        return res.send("SUCCESS");
+      }
+
+      if (deposit.status === "approved" || deposit.status === "rejected") {
+        return res.send("SUCCESS");
+      }
+
+      const mappedStatus = cloudpay.mapCloudpayStatus(Number(status));
+
+      if (mappedStatus === "approved") {
+        await storage.updateDeposit(deposit.id, { status: "approved", processedAt: new Date() });
+        const user = await storage.getUser(deposit.userId);
+        if (user) {
+          const newBalance = parseFloat(user.balance) + deposit.amount;
+          await storage.updateUser(user.id, { balance: newBalance.toFixed(2), hasDeposited: true });
+          await storage.createTransaction({
+            userId: user.id,
+            type: "deposit",
+            amount: deposit.amount.toString(),
+            description: `Dépôt CloudPay #${deposit.id}`,
+          });
+          await storage.processDepositReferralCommissions(user.id, deposit.amount);
+        }
+      } else if (mappedStatus === "rejected") {
+        await storage.updateDeposit(deposit.id, { status: "rejected", processedAt: new Date() });
+      }
+
+      res.send("SUCCESS");
+    } catch (e: any) {
+      console.error("[cloudpay] webhook error:", e);
+      res.send("SUCCESS");
+    }
+  });
+
+  // CloudPay auto-withdrawal
+  app.post("/api/cloudpay/withdraw", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const merchantId = settings.cloudpayMerchantId || "";
+      const secretKey = settings.cloudpaySecretKey || "";
+      const domain = settings.cloudpayDomain || "";
+      const enabled = settings.cloudpayEnabled === "true";
+
+      if (!enabled || !merchantId || !secretKey || !domain) {
+        return res.status(400).json({ message: "CloudPay non configuré" });
+      }
+
+      const { withdrawalId } = req.body;
+      if (!withdrawalId) {
+        return res.status(400).json({ message: "withdrawalId requis" });
+      }
+
+      const withdrawal = await storage.getWithdrawal(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ message: "Retrait introuvable" });
+      }
+
+      if (withdrawal.userId !== req.session.userId) {
+        return res.status(403).json({ message: "Accès refusé" });
+      }
+
+      const orderId = `CPW-${withdrawal.id}-${Date.now()}`;
+      const host = `${req.protocol}://${req.get("host")}`;
+      const callbackUrl = `${host}/api/webhooks/cloudpay-withdrawal`;
+
+      const bankCode = cloudpay.getBankCode(withdrawal.paymentMethod || "GCash");
+
+      const result = await cloudpay.initiateWithdrawal(domain, merchantId, secretKey, {
+        merchant: merchantId,
+        total_amount: withdrawal.netAmount,
+        callback_url: callbackUrl,
+        order_id: orderId,
+        bank: bankCode,
+        bank_card_name: withdrawal.accountName,
+        bank_card_account: withdrawal.accountNumber,
+        bank_card_remark: `Retrait JinKO #${withdrawal.id}`,
+      });
+
+      if (result.status !== "1" && result.status !== "success") {
+        return res.status(400).json({ message: result.message || "Retrait refusé" });
+      }
+
+      await storage.updateWithdrawal(withdrawal.id, {
+        status: "processing",
+        processedAt: new Date(),
+      });
+
+      res.json({ success: true, orderId, message: result.message });
+    } catch (e: any) {
+      console.error("[cloudpay] withdrawal error:", e);
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // CloudPay withdrawal webhook
+  app.post("/api/webhooks/cloudpay-withdrawal", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const secretKey = settings.cloudpaySecretKey || "";
+      const merchantId = settings.cloudpayMerchantId || "";
+
+      const { order_id, amount, status, sign, merchant } = req.body;
+      if (!order_id || !sign) return res.status(400).send("FAIL");
+
+      const params: Record<string, string | number> = {
+        merchant: merchant || merchantId,
+        order_id,
+        amount,
+        status,
+      };
+      const isValid = cloudpay.verifySign(params, secretKey);
+      if (!isValid) {
+        console.error("[cloudpay] withdrawal webhook invalid signature:", order_id);
+        return res.status(400).send("FAIL");
+      }
+
+      console.log("[cloudpay] withdrawal webhook received:", JSON.stringify(req.body));
+      res.send("SUCCESS");
+    } catch (e: any) {
+      console.error("[cloudpay] withdrawal webhook error:", e);
+      res.send("SUCCESS");
+    }
+  });
+
+  // ─── End CloudPay ─────────────────────────────────────────────────
 
   // Withdrawals
   app.post("/api/withdrawals", requireAuth, async (req, res) => {

@@ -87,6 +87,18 @@ Preferred communication style: Simple, everyday language.
 - `DATABASE_URL`: PostgreSQL connection string
 - `SESSION_SECRET`: Secret for session encryption (optional, has fallback)
 
+## Recent Changes (May 2026)
+- **CloudPay (Galaxy System API v3.0.4) integration** added for deposits and withdrawals
+  - `server/cloudpay.ts`: MD5 signature builder, deposit (`POST /api/transfer`), withdrawal (`POST /api/daifu`), query (`POST /api/query`)
+  - Routes: `POST /api/cloudpay/deposit`, `GET /api/cloudpay/deposit/:id/status`, `POST /api/cloudpay/withdraw`
+  - Webhooks: `POST /api/webhooks/cloudpay` (deposit callback), `POST /api/webhooks/cloudpay-withdrawal`
+  - Virtual channel `id: -5, gateway: "cloudpay"` injected into `/api/payment-channels` when enabled
+  - Admin settings: `cloudpayEnabled`, `cloudpayMerchantId`, `cloudpaySecretKey`, `cloudpayDomain`, `cloudpayChannelName`
+  - Admin withdrawals panel has a "Send via CloudPay" button for auto-processing pending withdrawals
+  - Deposit modal detects CloudPay channel and shows QR code / redirect URL on success
+  - Philippine bank codes mapped: GCash→gcash, Maya→PMP, GoTyme→GOT, BPI→bpi, etc.
+  - To activate: go to Admin → Settings → CloudPay section, toggle Enable, enter Domain, Merchant ID, and Secret Key
+
 ## Recent Changes (February 2026)
 - Deposit system now uses dual approach: Soleaspay (automatic) per-country OR manual recharge channels
 - Admin can enable Soleaspay globally and select specific countries for automatic payment

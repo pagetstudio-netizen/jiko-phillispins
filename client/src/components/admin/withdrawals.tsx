@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAdminCurrency } from "@/lib/useAdminCurrency";
-import { Check, X, Search, Loader2 } from "lucide-react";
+import { Check, X, Search, Loader2, Send } from "lucide-react";
 import type { Withdrawal } from "@shared/schema";
 
 interface WithdrawalWithUser extends Withdrawal {
@@ -26,6 +26,7 @@ export default function AdminWithdrawals() {
   const { formatAmount } = useAdminCurrency();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected" | "processing">("pending");
+  const [sendingCloudpayId, setSendingCloudpayId] = useState<number | null>(null);
 
   const { data: allWithdrawals, isLoading } = useQuery<WithdrawalWithUser[]>({
     queryKey: ["/api/admin/withdrawals"],
@@ -58,6 +59,23 @@ export default function AdminWithdrawals() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  const sendCloudpay = async (withdrawalId: number) => {
+    setSendingCloudpayId(withdrawalId);
+    try {
+      const response = await apiRequest("POST", "/api/cloudpay/withdraw", { withdrawalId });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error");
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
+      toast({ title: "Sent via CloudPay!", description: "Withdrawal is being processed automatically." });
+    } catch (err: any) {
+      toast({ title: "CloudPay error", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingCloudpayId(null);
+    }
+  };
 
   const filteredWithdrawals = withdrawals?.filter(w =>
     w.accountNumber.includes(filter) ||
@@ -154,25 +172,41 @@ export default function AdminWithdrawals() {
                 </div>
 
                 {withdrawal.status === "pending" && (
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => processMutation.mutate({ id: withdrawal.id, action: "approve" })}
+                        disabled={processMutation.isPending}
+                        data-testid={`button-manual-approve-${withdrawal.id}`}
+                      >
+                        {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => processMutation.mutate({ id: withdrawal.id, action: "reject" })}
+                        disabled={processMutation.isPending}
+                        data-testid={`button-reject-${withdrawal.id}`}
+                      >
+                        <X className="w-4 h-4 mr-1" /> Reject
+                      </Button>
+                    </div>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => processMutation.mutate({ id: withdrawal.id, action: "approve" })}
-                      disabled={processMutation.isPending}
-                      data-testid={`button-manual-approve-${withdrawal.id}`}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => sendCloudpay(withdrawal.id)}
+                      disabled={sendingCloudpayId === withdrawal.id}
+                      data-testid={`button-cloudpay-withdraw-${withdrawal.id}`}
                     >
-                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => processMutation.mutate({ id: withdrawal.id, action: "reject" })}
-                      disabled={processMutation.isPending}
-                      data-testid={`button-reject-${withdrawal.id}`}
-                    >
-                      <X className="w-4 h-4 mr-1" /> Reject
+                      {sendingCloudpayId === withdrawal.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                      ) : (
+                        <Send className="w-4 h-4 mr-1" />
+                      )}
+                      Send via CloudPay
                     </Button>
                   </div>
                 )}
