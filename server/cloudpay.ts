@@ -114,8 +114,8 @@ export async function initiateDeposit(
 
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)]))).toString(),
   });
 
   const result = await response.json() as CloudpayDepositResponse;
@@ -147,8 +147,8 @@ export async function initiateWithdrawal(
 
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)]))).toString(),
   });
 
   const result = await response.json() as CloudpayWithdrawalResponse;
@@ -174,8 +174,8 @@ export async function queryTransaction(
 
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)]))).toString(),
   });
 
   const result = await response.json() as CloudpayQueryResponse;
