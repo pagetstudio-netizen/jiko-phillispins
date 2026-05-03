@@ -8,6 +8,7 @@ import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.pn
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { apiRequest } from "@/lib/queryClient";
 import mayaLogo from "@assets/2206757_1777781237200.jpg";
+import gcashLogo from "@assets/Screenshot_20260415-140919_1777781311304.png";
 
 const GREEN = "#3db51d";
 
@@ -18,10 +19,7 @@ const METHODS = [
     bg: "#0070E0",
     textColor: "white",
     logo: (
-      <svg viewBox="0 0 48 48" width="42" height="42" fill="none">
-        <circle cx="24" cy="24" r="24" fill="#0070E0" />
-        <text x="24" y="32" textAnchor="middle" fontSize="22" fontWeight="900" fontFamily="Arial,sans-serif" fill="white">G</text>
-      </svg>
+      <img src={gcashLogo} alt="GCash" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
     ),
   },
   {
@@ -30,7 +28,7 @@ const METHODS = [
     bg: "#00AC4F",
     textColor: "white",
     logo: (
-      <img src={mayaLogo} alt="Maya" style={{ width: 42, height: 42, borderRadius: 10, objectFit: "cover" }} />
+      <img src={mayaLogo} alt="Maya" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
     ),
   },
 ];
