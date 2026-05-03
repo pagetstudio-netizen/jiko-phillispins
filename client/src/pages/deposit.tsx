@@ -209,53 +209,51 @@ export default function DepositPage() {
           <div style={{ background: "white", borderRadius: 16, padding: "18px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
             <p style={{ fontWeight: 700, fontSize: 15, color: "#111827", margin: "0 0 14px 0" }}>Canal de paiement</p>
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-              {activeChannels.map((channel: any) => (
-                <button
-                  key={channel.id}
-                  onClick={() => setSelectedChannelId(channel.id.toString())}
-                  data-testid={`button-channel-${channel.id}`}
-                  style={{
-                    width: "100%",
-                    padding: "14px 16px",
-                    borderRadius: 12,
-                    border: `2px solid ${selectedChannelId === channel.id.toString() ? GREEN : "#e5e7eb"}`,
-                    background: selectedChannelId === channel.id.toString() ? `${GREEN}10` : "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    textAlign: "left" as const,
-                  }}
-                >
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>{channel.name}</p>
-                    <p style={{ fontSize: 12, color: "#6b7280", margin: "2px 0 0 0" }}>
-                      {channel.gateway === "cloudpay" ? "Paiement automatique instantané" : "Paiement manuel"}
-                    </p>
-                  </div>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: "50%",
-                    border: `2px solid ${selectedChannelId === channel.id.toString() ? GREEN : "#d1d5db"}`,
-                    background: selectedChannelId === channel.id.toString() ? GREEN : "white",
-                    flexShrink: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    {selectedChannelId === channel.id.toString() && (
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: "white" }} />
+              {activeChannels.map((channel: any) => {
+                const isSelected = selectedChannelId === channel.id.toString();
+                const isCP = channel.gateway === "cloudpay";
+                return (
+                  <div
+                    key={channel.id}
+                    onClick={() => setSelectedChannelId(channel.id.toString())}
+                    data-testid={`button-channel-${channel.id}`}
+                    style={{
+                      width: "100%",
+                      borderRadius: 12,
+                      border: `2px solid ${isSelected ? GREEN : "#e5e7eb"}`,
+                      background: isSelected ? `${GREEN}10` : "white",
+                      cursor: "pointer",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>{channel.name}</p>
+                        <p style={{ fontSize: 12, color: "#6b7280", margin: "2px 0 0 0" }}>
+                          {isCP ? "Paiement automatique instantané" : "Paiement manuel"}
+                        </p>
+                      </div>
+                      <div style={{
+                        width: 20, height: 20, borderRadius: "50%",
+                        border: `2px solid ${isSelected ? GREEN : "#d1d5db"}`,
+                        background: isSelected ? GREEN : "white",
+                        flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        {isSelected && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "white" }} />}
+                      </div>
+                    </div>
+                    {isSelected && isCP && (
+                      <div style={{ margin: "0 14px 14px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px" }}>
+                        <p style={{ fontSize: 13, color: "#1e40af", margin: 0, lineHeight: 1.6 }}>
+                          ✅ Votre dépôt sera traité <strong>automatiquement</strong>. Vous recevrez un lien ou QR code pour finaliser le paiement.
+                        </p>
+                      </div>
                     )}
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        )}
-
-        {/* Note CloudPay */}
-        {isCloudpay && (
-          <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "12px 16px" }}>
-            <p style={{ fontSize: 13, color: "#1e40af", margin: 0, lineHeight: 1.6 }}>
-              ✅ Votre dépôt sera traité <strong>automatiquement</strong>. Vous recevrez un lien ou QR code pour finaliser le paiement.
-            </p>
           </div>
         )}
 
