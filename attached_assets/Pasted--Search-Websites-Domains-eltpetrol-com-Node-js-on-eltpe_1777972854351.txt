@@ -1,0 +1,74 @@
+
+Search...
+
+
+
+Websites & Domains
+eltpetrol.com
+Node.js on eltpetrol.com
+Warning: Another user with the same username (sendavap) is already logged in to Plesk.
+Dashboard
+Run Node.js commands
+
+
+
+
+Disable Node.js
+
+Node.js Version
+21.7.3
+Package Manager
+npm      This is what we detected, you can change it  
+Document Root
+/eltpetrol.com        It is recommended to set the document root to a subdirectory of the application root (such as public/) due to security considerations.
+Application Mode
+production
+Application URL
+http://eltpetrol.com
+Application Root
+/eltpetrol.com   open
+Application Startup File
+app.js   edit
+Custom environment variables
+- SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqY2Vpd2R2a2RzaGJhcXRlanN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTk4MDQsImV4cCI6MjA5MzM3NTgwNH0.tIkmATOhqHa0QGtYU3boLWIpbc6j8-lT6ULzHry36x8
+- SUPABASE_DATABASE_URL: postgresql://postgres.cjceiwdvkdshbaqtejst:rW7SkxyuOLyxGJtJ@aws-1-eu-west-3.pooler.supabase.com:6543/postgres
+- SESSION_SECRET: JinkoSolar2024!xK9mP
+- NODE_ENV: production
+- DATABASE_URL: postgresql://postgres.cjceiwdvkdshbaqtejst:rW7SkxyuOLyxGJtJ@aws-1-eu-west-3.pooler.supabase.com:6543/postgres
+specify
+Access to Configuration Files
+Click a file name to edit:
+
+package.json
+app.js
+plesk.com
+Suggest an Idea
+Accessibility
+Cookies
+NPM install
+
+
+Installing the application dependencies.
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE package: 'connect-pg-simple@10.0.0',
+npm WARN EBADENGINE required: { node: '^18.18.0 || ^20.9.0 || >=22.0.0' },
+npm WARN EBADENGINE current: { node: 'v21.7.3', npm: '10.5.0' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE package: 'vite@7.3.0',
+npm WARN EBADENGINE required: { node: '^20.19.0 || >=22.12.0' },
+npm WARN EBADENGINE current: { node: 'v21.7.3', npm: '10.5.0' }
+npm WARN EBADENGINE }
+npm ERR! code 127
+npm ERR! path /data/vhosts/sendavapay.com/eltpetrol.com/node_modules/bcrypt
+npm ERR! command failed
+npm ERR! command sh -c node-gyp-build
+npm ERR! nodenv: node: command not found
+npm ERR!
+npm ERR! The `node' command exists in these Node versions:
+npm ERR! 20
+npm ERR! 21
+npm ERR! A complete log of this run can be found in: /var/www/vhosts/sendavapay.com/.npm/_logs/2026-05-05T09_19_58_957Z-debug-0.log
+Failed
+
+Close

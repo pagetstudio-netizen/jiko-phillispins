@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { storage } from "./storage";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { registerSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 import ConnectPgSimple from "connect-pg-simple";
