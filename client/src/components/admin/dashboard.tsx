@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Users, ArrowDownToLine, ArrowUpFromLine, ShoppingCart, Wallet, Clock, TrendingUp, Award, Calendar, RotateCcw, Loader2, AlertTriangle } from "lucide-react";
+import { Users, ArrowDownToLine, ArrowUpFromLine, ShoppingCart, Wallet, Clock, TrendingUp, Award, Calendar, RotateCcw, Loader2, AlertTriangle, RefreshCw, CloudCog } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAdminCurrency } from "@/lib/useAdminCurrency";
@@ -67,6 +67,21 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
     setEndDate("");
     setAppliedDates({ start: "", end: "" });
   };
+
+  const { data: cloudpayBalance, isLoading: isLoadingBalance, refetch: refetchBalance, error: cloudpayError } = useQuery<{ status: string; balance?: number | string; usable_balance?: number | string; frozen_balance?: number | string; message?: string }>({
+    queryKey: ["/api/admin/cloudpay/balance"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/cloudpay/balance", { credentials: "include" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Erreur");
+      }
+      return res.json();
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 60000,
+  });
 
   const resetStatsMutation = useMutation({
     mutationFn: async () => {
@@ -300,6 +315,67 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
           <StatCard key={index} stat={stat} />
         ))}
       </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">Solde CloudPay</p>
+        <Button variant="ghost" size="sm" onClick={() => refetchBalance()} disabled={isLoadingBalance}>
+          <RefreshCw className={`w-4 h-4 ${isLoadingBalance ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+      <Card className="border-blue-500/30">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <CloudCog className="w-5 h-5 text-blue-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              {isLoadingBalance ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-6 w-48" />
+                </div>
+              ) : cloudpayError ? (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">CloudPay non configuré</p>
+                  <p className="text-xs text-destructive mt-0.5">{(cloudpayError as Error).message}</p>
+                </div>
+              ) : cloudpayBalance ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Statut:</span>
+                    <span className={`text-xs font-medium ${cloudpayBalance.status === "1" || cloudpayBalance.status === "success" ? "text-green-500" : "text-yellow-500"}`}>
+                      {cloudpayBalance.status === "1" || cloudpayBalance.status === "success" ? "Connecté" : cloudpayBalance.status}
+                    </span>
+                  </div>
+                  {cloudpayBalance.balance !== undefined && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Solde total</p>
+                      <p className="text-xl font-bold text-foreground">{cloudpayBalance.balance}</p>
+                    </div>
+                  )}
+                  {cloudpayBalance.usable_balance !== undefined && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Solde disponible</p>
+                      <p className="text-lg font-bold text-green-500">{cloudpayBalance.usable_balance}</p>
+                    </div>
+                  )}
+                  {cloudpayBalance.frozen_balance !== undefined && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Solde gelé</p>
+                      <p className="text-sm font-medium text-yellow-500">{cloudpayBalance.frozen_balance}</p>
+                    </div>
+                  )}
+                  {cloudpayBalance.message && (
+                    <p className="text-xs text-muted-foreground">{cloudpayBalance.message}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Cliquer sur actualiser pour charger le solde</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {isSuperAdmin && (
         <Card className="border-destructive/50">

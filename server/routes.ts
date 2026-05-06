@@ -1071,11 +1071,33 @@ export async function registerRoutes(
       await storage.updateWithdrawal(withdrawal.id, {
         status: "processing",
         processedAt: new Date(),
+        cloudpayOrderId: orderId,
       });
 
       res.json({ success: true, orderId, message: result.message });
     } catch (e: any) {
       console.error("[cloudpay] withdrawal error:", e);
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // CloudPay balance check (admin only)
+  app.get("/api/admin/cloudpay/balance", requireAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const merchantId = settings.cloudpayMerchantId || "";
+      const secretKey = settings.cloudpaySecretKey || "";
+      const domain = settings.cloudpayDomain || "";
+      const enabled = settings.cloudpayEnabled === "true";
+
+      if (!enabled || !merchantId || !secretKey || !domain) {
+        return res.status(400).json({ message: "CloudPay non configuré" });
+      }
+
+      const result = await cloudpay.queryBalance(domain, merchantId, secretKey);
+      res.json(result);
+    } catch (e: any) {
+      console.error("[cloudpay] balance error:", e);
       res.status(500).json({ message: e.message });
     }
   });

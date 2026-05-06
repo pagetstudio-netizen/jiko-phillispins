@@ -129,6 +129,30 @@ export default function AdminDeposits() {
                     <p className="text-muted-foreground">Sender Number</p>
                     <p className="font-medium text-foreground">{(deposit as any).senderNumber || "—"}</p>
                   </div>
+                  {(deposit as any).soleaspayOrderId && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Order ID (CloudPay)</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(deposit as any).soleaspayOrderId}</p>
+                    </div>
+                  )}
+                  {(deposit as any).ashtechpayReference && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Référence AshtechPay</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(deposit as any).ashtechpayReference}</p>
+                    </div>
+                  )}
+                  {(deposit as any).ashtechpayTransactionId && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Transaction ID AshtechPay</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(deposit as any).ashtechpayTransactionId}</p>
+                    </div>
+                  )}
+                  {(deposit as any).soleaspayReference && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Référence Soleaspay</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(deposit as any).soleaspayReference}</p>
+                    </div>
+                  )}
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Date & Time</p>
                     <p className="font-medium text-foreground">

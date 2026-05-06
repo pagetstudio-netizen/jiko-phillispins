@@ -121,6 +121,7 @@ export const withdrawals = pgTable("withdrawals", {
   status: text("status").notNull().default("pending"),
   inpayOrderNumber: text("inpay_order_number"),
   inpayOutTradeNo: text("inpay_out_trade_no"),
+  cloudpayOrderId: text("cloudpay_order_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   processedAt: timestamp("processed_at"),
   processedBy: integer("processed_by"),

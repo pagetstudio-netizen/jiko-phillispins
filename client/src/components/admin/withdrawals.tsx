@@ -154,8 +154,24 @@ export default function AdminWithdrawals() {
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Receiving Number</p>
-                    <p className="font-medium text-foreground">{withdrawal.accountNumber} - {withdrawal.accountName}</p>
+                    <p className="font-medium text-foreground">{withdrawal.accountNumber}</p>
                   </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">Account Name</p>
+                    <p className="font-medium text-foreground">{withdrawal.accountName}</p>
+                  </div>
+                  {(withdrawal as any).cloudpayOrderId && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Order ID (CloudPay)</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(withdrawal as any).cloudpayOrderId}</p>
+                    </div>
+                  )}
+                  {(withdrawal as any).inpayOrderNumber && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Order Number (InPay)</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(withdrawal as any).inpayOrderNumber}</p>
+                    </div>
+                  )}
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Date & Time</p>
                     <p className="font-medium text-foreground">

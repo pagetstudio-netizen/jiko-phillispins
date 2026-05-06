@@ -183,6 +183,38 @@ export async function queryTransaction(
   return result;
 }
 
+export interface CloudpayBalanceResponse {
+  status: string;
+  message?: string;
+  balance?: number | string;
+  usable_balance?: number | string;
+  frozen_balance?: number | string;
+}
+
+export async function queryBalance(
+  apiDomain: string,
+  merchantId: string,
+  secretKey: string
+): Promise<CloudpayBalanceResponse> {
+  const payload: Record<string, string | number> = {
+    merchant: merchantId,
+  };
+  payload.sign = buildSign(payload, secretKey);
+
+  const url = `https://${apiDomain}/api/balance`;
+  console.log("[cloudpay] balance request to", url);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)]))).toString(),
+  });
+
+  const result = await response.json() as CloudpayBalanceResponse;
+  console.log("[cloudpay] balance response:", JSON.stringify(result));
+  return result;
+}
+
 export function mapCloudpayStatus(status: number | undefined): "pending" | "approved" | "rejected" {
   if (status === 5) return "approved";
   if (status === 3 || status === 0) return "rejected";
