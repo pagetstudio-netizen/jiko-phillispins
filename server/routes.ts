@@ -863,6 +863,12 @@ export async function registerRoutes(
 
       const resolvedBankCode = bankCode || cloudpay.getBankCode(paymentMethod || "GCash");
 
+      // `amount` arrives in FCFA (already converted by frontend via toFcfa).
+      // CloudPay expects PHP, so we divide back by the conversion rate.
+      const phpToFcfaRate = parseFloat(settings.phpToFcfaRate || "10");
+      const phpAmount = Math.round(amount / phpToFcfaRate);
+
+      // Store FCFA amount in DB so user balance is credited correctly.
       const deposit = await storage.createDeposit({
         userId: user.id,
         amount,
@@ -880,10 +886,11 @@ export async function registerRoutes(
       };
       const method = methodMap[paymentMethod] || methodMap["GCash"];
 
+      // Send PHP amount to CloudPay (not FCFA).
       const result = await cloudpay.initiateDeposit(domain, merchantId, secretKey, {
         merchant: merchantId,
         payment_type: method.payment_type,
-        amount,
+        amount: phpAmount,
         order_id: orderId,
         bank_code: method.bank_code,
         callback_url: callbackUrl,
@@ -1109,10 +1116,14 @@ export async function registerRoutes(
       };
       const method = methodMap[deposit.paymentMethod] || methodMap["GCash"];
 
+      // Deposit amount in DB is stored in FCFA; CloudPay needs PHP
+      const phpToFcfaRate = parseFloat(settings.phpToFcfaRate || "10");
+      const phpAmount = Math.round(deposit.amount / phpToFcfaRate);
+
       const payload: Record<string, string | number> = {
         merchant: merchantId,
         payment_type: method.payment_type,
-        amount: deposit.amount,
+        amount: phpAmount,
         order_id: orderId,
         bank_code: method.bank_code,
         callback_url: callbackUrl,
