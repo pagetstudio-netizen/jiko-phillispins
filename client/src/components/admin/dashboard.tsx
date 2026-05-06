@@ -317,7 +317,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">Solde CloudPay</p>
+        <p className="text-sm font-medium text-muted-foreground">CloudPay Balance</p>
         <Button variant="ghost" size="sm" onClick={() => refetchBalance()} disabled={isLoadingBalance}>
           <RefreshCw className={`w-4 h-4 ${isLoadingBalance ? "animate-spin" : ""}`} />
         </Button>
@@ -336,32 +336,32 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
                 </div>
               ) : cloudpayError ? (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">CloudPay non configuré</p>
+                  <p className="text-sm font-medium text-muted-foreground">CloudPay not configured</p>
                   <p className="text-xs text-destructive mt-0.5">{(cloudpayError as Error).message}</p>
                 </div>
               ) : cloudpayBalance ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Statut:</span>
+                    <span className="text-xs text-muted-foreground">Status:</span>
                     <span className={`text-xs font-medium ${cloudpayBalance.status === "1" || cloudpayBalance.status === "success" ? "text-green-500" : "text-yellow-500"}`}>
-                      {cloudpayBalance.status === "1" || cloudpayBalance.status === "success" ? "Connecté" : cloudpayBalance.status}
+                      {cloudpayBalance.status === "1" || cloudpayBalance.status === "success" ? "Connected" : cloudpayBalance.status}
                     </span>
                   </div>
                   {cloudpayBalance.balance !== undefined && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Solde total</p>
+                      <p className="text-xs text-muted-foreground">Total Balance</p>
                       <p className="text-xl font-bold text-foreground">{cloudpayBalance.balance}</p>
                     </div>
                   )}
                   {cloudpayBalance.usable_balance !== undefined && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Solde disponible</p>
+                      <p className="text-xs text-muted-foreground">Available Balance</p>
                       <p className="text-lg font-bold text-green-500">{cloudpayBalance.usable_balance}</p>
                     </div>
                   )}
                   {cloudpayBalance.frozen_balance !== undefined && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Solde gelé</p>
+                      <p className="text-xs text-muted-foreground">Frozen Balance</p>
                       <p className="text-sm font-medium text-yellow-500">{cloudpayBalance.frozen_balance}</p>
                     </div>
                   )}
@@ -370,7 +370,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Cliquer sur actualiser pour charger le solde</p>
+                <p className="text-sm text-muted-foreground">Click refresh to load balance</p>
               )}
             </div>
           </div>

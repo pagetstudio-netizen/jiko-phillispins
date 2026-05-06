@@ -41,10 +41,10 @@ export default function AdminDeposits() {
       const text = JSON.stringify(payload, null, 2);
       await navigator.clipboard.writeText(text);
       setCopiedId(depositId);
-      toast({ title: "Requête copiée !", description: `Payload CloudPay copié pour ${payload.order_id}` });
+      toast({ title: "Request copied!", description: `CloudPay payload copied for ${payload.order_id}` });
       setTimeout(() => setCopiedId(null), 3000);
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setCopyingId(null);
     }
@@ -207,7 +207,7 @@ export default function AdminDeposits() {
                     ) : (
                       <Copy className="w-4 h-4 mr-2" />
                     )}
-                    {copiedId === deposit.id ? "Requête copiée !" : "Copier la requête CloudPay"}
+                    {copiedId === deposit.id ? "Request copied!" : "Copy CloudPay Request"}
                   </Button>
                 )}
 
