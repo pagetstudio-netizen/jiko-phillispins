@@ -1081,6 +1081,51 @@ export async function registerRoutes(
     }
   });
 
+  // Reconstruct CloudPay deposit payload with signature (admin only)
+  app.get("/api/admin/deposits/:id/cloudpay-payload", requireAdmin, async (req, res) => {
+    try {
+      const deposit = await storage.getDeposit(parseInt(req.params.id));
+      if (!deposit) return res.status(404).json({ message: "Dépôt introuvable" });
+
+      const orderId = deposit.soleaspayOrderId;
+      if (!orderId || !orderId.startsWith("CP-")) {
+        return res.status(400).json({ message: "Ce dépôt n'est pas un dépôt CloudPay" });
+      }
+
+      const settings = await storage.getSettings();
+      const merchantId = settings.cloudpayMerchantId || "";
+      const secretKey = settings.cloudpaySecretKey || "";
+      const domain = settings.cloudpayDomain || "";
+
+      const host = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : `${req.protocol}://${req.get("host")}`;
+      const callbackUrl = `${host}/api/webhooks/cloudpay`;
+      const returnUrl = `${host}/deposit-orders`;
+
+      const methodMap: Record<string, { payment_type: string; bank_code: string }> = {
+        "Maya": { payment_type: "3", bank_code: "PMP" },
+        "GCash": { payment_type: "7", bank_code: "mya" },
+      };
+      const method = methodMap[deposit.paymentMethod] || methodMap["GCash"];
+
+      const payload: Record<string, string | number> = {
+        merchant: merchantId,
+        payment_type: method.payment_type,
+        amount: deposit.amount,
+        order_id: orderId,
+        bank_code: method.bank_code,
+        callback_url: callbackUrl,
+        return_url: returnUrl,
+      };
+      payload.sign = cloudpay.buildSign(payload, secretKey);
+
+      res.json({ domain, payload });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   // CloudPay balance check (admin only)
   app.get("/api/admin/cloudpay/balance", requireAdmin, async (req, res) => {
     try {

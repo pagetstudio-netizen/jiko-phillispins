@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAdminCurrency } from "@/lib/useAdminCurrency";
-import { Check, X, Ban, Search, Loader2 } from "lucide-react";
+import { Check, X, Ban, Search, Loader2, Copy, ClipboardCheck } from "lucide-react";
 import type { Deposit } from "@shared/schema";
 
 interface DepositWithUser extends Deposit {
@@ -26,6 +26,29 @@ export default function AdminDeposits() {
   const { formatAmount } = useAdminCurrency();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [copyingId, setCopyingId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const copyCloudpayPayload = async (depositId: number) => {
+    setCopyingId(depositId);
+    try {
+      const res = await fetch(`/api/admin/deposits/${depositId}/cloudpay-payload`, { credentials: "include" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Erreur");
+      }
+      const { domain, payload } = await res.json();
+      const text = JSON.stringify(payload, null, 2);
+      await navigator.clipboard.writeText(text);
+      setCopiedId(depositId);
+      toast({ title: "Requête copiée !", description: `Payload CloudPay copié pour ${payload.order_id}` });
+      setTimeout(() => setCopiedId(null), 3000);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setCopyingId(null);
+    }
+  };
 
   const { data: allDeposits, isLoading } = useQuery<DepositWithUser[]>({
     queryKey: ["/api/admin/deposits"],
@@ -167,6 +190,26 @@ export default function AdminDeposits() {
                     </p>
                   </div>
                 </div>
+
+                {(deposit as any).soleaspayOrderId && String((deposit as any).soleaspayOrderId).startsWith("CP-") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full border-blue-500/40 text-blue-500 hover:bg-blue-500/10"
+                    onClick={() => copyCloudpayPayload(deposit.id)}
+                    disabled={copyingId === deposit.id}
+                    data-testid={`button-copy-cloudpay-${deposit.id}`}
+                  >
+                    {copyingId === deposit.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : copiedId === deposit.id ? (
+                      <ClipboardCheck className="w-4 h-4 mr-2 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4 mr-2" />
+                    )}
+                    {copiedId === deposit.id ? "Requête copiée !" : "Copier la requête CloudPay"}
+                  </Button>
+                )}
 
                 {(deposit as any).screenshotData && (
                   <div>
