@@ -84,7 +84,7 @@ export default function HomePage() {
   const totalEarnings = parseFloat((user as any).totalEarnings || "0");
 
   const handleAction = (path: string) => {
-    if (path === "__gift__") { setGiftCode(""); setShowGiftModal(true); }
+    if (path === "__gift__") navigate("/gift-code");
     else if (path === "__help__") setShowContactSheet(true);
     else navigate(path);
   };
