@@ -122,7 +122,7 @@ export default function AccountPage() {
               className="w-16 h-16 rounded-full flex items-center justify-center"
               style={{ background: "rgba(255,255,255,0.12)", border: "2px solid rgba(255,255,255,0.25)" }}
             >
-              <img src={nioAvatar} alt="NIO" className="w-10 h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+              <img src={nioAvatar} alt="Noviqra AI" className="w-10 h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
             </div>
           </div>
 

@@ -28,14 +28,14 @@ interface ProductWithOwnership extends Product {
 }
 
 const VIP_NAMES = [
-  "VIP1 NIO ET5",
-  "VIP2 NIO ET5 S",
-  "VIP3 NIO ET7",
-  "VIP4 NIO EC6",
-  "VIP5 NIO ES6",
-  "VIP6 NIO ES8",
-  "VIP7 NIO EP9",
-  "VIP8 NIO ET9",
+  "VIP1 Noviqra AI ET5",
+  "VIP2 Noviqra AI ET5 S",
+  "VIP3 Noviqra AI ET7",
+  "VIP4 Noviqra AI EC6",
+  "VIP5 Noviqra AI ES6",
+  "VIP6 Noviqra AI ES8",
+  "VIP7 Noviqra AI EP9",
+  "VIP8 Noviqra AI ET9",
 ];
 
 export default function InvestPage() {

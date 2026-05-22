@@ -26,7 +26,7 @@ function NioLogo() {
           fill="none"
         />
       </svg>
-      <span style={{ color: "white", fontWeight: 800, fontSize: 32, letterSpacing: 4, fontFamily: "sans-serif" }}>NIO</span>
+      <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>Noviqra AI</span>
     </div>
   );
 }
@@ -135,7 +135,7 @@ export default function LoginPage() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 16 }}>
           <NioLogo />
           <p style={{ color: "white", fontSize: 22, fontWeight: 700, marginTop: 12, textShadow: "0 1px 6px rgba(0,0,0,0.25)" }}>
-            {lang === "fr" ? "Bienvenue sur NIO" : "Welcome to NIO"}
+            {lang === "fr" ? "Bienvenue sur Noviqra AI" : "Welcome to Noviqra AI"}
           </p>
         </div>
 
