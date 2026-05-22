@@ -1,14 +1,21 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { SiTelegram } from "react-icons/si";
-import serviceAgent1 from "@assets/images_(20)_1773474932054.jpeg";
-import serviceAgent2 from "@assets/images_(21)_1773474931992.jpeg";
+import { useLang } from "@/lib/i18n";
+import heroBg from "@assets/20260408_191018_1775675626871.jpg";
 
 export default function ServicePage() {
+  const { lang, t } = useLang();
   useEffect(() => { document.title = "Service client | Noviqra Ai"; }, []);
-  const { data: settings } = useQuery<{ supportLink: string; support2Link: string; channelLink: string; groupLink: string }>({
+
+  const { data: settings } = useQuery<{
+    supportLink: string;
+    support2Link: string;
+    channelLink: string;
+    groupLink: string;
+  }>({
     queryKey: ["/api/settings/links"],
   });
 
@@ -16,112 +23,137 @@ export default function ServicePage() {
     window.open(url, "_blank");
   };
 
-  return (
-    <div className="flex flex-col min-h-full bg-gray-100">
+  const links = [
+    {
+      label: lang === "fr" ? "Service Telegram" : "Telegram Support",
+      url: settings?.supportLink || "https://t.me/Jinkosolarr",
+      testId: "button-support-link",
+    },
+    {
+      label: lang === "fr" ? "Groupes Telegram" : "Telegram Groups",
+      url: settings?.groupLink || "https://t.me/Jinkosolarr",
+      testId: "button-group-link",
+    },
+    {
+      label: lang === "fr" ? "Chaînes Telegram" : "Telegram Channels",
+      url: settings?.channelLink || "https://t.me/Jinkosolarr",
+      testId: "button-channel-link",
+    },
+  ];
 
-      {/* Red header */}
-      <div style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}>
-        <div className="flex items-center px-4 py-4">
+  const infoLines = lang === "fr"
+    ? [
+        "1. Pour toute question, n'hésitez pas à contacter notre service client en ligne. Nous serons ravis de vous aider.",
+        "2. Veuillez conserver votre mot de passe en lieu sûr et ne le divulguez jamais à personne. Le personnel officiel ne vous le demandera jamais.",
+      ]
+    : [
+        "1. For any questions, do not hesitate to contact our online customer service. We will be happy to help you.",
+        "2. Please keep your password in a safe place and never share it with anyone. Official staff will never ask for it.",
+      ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#111111", display: "flex", flexDirection: "column" }}>
+
+      {/* ── HERO HEADER ── */}
+      <div style={{ position: "relative" }}>
+        <img
+          src={heroBg}
+          alt=""
+          style={{ width: "100%", height: 220, objectFit: "cover", objectPosition: "center 40%", display: "block" }}
+        />
+        {/* gradient overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.65) 100%)",
+        }} />
+
+        {/* back button */}
+        <div style={{ position: "absolute", top: 44, left: 16 }}>
           <Link href="/account">
-            <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20" data-testid="button-back">
-              <ChevronLeft className="w-5 h-5 text-white" />
+            <button data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
+              <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
             </button>
           </Link>
-          <h1 className="flex-1 text-center text-white font-bold text-base mr-9">Service client</h1>
         </div>
 
-        {/* Hours banner */}
-        <div className="flex items-center justify-center gap-2 pb-5">
-          <Clock className="w-4 h-4 text-white/80" />
-          <p className="text-white/90 text-sm font-medium">Disponible de 09h00 à 20h00</p>
+        {/* centered text */}
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          paddingTop: 20,
+        }}>
+          <p style={{ color: "white", fontWeight: 900, fontSize: 22, letterSpacing: 3, margin: 0 }}>
+            {lang === "fr" ? "SERVICE CLIENT" : "CUSTOMER SERVICE"}
+          </p>
+          <p style={{ color: "white", fontWeight: 900, fontSize: 28, margin: "4px 0 0", letterSpacing: -0.5 }}>
+            9:00 AM-7:00 PM
+          </p>
+          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: 500, margin: "2px 0 0" }}>
+            {lang === "fr" ? "Heures en ligne" : "Online hours"}
+          </p>
         </div>
       </div>
 
-      {/* Cards */}
-      <div className="flex-1 px-4 pt-4 pb-24 space-y-3">
+      {/* ── CONTENT ── */}
+      <div style={{ flex: 1, padding: "18px 12px 60px", display: "flex", flexDirection: "column", gap: 8 }}>
 
-        {/* Service client en ligne 1 */}
-        <button
-          onClick={() => openLink(settings?.supportLink || "https://t.me/wendysappgroup")}
-          className="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 border border-gray-100"
-          data-testid="button-support-link"
-        >
-          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border-2 border-[#3db51d]/20">
-            <img src={serviceAgent1} alt="Service client 1" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="font-bold text-gray-800 text-sm">Service client en ligne 1</p>
-            <p className="text-gray-500 text-xs mt-1 leading-relaxed">
-              Les heures du service client en ligne sont de 10h00 à 18h00.
+        {/* Section label */}
+        <p style={{ color: "#3b82f6", fontSize: 14, fontWeight: 600, marginBottom: 4, paddingLeft: 2 }}>
+          Telegram
+        </p>
+
+        {/* Telegram rows */}
+        {links.map((item) => (
+          <button
+            key={item.testId}
+            onClick={() => openLink(item.url)}
+            data-testid={item.testId}
+            style={{
+              width: "100%",
+              background: "#1a1a1a",
+              border: "none",
+              borderRadius: 12,
+              padding: "16px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              cursor: "pointer",
+            }}
+          >
+            {/* Telegram circle icon */}
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%",
+              background: "#229ED9",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <SiTelegram style={{ width: 22, height: 22, color: "white" }} />
+            </div>
+
+            <span style={{ flex: 1, color: "white", fontSize: 15, fontWeight: 500, textAlign: "left" }}>
+              {item.label}
+            </span>
+
+            <ChevronRight style={{ width: 18, height: 18, color: "#6b7280", flexShrink: 0 }} />
+          </button>
+        ))}
+
+        {/* Info card */}
+        <div style={{
+          marginTop: 8,
+          background: "#1a1a1a",
+          borderRadius: 12,
+          padding: "16px 14px",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          {infoLines.map((line, i) => (
+            <p key={i} style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.65, margin: i > 0 ? "8px 0 0" : 0 }}>
+              {line}
             </p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        </button>
-
-        {/* Service client en ligne 2 */}
-        <button
-          onClick={() => openLink(settings?.support2Link || "https://t.me/wendysappgroup")}
-          className="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 border border-gray-100"
-          data-testid="button-support2-link"
-        >
-          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border-2 border-[#3db51d]/20">
-            <img src={serviceAgent2} alt="Service client 2" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="font-bold text-gray-800 text-sm">Service client en ligne 2</p>
-            <p className="text-gray-500 text-xs mt-1 leading-relaxed">
-              Les heures du service client en ligne sont de 10h00 à 18h00.
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        </button>
-
-        {/* Canal Telegram */}
-        <button
-          onClick={() => openLink(settings?.channelLink || "https://t.me/wendysappgroup")}
-          className="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 border border-gray-100"
-          data-testid="button-channel-link"
-        >
-          <div className="w-14 h-14 rounded-xl bg-[#229ED9] flex items-center justify-center flex-shrink-0">
-            <SiTelegram className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="font-bold text-gray-800 text-sm">Canal Telegram</p>
-            <p className="text-gray-500 text-xs mt-1 leading-relaxed">
-              Dernières nouvelles et annonces, nouvelles informations sur les avantages !
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        </button>
-
-        {/* Groupe Telegram */}
-        <button
-          onClick={() => openLink(settings?.groupLink || "https://t.me/wendysappgroup")}
-          className="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 border border-gray-100"
-          data-testid="button-group-link"
-        >
-          <div className="w-14 h-14 rounded-xl bg-[#229ED9] flex items-center justify-center flex-shrink-0">
-            <SiTelegram className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="font-bold text-gray-800 text-sm">Groupe Telegram</p>
-            <p className="text-gray-500 text-xs mt-1 leading-relaxed">
-              Rejoignez notre communauté et échangez avec nos membres !
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        </button>
-
-        {/* Instructions */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 border-l-4 border-l-[#3db51d]">
-          <p className="text-[#3db51d] font-bold text-sm mb-3">Instructions</p>
-          <div className="space-y-2.5 text-xs text-gray-500 leading-relaxed">
-            <p>1. Si vous ne parvenez pas à ouvrir l'application Telegram officielle, veuillez utiliser un autre navigateur.</p>
-            <p>2. Pour toute question, contactez notre service client en ligne. Ils répondront à toutes vos questions.</p>
-            <p>3. Si notre service client ne répond pas immédiatement, veuillez patienter. Nous recevons un grand nombre de messages et vous répondrons dès que possible.</p>
-            <p>4. Pour gagner plus d'argent, rejoignez notre chaîne Telegram officielle !</p>
-          </div>
+          ))}
         </div>
+
       </div>
     </div>
   );
