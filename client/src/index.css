@@ -330,3 +330,9 @@ nav button:active,
 .bottom-nav button:active {
   transform: scale(0.9);
 }
+
+/* Notification ticker scroll animation */
+@keyframes noviqra-ticker {
+  from { transform: translateX(0%); }
+  to   { transform: translateX(-50%); }
+}

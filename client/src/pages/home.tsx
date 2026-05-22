@@ -1,149 +1,123 @@
 import { useAuth } from "@/lib/auth";
-import { SiTelegram } from "react-icons/si";
 import { useLocation } from "wouter";
 import ContactSheet from "@/components/contact-sheet";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getCountryByCode } from "@/lib/countries";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import { Loader2, MessageCircleMore, X, Gift } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import iconGratuit from "@assets/20260409_174413_1775756828265.png";
-import iconPreuve from "@assets/20260409_174658_1775756828223.png";
-import iconRecharger from "@assets/20260409_133235_1775749369916.png";
-import iconRetrait from "@assets/20260409_133935_1775749370458.png";
-import iconContact from "@assets/20260409_152753_1775749370488.png";
+
 import popupCharacters from "@assets/20260415_134352_1776260827812.png";
 import popupTelegramBtn from "@assets/20260411_144546_1775920729992.png";
 import popupCloseBtn from "@assets/20260411_144711_1775920729969.png";
-import type { Product } from "@shared/schema";
 
-import p1 from "@assets/panneaux-solaires-3d-realiste_625553-173_1775768333512.jpg";
-import p2 from "@assets/images_(33)_1775768333811.jpeg";
-import p3 from "@assets/panneau-solaire-detoure-min_1775768333844.png";
-import p4 from "@assets/panneau-solaire-hybride_1775768333929.jpg";
-import p5 from "@assets/images_(30)_1775768333959.jpeg";
-import p6 from "@assets/images_(29)_1775768333985.jpeg";
-import p7 from "@assets/images_(28)_1775768334009.jpeg";
-import p8 from "@assets/images_(26)_1775768334029.jpeg";
-import p9 from "@assets/Jinko-solar-panel-535-555W-p-type-1_1775768334052.jpg";
-import jinkoLogoText from "@assets/JinkoSolarLOGO_1775671142017.png";
-import jinkoLogoSquare from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
 import heroImg from "@assets/20260408_191813_1775675938233.jpg";
+import rdBgImg from "@assets/review-energy-noticias-3217478400901_1775833296599.jpg";
+import newModelImg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
 
-const productImages: Record<number, string> = { 2: p1, 3: p2, 4: p3, 5: p4, 6: p5, 7: p6, 8: p7, 9: p8, 10: p9 };
+import robotBonus   from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773319220043.png";
+import robotMission from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773273784524.png";
 
-interface ProductWithOwnership extends Product {
-  isOwned: boolean;
-  canClaimFree: boolean;
-  ownedCount?: number;
+import iconDeposit  from "@assets/recharge-icon-BZHWSjQZ_(1)_1779463427355.png";
+import iconWithdraw from "@assets/withdraw-icon-DFsum39V_(1)_1779463427337.png";
+import iconGift     from "@assets/téléchargement_(66)_1779463427239.png";
+import iconHelp     from "@assets/téléchargement_(67)_1779463427299.png";
+import iconBell     from "@assets/téléchargement_(65)_1779463427321.png";
+
+const TICKER_TEXT =
+  "73 a rechargé 35,000 ★★★★★★3765 a rechargé 15,000 ★★★★★8829 a rechargé 30,000 ★★★★★★1234 a rechargé 10,000 ★★★★★5678 a rechargé 50,000 ★★★★★9012 a rechargé 8,000 ★★★★★★3456 a rechargé 25,000 ★★★★7890 a rechargé 12,000 ★★★★★★";
+
+function NioArcLogo() {
+  return (
+    <svg width="90" height="68" viewBox="0 0 90 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 64 C6 38 20 7 45 7 C70 7 84 38 84 64" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none" />
+      <path d="M20 64 C20 46 30 23 45 23 C60 23 70 46 70 64" stroke="white" strokeWidth="5.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
 }
 
+const RD_STATS = [
+  { value: "7",       label: "Pays",                   orange: false },
+  { value: "11,000+", label: "Ingénieurs R&D",          orange: true  },
+  { value: "12",      label: "Domaines technologiques", orange: false },
+  { value: "9300+",   label: "Brevets",                 orange: true  },
+];
+
+const ACTIONS = [
+  { icon: iconDeposit,  label: "Dépôt",   path: "/deposit"    },
+  { icon: iconWithdraw, label: "Retrait",  path: "/withdrawal" },
+  { icon: iconGift,     label: "Cadeau",   path: "__gift__"    },
+  { icon: iconHelp,     label: "Aide",     path: "__help__"    },
+];
+
 export default function HomePage() {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   useEffect(() => { document.title = "Home | Noviqra Ai"; }, []);
-  const [showPopup, setShowPopup] = useState(true);
-  const [showGiftModal, setShowGiftModal] = useState(false);
+
+  const [showPopup, setShowPopup]           = useState(true);
+  const [showGiftModal, setShowGiftModal]   = useState(false);
   const [showContactSheet, setShowContactSheet] = useState(false);
-  const [giftCode, setGiftCode] = useState("");
+  const [giftCode, setGiftCode]             = useState("");
+
+  const { data: platformSettings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
+  const { fmt } = useUserCurrency();
 
   const claimMutation = useMutation({
     mutationFn: async (code: string) => {
-      const response = await apiRequest("POST", "/api/gift-codes/claim", { code });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Erreur");
-      }
-      return response.json();
+      const res = await apiRequest("POST", "/api/gift-codes/claim", { code });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message || "Erreur"); }
+      return res.json();
     },
     onSuccess: (data) => {
-      refreshUser();
-      setGiftCode("");
-      setShowGiftModal(false);
-      toast({ title: "Congratulations!", description: data.message });
+      setGiftCode(""); setShowGiftModal(false);
+      toast({ title: "Félicitations!", description: data.message });
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
+    onError: (err: any) => toast({ title: "Erreur", description: err.message, variant: "destructive" }),
   });
 
-  const { data: platformSettings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
+  if (!user) return <div style={{ minHeight: "100vh", backgroundColor: "#111111" }} />;
 
-  const { data: products, isLoading: productsLoading } = useQuery<ProductWithOwnership[]>({
-    queryKey: ["/api/products"],
-    enabled: !!user,
-  });
+  const balance       = parseFloat(user.balance       || "0");
+  const totalEarnings = parseFloat((user as any).totalEarnings || "0");
 
-  useEffect(() => {
-    setShowPopup(true);
-  }, [location]);
-
-  if (!user) return <div className="min-h-screen bg-gray-100" />;
-
-  const country = getCountryByCode(user.country);
-  const currency = country?.currency || "PHP";
-  const { fmt } = useUserCurrency();
-  const paidProducts = products?.filter(p => !p.isFree) || [];
-
-  const quickActions = [
-    { label: "Deposit", img: iconRecharger, onClick: () => navigate("/deposit") },
-    { label: "Withdraw", img: iconRetrait, onClick: () => navigate("/withdrawal") },
-    { label: "Contact Us", img: iconContact, onClick: () => setShowContactSheet(true) },
-    { label: "Free Money", img: iconGratuit, onClick: () => { setGiftCode(""); setShowGiftModal(true); } },
-    { label: "Stay Informed", img: iconPreuve, onClick: () => navigate("/info") },
-  ];
+  const handleAction = (path: string) => {
+    if (path === "__gift__") { setGiftCode(""); setShowGiftModal(true); }
+    else if (path === "__help__") setShowContactSheet(true);
+    else navigate(path);
+  };
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-100">
+    <div style={{ minHeight: "100vh", backgroundColor: "#111111", paddingBottom: 80 }}>
 
       <ContactSheet open={showContactSheet} onClose={() => setShowContactSheet(false)} />
 
-      {/* Popup */}
+      {/* ── POPUP ── */}
       {showPopup && (
         <div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.82)" }}
           onClick={() => setShowPopup(false)}
         >
-          {/* Contenu du popup — clic intérieur ne ferme pas */}
           <div
             style={{ width: "92vw", maxWidth: 420, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Image principale */}
-            <img
-              src={popupCharacters}
-              alt="Bienvenue"
-              style={{ width: "100%", display: "block", borderRadius: 20 }}
-              data-testid="img-popup"
-            />
-
-            {/* Bouton Télégram Groupe */}
+            <img src={popupCharacters} alt="Bienvenue" style={{ width: "100%", borderRadius: 20 }} data-testid="img-popup" />
             <a
               href={platformSettings?.groupLink || "https://t.me/+R9SFSGneBkg3NTFh"}
-              target="_blank"
-              rel="noopener noreferrer"
+              target="_blank" rel="noopener noreferrer"
               data-testid="button-popup-telegram"
               style={{ width: "90%", display: "block" }}
-              aria-label="Rejoindre le groupe Telegram"
             >
-              <img
-                src={popupTelegramBtn}
-                alt="Télégram Group"
-                style={{ width: "100%", display: "block", borderRadius: 50 }}
-              />
+              <img src={popupTelegramBtn} alt="Telegram Group" style={{ width: "100%", borderRadius: 50 }} />
             </a>
-
-            {/* Bouton X — ferme le popup */}
             <button
               onClick={() => setShowPopup(false)}
               data-testid="button-popup-close"
               style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, width: 64, height: 64 }}
-              aria-label="Fermer"
             >
               <img src={popupCloseBtn} alt="Fermer" style={{ width: "100%", height: "100%" }} />
             </button>
@@ -151,217 +125,173 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white shadow-sm">
-        <img src={jinkoLogoText} alt="Jinko Solar" className="h-10 w-auto object-contain" data-testid="text-brand-name" />
-        <button onClick={() => setShowContactSheet(true)} data-testid="button-service-header" className="p-1">
-          <MessageCircleMore className="w-7 h-7 text-gray-700" />
-        </button>
-      </div>
+      {/* ── HERO + ACCOUNT CARD ── */}
+      <div
+        style={{
+          background: `linear-gradient(to bottom, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.55) 100%), url(${heroImg}) center/cover no-repeat`,
+          paddingTop: 44,
+          paddingBottom: 0,
+        }}
+      >
+        {/* Arc logo */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+          <NioArcLogo />
+        </div>
 
-      {/* Hero Image with overlaid buttons */}
-      <div style={{ position: "relative", lineHeight: 0 }}>
-        <img
-          src={heroImg}
-          alt="Jinko Solar"
-          style={{ width: "100%", display: "block", height: "auto" }}
-          data-testid="img-hero"
-        />
-        {/* Overlay buttons — 10% from bottom, right half only (avoid solar panel) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "10%",
-            left: "36%",
-            right: "3%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-          }}
-        >
-          <button
-            onClick={() => navigate("/deposit")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              paddingLeft: 10,
-              paddingRight: 13,
-              paddingTop: 6,
-              paddingBottom: 6,
-              borderRadius: 999,
-              background: "#e53935",
-              border: "2px solid rgba(255,255,255,0.45)",
-              color: "white",
-              fontWeight: 700,
-              fontSize: 12,
-              boxShadow: "0 3px 8px rgba(0,0,0,0.35)",
-              cursor: "pointer",
-            }}
-            data-testid="button-hero-recharger"
-          >
-            <img src={iconRecharger} alt="" style={{ width: 20, height: 20, objectFit: "contain" }} />
-            Deposit
-          </button>
+        {/* Dark account card */}
+        <div style={{ margin: "0 10px", borderRadius: "18px 18px 0 0", background: "rgba(12,12,12,0.93)", padding: "18px 14px 14px" }}>
 
-          <button
-            onClick={() => navigate("/withdrawal")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              paddingLeft: 10,
-              paddingRight: 13,
-              paddingTop: 6,
-              paddingBottom: 6,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.92)",
-              border: "2px solid rgba(255,255,255,0.7)",
-              color: "#3db51d",
-              fontWeight: 700,
-              fontSize: 12,
-              boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-              cursor: "pointer",
-            }}
-            data-testid="button-hero-retrait"
-          >
-            <span style={{
-              width: 22, height: 22, borderRadius: "50%",
-              background: "#2a8d13",
-              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            }}>
-              <img src={iconRetrait} alt="" style={{ width: 14, height: 14, objectFit: "contain" }} />
-            </span>
-            Withdraw
-          </button>
+          <p style={{ color: "white", fontWeight: 700, fontSize: 17, textAlign: "center", marginBottom: 14 }}>Mon compte</p>
+
+          {/* Balance + Cumul */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            {[
+              { label: "Solde",  value: fmt(balance)       },
+              { label: "Cumul",  value: fmt(totalEarnings) },
+            ].map((card) => (
+              <div
+                key={card.label}
+                data-testid={`card-${card.label.toLowerCase()}`}
+                style={{ background: "#0a0a0a", border: "1.5px solid #f59e0b", borderRadius: 10, padding: "14px 10px" }}
+              >
+                <p style={{ color: "white", fontWeight: 800, fontSize: 18, marginBottom: 4 }}>{card.value}</p>
+                <p style={{ color: "#9ca3af", fontSize: 12 }}>{card.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <button
+              onClick={() => navigate("/checkin")}
+              data-testid="button-bonus-quotidien"
+              style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
+            >
+              <img src={robotBonus} alt="Bonus quotidien" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
+              <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
+                Bonus quotidien &gt;
+              </p>
+            </button>
+
+            <button
+              onClick={() => navigate("/tasks")}
+              data-testid="button-centre-missions"
+              style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
+            >
+              <img src={robotMission} alt="Centre de missions" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
+              <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
+                Centre de missions &gt;
+              </p>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Green Quick Actions Bar */}
-      <div className="px-3 pt-3">
-        <div
-          className="rounded-2xl px-2 py-4 shadow-sm"
-          style={{ background: "linear-gradient(135deg, #3db51d 0%, #2a8d13 100%)" }}
-        >
-          <div className="flex justify-around items-start">
-            {quickActions.map((action) => (
+      {/* ── NOTIFICATION TICKER ── */}
+      <div style={{ background: "#1a1a1a", display: "flex", alignItems: "center", overflow: "hidden", padding: "9px 0", gap: 0 }}>
+        <div style={{ flexShrink: 0, padding: "0 10px 0 14px" }}>
+          <img src={iconBell} alt="notification" style={{ width: 20, height: 20, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <div
+            style={{
+              display: "inline-block",
+              whiteSpace: "nowrap",
+              animation: "noviqra-ticker 32s linear infinite",
+              color: "#d1d5db",
+              fontSize: 12.5,
+            }}
+          >
+            {TICKER_TEXT}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{TICKER_TEXT}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4 ACTION BUTTONS ── */}
+      <div style={{ margin: "10px 10px 0" }}>
+        <div style={{ background: "#1a1a1a", borderRadius: 16, padding: "18px 6px" }}>
+          <div style={{ display: "flex", justifyContent: "space-around" }}>
+            {ACTIONS.map((action) => (
               <button
                 key={action.label}
-                onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 flex-1"
-                data-testid={`button-action-${action.label.toLowerCase().replace(/\s+/g, '-')}`}
+                onClick={() => handleAction(action.path)}
+                data-testid={`button-action-${action.label.toLowerCase().replace(/é/g, "e")}`}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", flex: 1 }}
               >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
-                  style={{ background: "rgba(255,255,255,0.25)", border: "2px solid rgba(255,255,255,0.5)" }}
-                >
-                  <img
-                    src={action.img}
-                    alt={action.label}
-                    className="w-7 h-7 object-contain"
-                  />
+                <div style={{
+                  width: 52, height: 52, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.09)",
+                  border: "1.5px solid rgba(255,255,255,0.13)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <img src={action.icon} alt={action.label} style={{ width: 27, height: 27, objectFit: "contain" }} />
                 </div>
-                <span className="text-white text-[10px] font-semibold text-center leading-tight max-w-[52px]">
-                  {action.label}
-                </span>
+                <span style={{ color: "white", fontSize: 11.5, fontWeight: 600 }}>{action.label}</span>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Products Section */}
-      <div className="px-3 mt-4 pb-24 space-y-3">
-        {productsLoading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#3db51d" }} />
+      {/* ── R&D STATS ── */}
+      <div style={{ margin: "10px 10px 0" }}>
+        <div
+          style={{
+            borderRadius: 16,
+            padding: "20px 14px",
+            background: `linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.68)), url(${rdBgImg}) center/cover no-repeat`,
+          }}
+        >
+          <p style={{ color: "white", fontWeight: 700, fontSize: 14, textAlign: "center", marginBottom: 18 }}>
+            Réalisations en R&amp;D technologique et brevets
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+            {RD_STATS.map((stat) => (
+              <div key={stat.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                <span style={{ color: stat.orange ? "#f59e0b" : "white", fontWeight: 800, fontSize: 17 }}>{stat.value}</span>
+                <span style={{ color: "#9ca3af", fontSize: 9, textAlign: "center", lineHeight: 1.3 }}>{stat.label}</span>
+              </div>
+            ))}
           </div>
-        ) : (
-          paidProducts.map((product) => {
-            const price = Number(product.price);
-            const total = Number(product.totalReturn);
-            const daily = Number(product.dailyEarnings);
-            const taux = price > 0 ? Math.round((total / price) * 100) : 0;
-            const imgSrc = productImages[product.id] || p1;
-            return (
-              <button
-                key={product.id}
-                onClick={() => navigate(`/product/${product.id}`)}
-                className="w-full text-left rounded-2xl overflow-hidden shadow-md"
-                style={{ backgroundColor: "#1a1a2e" }}
-                data-testid={`card-product-${product.id}`}
-              >
-                {/* Top row: image + info */}
-                <div className="flex gap-3 p-3 pb-2">
-                  <div className="w-[110px] h-[110px] rounded-xl overflow-hidden shrink-0">
-                    <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-1">
-                    <div>
-                      <p className="text-white font-bold text-base">{product.name}</p>
-                      <p className="text-gray-400 text-xs mt-0.5">cycles {product.cycleDays}</p>
-                    </div>
-                    <div>
-                      <span className="text-cyan-400 text-xs font-semibold">Price </span>
-                      <span className="font-extrabold text-base" style={{ color: "#f59e0b" }}>
-                        {fmt(price)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 12px" }} />
-
-                {/* Stats row */}
-                <div className="flex items-center justify-between px-3 py-2.5">
-                  <div className="flex-1">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Daily Income</p>
-                    <p className="text-white font-bold text-sm">{fmt(daily)}</p>
-                  </div>
-                  <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
-                  <div className="flex-1 text-center">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Total Earnings</p>
-                    <p className="text-white font-bold text-sm">{fmt(total)}</p>
-                  </div>
-                  <div className="w-px h-7" style={{ background: "rgba(255,255,255,0.1)" }} />
-                  <div className="flex-1 text-right">
-                    <p className="text-gray-500 text-[10px] mb-0.5">Return Rate</p>
-                    <p className="font-bold text-sm" style={{ color: "#3db51d" }}>{taux}%</p>
-                  </div>
-                </div>
-              </button>
-            );
-          })
-        )}
+        </div>
       </div>
 
-      {/* Gift Code Modal */}
+      {/* ── NOUVEAUX MODÈLES CARD ── */}
+      <div style={{ margin: "10px 10px 0", borderRadius: 16, overflow: "hidden" }}>
+        <div
+          style={{
+            height: 155,
+            background: `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.55)), url(${newModelImg}) center/cover no-repeat`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <p style={{ color: "white", fontWeight: 900, fontSize: 28, textAlign: "center", lineHeight: 1.25, textShadow: "0 2px 10px rgba(0,0,0,0.6)" }}>
+            Nouveaux modèles<br />nio es6
+          </p>
+        </div>
+      </div>
+
+      {/* ── GIFT CODE MODAL ── */}
       {showGiftModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-5" style={{ background: "rgba(0,0,0,0.55)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowGiftModal(false); }}>
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-5"
+          style={{ background: "rgba(0,0,0,0.60)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowGiftModal(false); }}
+        >
           <div className="w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl" style={{ background: "#3db51d" }}>
-            {/* Close button */}
             <div className="flex justify-end px-4 pt-4">
               <button onClick={() => setShowGiftModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: "rgba(0,0,0,0.15)" }} data-testid="button-close-gift">
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
-
-            {/* Title */}
             <div className="px-6 pb-2 pt-1">
-              <h2 className="text-white font-extrabold text-2xl italic leading-tight">
-                Receive<br />Free Money
-              </h2>
+              <h2 className="text-white font-extrabold text-2xl italic leading-tight">Receive<br />Free Money</h2>
             </div>
-
-            {/* Money bag emoji */}
             <div className="flex justify-center py-4">
               <span style={{ fontSize: 52 }}>💰</span>
             </div>
-
-            {/* Input */}
             <div className="px-6 pb-4">
               <input
                 type="text"
@@ -373,8 +303,6 @@ export default function HomePage() {
                 data-testid="input-gift-code-modal"
               />
             </div>
-
-            {/* Confirm button */}
             <div className="px-6 pb-5">
               <button
                 onClick={() => {
@@ -389,8 +317,6 @@ export default function HomePage() {
                 {claimMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin text-yellow-400" /> : "CONFIRM"}
               </button>
             </div>
-
-            {/* Info section */}
             <div className="mx-5 mb-5 rounded-2xl p-4 space-y-2" style={{ background: "rgba(0,0,0,0.15)" }}>
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
@@ -402,7 +328,7 @@ export default function HomePage() {
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs leading-relaxed">
-                  Bonus codes are published on the official Telegram channel every day at 11:30 and 18:00. Follow our channel so you don't miss any!
+                  Bonus codes are published on the official Telegram channel every day at 11:30 and 18:00.
                 </p>
               </div>
             </div>
