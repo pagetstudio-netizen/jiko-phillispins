@@ -22,7 +22,7 @@ type WalletForm = z.infer<typeof walletSchema>;
 export default function WalletPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Wallet | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Wallet | Noviqra Ai"; }, []);
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);

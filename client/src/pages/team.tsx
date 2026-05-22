@@ -22,7 +22,7 @@ const GREEN_DARK = "#2a8d13";
 export default function TeamPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Team | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Team | Noviqra Ai"; }, []);
   const [, navigate] = useLocation();
 
   const { data: stats } = useQuery<TeamStats>({
@@ -43,7 +43,7 @@ export default function TeamPage() {
 
   const shareLink = () => {
     if (navigator.share) {
-      navigator.share({ title: "Join Jinko Solar", url: referralLink });
+      navigator.share({ title: "Join Noviqra Ai", url: referralLink });
     } else {
       navigator.clipboard.writeText(referralLink);
       toast({ title: "Link copied!" });

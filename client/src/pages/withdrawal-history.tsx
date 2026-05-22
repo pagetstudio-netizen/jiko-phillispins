@@ -29,7 +29,7 @@ function formatDate(iso: string) {
 }
 
 export default function WithdrawalHistoryPage() {
-  useEffect(() => { document.title = "Withdrawal History | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Withdrawal History | Noviqra Ai"; }, []);
   const { user } = useAuth();
   const { fmt } = useUserCurrency();
 

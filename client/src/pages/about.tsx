@@ -17,24 +17,24 @@ export default function AboutPage() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Qui sommes-nous ?</h2>
           <p className="text-gray-600 leading-relaxed">
-            Jinko Solar est l'un des plus grands fabricants de panneaux solaires au monde, fondé en 2006 et présent dans plus de 160 pays. Reconnu pour la qualité et la fiabilité de ses modules photovoltaïques, Jinko Solar est un leader incontesté de la transition énergétique mondiale.
+            Noviqra Ai est une plateforme d'investissement innovante basée sur l'intelligence artificielle, présente dans plus de 7 pays africains. Reconnue pour la performance et la fiabilité de ses solutions d'investissement, Noviqra Ai est un acteur incontournable de la finance numérique en Afrique.
           </p>
           <p className="text-gray-600 leading-relaxed">
-            Grâce à notre expertise et à notre réseau mondial, nous offrons à nos utilisateurs des opportunités uniques de générer des revenus quotidiens en participant au financement et à l'expansion de Jinko Solar à l'échelle internationale.
+            Grâce à notre technologie IA de pointe et à notre réseau mondial, nous offrons à nos utilisateurs des opportunités uniques de générer des revenus quotidiens stables en participant à nos programmes d'investissement intelligents.
           </p>
         </div>
 
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Notre héritage</h2>
           <p className="text-gray-600 leading-relaxed">
-            Aujourd'hui, Jinko Solar est présent dans de nombreux pays avec plus de 200 GW de capacité installée et propose une large gamme de panneaux solaires haute performance, devenant ainsi une marque reconnue à l'échelle internationale dans le secteur de l'énergie renouvelable.
+            Aujourd'hui, Noviqra Ai est présent dans de nombreux pays avec des milliers d'utilisateurs actifs et propose une large gamme de produits d'investissement haute performance, devenant ainsi une marque reconnue dans le secteur de la finance digitale africaine.
           </p>
         </div>
 
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Sécurité et Fiabilité</h2>
           <p className="text-gray-600 leading-relaxed">
-            La sécurité de vos fonds et la transparence de nos opérations sont nos priorités absolues. L'empreinte de Jinko Solar dans le domaine de l'énergie solaire illustre parfaitement la capacité d'une entreprise à conjuguer qualité, innovation et stratégie de marque pérenne.
+            La sécurité de vos fonds et la transparence de nos opérations sont nos priorités absolues. L'empreinte de Noviqra Ai dans le domaine de l'investissement numérique illustre parfaitement la capacité d'une entreprise à conjuguer qualité, innovation et stratégie de marque pérenne.
           </p>
         </div>
       </div>

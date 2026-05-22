@@ -7,7 +7,7 @@ import serviceAgent1 from "@assets/images_(20)_1773474932054.jpeg";
 import serviceAgent2 from "@assets/images_(21)_1773474931992.jpeg";
 
 export default function ServicePage() {
-  useEffect(() => { document.title = "Service client | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Service client | Noviqra Ai"; }, []);
   const { data: settings } = useQuery<{ supportLink: string; support2Link: string; channelLink: string; groupLink: string }>({
     queryKey: ["/api/settings/links"],
   });

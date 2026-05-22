@@ -21,7 +21,7 @@ export default function CheckinPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { fmt } = useUserCurrency();
-  useEffect(() => { document.title = "Daily Check-in | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Daily Check-in | Noviqra Ai"; }, []);
 
   const { data: bonusStatus } = useQuery<BonusStatus>({
     queryKey: ["/api/daily-bonus-status"],

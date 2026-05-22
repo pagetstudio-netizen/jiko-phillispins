@@ -29,7 +29,7 @@ function formatDate(iso: string) {
 }
 
 export default function DepositOrdersPage() {
-  useEffect(() => { document.title = "Deposit History | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Deposit History | Noviqra Ai"; }, []);
   const { user } = useAuth();
   const { fmt } = useUserCurrency();
 

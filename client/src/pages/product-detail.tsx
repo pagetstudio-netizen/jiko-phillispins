@@ -28,12 +28,12 @@ interface ProductWithOwnership extends Product {
 }
 
 const descriptions: Record<string, string> = {
-  "Mini Solar Panel": "The Mini Solar Panel by Jinko Solar is the perfect entry-level investment to start your solar journey. These panels generate clean electricity every day and provide stable passive income. Invest now and benefit from solar energy.",
+  "Mini Solar Panel": "The Mini Solar Panel by Noviqra Ai is the perfect entry-level investment to start your AI-powered investment journey. This product generates stable daily earnings and provides reliable passive income. Invest now and benefit from our smart technology.",
   "Basic Solar Kit": "The Basic Solar Kit offers increased power and higher returns. Ideal for investors who want to optimize their daily earnings while contributing to the energy transition.",
   "Solar Panel 100W": "The Solar Panel 100W is a high-performance panel that maximizes solar energy production. With an excellent return on investment rate, it represents a strategic choice for your portfolio.",
   "Solar Panel 200W": "The Solar Panel 200W is designed for ambitious investors. Its advanced technology guarantees optimal energy production and attractive daily income throughout the full cycle.",
   "Home Solar System": "The Home Solar System combines performance and profitability. With this premium product, enjoy a high daily income and an exceptional total return on your solar investment.",
-  "Mini Solar Plant": "The Mini Solar Plant is reserved for experienced investors seeking maximum returns. Jinko Solar's cutting-edge technology ensures constant energy production and substantial gains.",
+  "Mini Solar Plant": "The Mini Solar Plant is reserved for experienced investors seeking maximum returns. Noviqra Ai's cutting-edge technology ensures constant daily earnings and substantial gains.",
   "Advanced Solar Station": "The Advanced Solar Station represents excellence in solar investment. Enjoy very high daily income and an optimized investment cycle to maximize your profits.",
   "Industrial Solar Plant": "The Industrial Solar Plant is our flagship product for large investors. It combines state-of-the-art technology and exceptional returns for a unique and highly profitable solar investment experience.",
 };
@@ -82,7 +82,7 @@ export default function ProductDetailPage() {
   const dailyEarnings = Number(product.dailyEarnings);
   const returnRate = price > 0 ? Math.round((totalReturn / price) * 100) : 0;
   const imgSrc = productImages[product.id] || defaultImg;
-  const desc = descriptions[product.name] || `${product.name} is a Jinko Solar solar investment product offering attractive daily returns and an excellent return on investment.`;
+  const desc = descriptions[product.name] || `${product.name} is a Noviqra Ai investment product offering attractive daily returns and an excellent return on investment.`;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0f0f1a" }}>

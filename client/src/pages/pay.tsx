@@ -32,7 +32,7 @@ export default function PayPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    document.title = "Payment | Jinko Solar";
+    document.title = "Payment | Noviqra Ai";
     if (!amountFcfa || !user) navigate("/deposit");
   }, []);
 

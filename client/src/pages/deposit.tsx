@@ -36,7 +36,7 @@ const METHODS = [
 export default function DepositPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Deposit | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Deposit | Noviqra Ai"; }, []);
   const { fmt, fromFcfa, toFcfa } = useUserCurrency();
 
   const [amount, setAmount] = useState<number | "">("");

@@ -131,7 +131,7 @@ export async function initiatePayment(
   paymentMethod: string,
   orderId: string,
   payerName: string,
-  payerEmail: string = "customer@jinkosolar.com"
+  payerEmail: string = "customer@noviqra.ai"
 ): Promise<SoleaspayPaymentResponse> {
   const serviceId = getServiceId(country, paymentMethod);
   if (!serviceId) {
@@ -141,14 +141,14 @@ export async function initiatePayment(
   const currency = getCurrency(country);
   const baseUrl = process.env.REPLIT_DEV_DOMAIN
     ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-    : "https://jinkosolar.replit.app";
+    : "https://noviqra.replit.app";
 
   const requestBody: SoleaspayPaymentRequest = {
     wallet: formatWallet(wallet, country),
     amount,
     currency,
     order_id: orderId,
-    description: `Depot Jinko Solar #${orderId}`,
+    description: `Depot Noviqra Ai #${orderId}`,
     payer: payerName,
     payerEmail,
     successUrl: `${baseUrl}/deposit-success`,

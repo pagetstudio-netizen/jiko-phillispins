@@ -1,8 +1,8 @@
-# Fanuc - Industrial Investment Platform
+# Noviqra Ai - AI Investment Platform
 
 ## Overview
 
-Fanuc is a mobile-first investment platform targeting French-speaking African countries. Users can purchase virtual industrial robot products that generate daily earnings, manage deposits/withdrawals via mobile money, build referral teams for commission income, and complete tasks for bonuses. The platform features a full admin panel for managing users, transactions, products, and platform settings.
+Noviqra Ai is a mobile-first investment platform targeting French-speaking African countries. Users can purchase virtual industrial robot products that generate daily earnings, manage deposits/withdrawals via mobile money, build referral teams for commission income, and complete tasks for bonuses. The platform features a full admin panel for managing users, transactions, products, and platform settings.
 
 ## User Preferences
 
@@ -122,14 +122,14 @@ Preferred communication style: Simple, everyday language.
 - Access the admin panel from Account page when logged in as admin
 
 ## Business Rules
-- **Signup Bonus**: 500 FCFA
-- **Free Daily Product**: 50 FCFA per day
-- **Withdrawal Fees**: 15%
-- **Minimum Deposit**: 3000 FCFA
-- **Minimum Withdrawal**: 1200 FCFA
-- **Withdrawal Hours**: 8h-17h (9h-18h for Cameroon/Benin)
+- **Signup Bonus**: 50 FCFA
+- **Free Daily Product**: 5 FCFA per day
+- **Withdrawal Fees**: 0%
+- **Minimum Deposit**: 500 FCFA
+- **Minimum Withdrawal**: 100 FCFA
+- **Withdrawal Hours**: 9h-18h
 - **Max Withdrawals/Day**: 2
-- **Referral Commissions**: Level 1 (27%), Level 2 (2%), Level 3 (1%)
+- **Referral Commissions**: Level 1 (20%), Level 2 (3%), Level 3 (2%)
 - **Product Cycle**: 80 days by default
 
 ## Supported Countries

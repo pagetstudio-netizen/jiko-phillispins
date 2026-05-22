@@ -45,7 +45,7 @@ export default function AccountPage() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Account | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Account | Noviqra Ai"; }, []);
   const [showPinModal, setShowPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [showContactSheet, setShowContactSheet] = useState(false);

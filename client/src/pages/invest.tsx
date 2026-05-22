@@ -25,7 +25,7 @@ export default function InvestPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { fmt, symbol } = useUserCurrency();
-  useEffect(() => { document.title = "Invest | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Invest | Noviqra Ai"; }, []);
   const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
   const [showContactSheet, setShowContactSheet] = useState(false);
 

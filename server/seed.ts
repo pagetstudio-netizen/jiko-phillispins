@@ -198,14 +198,14 @@ export async function seed() {
     { key: "support2Link", value: "https://t.me/Jinkosolarr" },
     { key: "channelLink", value: "https://t.me/Jinkosolarr" },
     { key: "groupLink", value: "https://t.me/+R9SFSGneBkg3NTFh" },
-    { key: "minDeposit", value: "3000" },
-    { key: "minWithdrawal", value: "1200" },
-    { key: "withdrawalFees", value: "17" },
-    { key: "withdrawalStartHour", value: "8" },
-    { key: "withdrawalEndHour", value: "17" },
-    { key: "level1Commission", value: "27" },
-    { key: "level2Commission", value: "2" },
-    { key: "level3Commission", value: "1" },
+    { key: "minDeposit", value: "500" },
+    { key: "minWithdrawal", value: "100" },
+    { key: "withdrawalFees", value: "0" },
+    { key: "withdrawalStartHour", value: "9" },
+    { key: "withdrawalEndHour", value: "18" },
+    { key: "level1Commission", value: "20" },
+    { key: "level2Commission", value: "3" },
+    { key: "level3Commission", value: "2" },
     { key: "soleaspayEnabled", value: "false" },
     { key: "soleaspayApiKey", value: "" },
     { key: "soleaspayCountries", value: "" },
@@ -223,7 +223,7 @@ export async function seed() {
   ];
 
   // Settings that should always be updated to the required value (critical platform config)
-  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "groupLink"]);
+  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "level1Commission", "level2Commission", "level3Commission", "groupLink"]);
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);

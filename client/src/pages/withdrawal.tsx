@@ -30,7 +30,7 @@ interface UserProduct {
 export default function WithdrawalPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Withdrawal | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Withdrawal | Noviqra Ai"; }, []);
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState<number | "">("");
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
@@ -302,7 +302,7 @@ export default function WithdrawalPage() {
           </div>
           <div className="flex gap-2 items-start">
             <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>Make your first deposit and activate a Jinko Solar product to unlock the withdrawal feature.</p>
+            <p>Make your first deposit and activate a Noviqra Ai product to unlock the withdrawal feature.</p>
           </div>
         </div>
       </div>

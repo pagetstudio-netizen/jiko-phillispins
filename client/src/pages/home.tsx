@@ -44,7 +44,7 @@ export default function HomePage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [location, navigate] = useLocation();
-  useEffect(() => { document.title = "Home | Jinko Solar"; }, []);
+  useEffect(() => { document.title = "Home | Noviqra Ai"; }, []);
   const [showPopup, setShowPopup] = useState(true);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showContactSheet, setShowContactSheet] = useState(false);
