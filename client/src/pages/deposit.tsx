@@ -1,37 +1,40 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
-import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { apiRequest } from "@/lib/queryClient";
+import heroImg from "@assets/20260408_191813_1775675938233.jpg";
+import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import mayaLogo from "@assets/2206757_1777781237200.jpg";
 import gcashLogo from "@assets/Screenshot_20260415-140919_1777781311304.png";
 
-const GREEN = "#3db51d";
+const PRESET_AMOUNTS_FCFA = [5000, 15000, 35000, 70000];
 
-const METHODS = [
-  {
-    key: "GCash" as const,
-    label: "GCash",
-    bg: "#0070E0",
-    textColor: "white",
-    logo: (
-      <img src={gcashLogo} alt="GCash" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
-    ),
-  },
-  {
-    key: "Maya" as const,
-    label: "Maya",
-    bg: "#00AC4F",
-    textColor: "white",
-    logo: (
-      <img src={mayaLogo} alt="Maya" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
-    ),
-  },
-];
+function NioTextLogo() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0 }}>
+      <span style={{ color: "white", fontWeight: 900, fontSize: 36, letterSpacing: -1, fontFamily: "sans-serif" }}>N</span>
+      <span style={{ color: "white", fontWeight: 900, fontSize: 36, letterSpacing: -1, fontFamily: "sans-serif" }}>I</span>
+      <span style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: 34, height: 34, borderRadius: "50%",
+        background: "conic-gradient(#e74c3c 0deg, #e67e22 60deg, #f1c40f 120deg, #2ecc71 180deg, #3498db 240deg, #9b59b6 300deg, #e74c3c 360deg)",
+        fontWeight: 900, fontSize: 22, color: "white",
+        fontFamily: "sans-serif", marginLeft: 1,
+        boxShadow: "0 0 0 2.5px white inset",
+      }}>
+        <span style={{
+          width: 26, height: 26, borderRadius: "50%",
+          background: "rgba(0,0,0,0.55)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontWeight: 900, fontSize: 20, color: "white",
+        }}>O</span>
+      </span>
+    </div>
+  );
+}
 
 export default function DepositPage() {
   const { user } = useAuth();
@@ -39,172 +42,221 @@ export default function DepositPage() {
   useEffect(() => { document.title = "Deposit | Noviqra Ai"; }, []);
   const { fmt, fromFcfa, toFcfa } = useUserCurrency();
 
-  const [amount, setAmount] = useState<number | "">("");
-  const [pendingMethod, setPendingMethod] = useState<"GCash" | "Maya" | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
+  const [customAmount, setCustomAmount]     = useState<string>("");
+  const [selectedMethod, setSelectedMethod] = useState<"GCash" | "Maya">("GCash");
 
-  const { data: platformSettings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
+  const { data: platformSettings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
 
-  const minDepositFcfa = parseInt(platformSettings?.minDeposit || "3000");
-  const minDeposit = fromFcfa(minDepositFcfa);
+  const minDepositFcfa = parseInt(platformSettings?.minDeposit || "500");
+
+  const getAmountFcfa = (): number => {
+    if (selectedPreset !== null) return selectedPreset;
+    const raw = parseFloat(customAmount);
+    if (!isNaN(raw) && raw > 0) return toFcfa(raw);
+    return 0;
+  };
 
   const cloudpayMutation = useMutation({
     mutationFn: async ({ amtFcfa, method }: { amtFcfa: number; method: "GCash" | "Maya" }) => {
-      const response = await apiRequest("POST", "/api/cloudpay/deposit", {
-        amount: amtFcfa,
-        paymentMethod: method,
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "CloudPay error");
-      }
+      const response = await apiRequest("POST", "/api/cloudpay/deposit", { amount: amtFcfa, paymentMethod: method });
+      if (!response.ok) { const err = await response.json(); throw new Error(err.message || "CloudPay error"); }
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-        return;
-      }
+      if (data.redirectUrl) window.location.href = data.redirectUrl;
     },
     onError: (err: any) => {
-      setPendingMethod(null);
       alert(err.message || "Payment service unavailable. Please try again later.");
-    },
-    onSettled: () => {
-      setPendingMethod(null);
     },
   });
 
-  const handleMethodClick = (method: "GCash" | "Maya") => {
-    const amt = typeof amount === "number" ? amount : 0;
-    if (!amt || amt < minDeposit) {
+  const handleConfirm = () => {
+    const amtFcfa = getAmountFcfa();
+    if (!amtFcfa || amtFcfa < minDepositFcfa) {
       alert(`Minimum deposit: ${fmt(minDepositFcfa)}`);
       return;
     }
-    setPendingMethod(method);
-    cloudpayMutation.mutate({ amtFcfa: toFcfa(amt), method });
+    cloudpayMutation.mutate({ amtFcfa, method: selectedMethod });
   };
 
   if (!user) return null;
 
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5f5f5", overflowX: "hidden" }}>
+  const METHODS = [
+    {
+      key: "GCash" as const,
+      label: "GCash",
+      logo: <img src={gcashLogo} alt="GCash" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
+    },
+    {
+      key: "Maya" as const,
+      label: "Maya",
+      logo: <img src={mayaLogo} alt="Maya" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
+    },
+  ];
 
-      {/* Header with background */}
-      <div style={{ backgroundImage: `url(${jinkoBg})`, backgroundSize: "cover", backgroundPosition: "center", paddingBottom: 32 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 16px 16px" }}>
+  return (
+    <div style={{ minHeight: "100vh", background: "#111111", display: "flex", flexDirection: "column" }}>
+
+      {/* ── HERO HEADER ── */}
+      <div style={{
+        background: `linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.55) 100%), url(${heroImg}) center/cover no-repeat`,
+        paddingTop: 44,
+        paddingBottom: 24,
+        position: "relative",
+      }}>
+        {/* Top bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", marginBottom: 12 }}>
           <button onClick={() => navigate("/")} data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
-            <ChevronLeft style={{ width: 24, height: 24, color: "white" }} />
+            <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
           </button>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0 }}>Deposit</h1>
+          <div style={{ flex: 1 }} />
           <Link href="/deposit-orders">
             <button data-testid="button-history" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
-              <img src={historyIcon} alt="History" style={{ width: 26, height: 26, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+              <img src={historyIcon} alt="History" style={{ width: 24, height: 24, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
             </button>
           </Link>
         </div>
 
-        {/* White card: method selector + amount input */}
-        <div style={{ width: "calc(100% - 16px)", marginLeft: 16, boxSizing: "border-box" as const, background: "white", borderRadius: "24px 0 0 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", padding: "20px 16px" }}>
-          <p style={{ fontSize: 12, color: GREEN, marginBottom: 14, fontWeight: 600 }}>
-            Minimum deposit: {fmt(minDepositFcfa)}
-          </p>
+        {/* NIO Logo */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+          <NioTextLogo />
+        </div>
+        <p style={{ color: "white", fontWeight: 800, fontSize: 16, textAlign: "center", letterSpacing: 4, margin: 0 }}>
+          RECHARGEMENT
+        </p>
+      </div>
 
-          {/* GCash / Maya logos */}
-          <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-            {METHODS.map((m) => {
-              const isSelected = pendingMethod === m.key || (!pendingMethod && m.key === "GCash");
+      {/* ── CONTENT ── */}
+      <div style={{ flex: 1, padding: "14px 12px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
+
+        {/* ── PRESET AMOUNTS ── */}
+        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 12 }}>
+            Selectionnez le montant du rechargement
+          </p>
+          <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+            {PRESET_AMOUNTS_FCFA.map((fcfa) => {
+              const isSelected = selectedPreset === fcfa;
               return (
                 <button
-                  key={m.key}
-                  onClick={() => setPendingMethod(m.key)}
-                  data-testid={`button-method-${m.key.toLowerCase()}`}
+                  key={fcfa}
+                  onClick={() => { setSelectedPreset(fcfa); setCustomAmount(""); }}
+                  data-testid={`button-preset-${fcfa}`}
                   style={{
-                    flex: 1,
-                    borderRadius: 14,
-                    border: `2px solid ${isSelected ? m.bg : "#e5e7eb"}`,
-                    background: isSelected ? `${m.bg}12` : "white",
+                    background: isSelected ? "#2a2a2a" : "#0d0d0d",
+                    border: isSelected ? "1.5px solid #f59e0b" : "1.5px solid rgba(255,255,255,0.08)",
+                    borderRadius: 10,
+                    padding: "14px 6px",
+                    color: isSelected ? "#f59e0b" : "white",
+                    fontWeight: 700,
+                    fontSize: 14,
                     cursor: "pointer",
-                    padding: "14px 10px",
-                    display: "flex",
-                    flexDirection: "column" as const,
-                    alignItems: "center",
-                    gap: 8,
-                    transition: "all 0.15s",
+                    textAlign: "center",
                   }}
                 >
-                  {m.logo}
-                  <span style={{ fontSize: 14, fontWeight: 700, color: m.bg }}>{m.label}</span>
+                  {fmt(fcfa)}
                 </button>
               );
             })}
           </div>
+        </div>
 
-          <p style={{ fontSize: 13, color: GREEN, margin: "0 0 8px 0" }}>Enter amount</p>
-          <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px" }}>
+        {/* ── CUSTOM AMOUNT ── */}
+        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Saisissez un autre montant</p>
+          <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: "1.5px solid rgba(255,255,255,0.18)", paddingBottom: 10 }}>
+            <DollarSign style={{ width: 22, height: 22, color: "#9ca3af", flexShrink: 0 }} />
             <input
               type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : "")}
-              placeholder={minDeposit.toLocaleString()}
+              value={customAmount}
+              onChange={(e) => { setCustomAmount(e.target.value); setSelectedPreset(null); }}
+              placeholder="Saisissez le montant"
               data-testid="input-deposit-amount"
-              style={{ flex: 1, fontSize: 16, color: "#111827", border: "none", outline: "none", background: "transparent" }}
+              style={{
+                flex: 1, fontSize: 15, color: "white", background: "transparent",
+                border: "none", outline: "none",
+              }}
             />
           </div>
         </div>
-      </div>
 
-      <div style={{ flex: 1, background: "#f5f5f5", padding: "20px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* ── PAYMENT METHOD ── */}
+        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 14 }}>Methode de rechargement</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {METHODS.map((m) => {
+              const isSelected = selectedMethod === m.key;
+              return (
+                <button
+                  key={m.key}
+                  onClick={() => setSelectedMethod(m.key)}
+                  data-testid={`button-method-${m.key.toLowerCase()}`}
+                  style={{
+                    background: isSelected ? "#1e3a5f" : "#0d0d0d",
+                    border: `2px solid ${isSelected ? "#3b82f6" : "rgba(255,255,255,0.08)"}`,
+                    borderRadius: 12,
+                    padding: "16px 10px",
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 10,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {m.logo}
+                  <span style={{ color: "white", fontSize: 13, fontWeight: 600 }}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-        {/* Deposit Now button */}
+        {/* ── CONFIRM BUTTON ── */}
         <button
-          onClick={() => handleMethodClick(pendingMethod ?? "GCash")}
+          onClick={handleConfirm}
           disabled={cloudpayMutation.isPending}
           data-testid="button-submit-deposit"
           style={{
-            width: "100%",
-            height: 52,
-            borderRadius: 999,
-            background: cloudpayMutation.isPending ? "#9ca3af" : GREEN,
+            width: "100%", height: 54,
+            background: "#0d0d0d",
+            border: "1.5px solid #f59e0b",
+            borderRadius: 12,
             color: "white",
             fontWeight: 700,
-            fontSize: 16,
-            border: "none",
+            fontSize: 17,
             cursor: cloudpayMutation.isPending ? "not-allowed" : "pointer",
-            boxShadow: cloudpayMutation.isPending ? "none" : "0 4px 12px rgba(61,181,29,0.35)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            opacity: cloudpayMutation.isPending ? 0.7 : 1,
           }}
         >
-          {cloudpayMutation.isPending ? (
-            <><Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite" }} /> Processing...</>
-          ) : "Deposit Now"}
+          {cloudpayMutation.isPending
+            ? <><Loader2 style={{ width: 20, height: 20 }} className="animate-spin" /> Traitement...</>
+            : "Confirmer"
+          }
         </button>
 
-        {/* Instructions */}
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 14, color: "#111827", marginBottom: 12 }}>
-            💳 Deposit Instructions:
-          </p>
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
-            {[
-              { bold: "Minimum deposit amount:", text: ` ${fmt(minDepositFcfa)}` },
-              { bold: "Carefully verify your account information", text: " when making a transfer to avoid payment errors" },
-              { bold: "Each order has its own payment information", text: "; do not reuse previous information for a second payment" },
-              { bold: "After a successful transfer", text: ", please wait 10 to 30 minutes. If the amount is not credited, contact customer service." },
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <span style={{ color: "#1565C0", fontWeight: 700, fontSize: 14, marginTop: 1, flexShrink: 0 }}>◆</span>
-                <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.6, margin: 0 }}>
-                  <span style={{ fontWeight: 700 }}>{item.bold}</span>
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
+        {/* ── HELP LINK ── */}
+        <p style={{ color: "#9ca3af", fontSize: 13, textAlign: "center" }}>
+          Probleme de paiement ?{" "}
+          <Link href="/service">
+            <span style={{ color: "#f59e0b", cursor: "pointer", textDecoration: "underline" }}>Cliquez ici</span>
+          </Link>
+        </p>
+
+        {/* ── INSTRUCTIONS ── */}
+        <div style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            `1. Le montant minimum de recharge est de ${fmt(minDepositFcfa)}. Les recharges inférieures à ce montant ne seront pas créditées.`,
+            "2. Veuillez utiliser votre numéro de compte le plus récent pour chaque recharge afin d'éviter d'utiliser des informations de compte expirées.",
+            "3. Veuillez lire attentivement les instructions de la plateforme de paiement et les suivre scrupuleusement.",
+            "4. Si votre recharge n'est pas créditée immédiatement après le transfert, veuillez télécharger vos informations de paiement sur la page de recharge ou contacter le service client officiel pour obtenir de l'aide.",
+          ].map((text, i) => (
+            <p key={i} style={{ margin: 0 }}>{text}</p>
+          ))}
         </div>
       </div>
     </div>
