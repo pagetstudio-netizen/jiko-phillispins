@@ -1,9 +1,9 @@
 import { useLocation } from "wouter";
 
-import iconHome   from "@assets/20260228_010602_1775758828500.png";
-import iconRevenu from "@assets/20260228_010536_1775758828691.png";
-import iconEquipe from "@assets/20251223_225137_1775758828713.png";
-import iconCompte from "@assets/20260228_010619_1775758828669.png";
+import iconHome   from "@assets/téléchargement_(68)_1779463977852.png";
+import iconRevenu from "@assets/téléchargement_(69)_1779463977899.png";
+import iconEquipe from "@assets/téléchargement_(70)_1779463977932.png";
+import iconCompte from "@assets/téléchargement_(71)_1779463977969.png";
 
 const whiteFilter = "brightness(0) invert(1)";
 const greenFilter = "brightness(0) saturate(100%) invert(42%) sepia(98%) saturate(500%) hue-rotate(80deg) brightness(95%)";
