@@ -98,7 +98,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Allow re-login even if already authenticated (for account switching)
+  if (user) {
+    return <Redirect to="/" />;
+  }
+
   return <>{children}</>;
 }
 

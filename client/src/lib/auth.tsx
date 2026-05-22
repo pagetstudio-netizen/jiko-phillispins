@@ -38,7 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = async (phone: string, country: string, password: string) => {
-    const response = await apiRequest("POST", "/api/auth/login", { phone, country, password });
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, country, password }),
+      credentials: "include",
+    });
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || "Erreur de connexion");
@@ -46,8 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data.user);
   };
 
-  const register = async (data: { fullName: string; phone: string; country: string; password: string; invitationCode?: string }) => {
-    const response = await apiRequest("POST", "/api/auth/register", data);
+  const register = async (registerData: { fullName: string; phone: string; country: string; password: string; invitationCode?: string }) => {
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(registerData),
+      credentials: "include",
+    });
     const result = await response.json();
     if (!response.ok) {
       throw new Error(result.message || "Erreur d'inscription");
