@@ -87,7 +87,7 @@ export default function GiftCodePage() {
 
         {/* Telegram group row */}
         <button
-          onClick={() => window.open(settings?.groupLink || "https://t.me/Jinkosolarr", "_blank")}
+          onClick={() => window.open(settings?.groupLink || "https://t.me/noviqraai", "_blank")}
           data-testid="button-group-link"
           style={{
             width: "100%",

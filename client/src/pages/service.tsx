@@ -26,17 +26,17 @@ export default function ServicePage() {
   const links = [
     {
       label: lang === "fr" ? "Service Telegram" : "Telegram Support",
-      url: settings?.supportLink || "https://t.me/Jinkosolarr",
+      url: settings?.supportLink || "https://t.me/noviqraai",
       testId: "button-support-link",
     },
     {
       label: lang === "fr" ? "Groupes Telegram" : "Telegram Groups",
-      url: settings?.groupLink || "https://t.me/Jinkosolarr",
+      url: settings?.groupLink || "https://t.me/noviqraai",
       testId: "button-group-link",
     },
     {
       label: lang === "fr" ? "Chaînes Telegram" : "Telegram Channels",
-      url: settings?.channelLink || "https://t.me/Jinkosolarr",
+      url: settings?.channelLink || "https://t.me/noviqraai",
       testId: "button-channel-link",
     },
   ];

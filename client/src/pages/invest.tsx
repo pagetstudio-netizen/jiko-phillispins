@@ -17,7 +17,7 @@ import car4       from "@assets/20260408_191416_1775676009094.jpg";
 import car5       from "@assets/20260408_191416_1775676156902.jpg";
 import car6       from "@assets/20260408_191416_1775728687952.jpg";
 import car7       from "@assets/20260408_191813_1775805436406.jpg";
-import car8       from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
+import car8       from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
 
 const CAR_IMAGES = [car1, car2, car3, car4, car5, car6, car7, car8];
 

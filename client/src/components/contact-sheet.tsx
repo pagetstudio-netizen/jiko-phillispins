@@ -30,19 +30,19 @@ export default function ContactSheet({ open, onClose }: ContactSheetProps) {
     {
       label: tr.channel,
       sublabel: tr.channelSub,
-      url: settings?.channelLink || "https://t.me/Jinkosolarr",
+      url: settings?.channelLink || "https://t.me/noviqraai",
       testId: "button-contact-channel",
     },
     {
       label: tr.group,
       sublabel: tr.groupSub,
-      url: settings?.groupLink || "https://t.me/Jinkosolarr",
+      url: settings?.groupLink || "https://t.me/noviqraai",
       testId: "button-contact-group",
     },
     {
       label: tr.support,
       sublabel: tr.supportSub,
-      url: settings?.supportLink || "https://t.me/Jinkosolarr",
+      url: settings?.supportLink || "https://t.me/noviqraai",
       testId: "button-contact-support",
     },
   ];

@@ -16,7 +16,7 @@ import p5 from "@assets/images_(30)_1775768333959.jpeg";
 import p6 from "@assets/images_(29)_1775768333985.jpeg";
 import p7 from "@assets/images_(28)_1775768334009.jpeg";
 import p8 from "@assets/images_(26)_1775768334029.jpeg";
-import p9 from "@assets/Jinko-solar-panel-535-555W-p-type-1_1775768334052.jpg";
+import p9 from "@assets/images_(29)_1779479856301.jpeg";
 
 const productImages: Record<number, string> = { 2: p1, 3: p2, 4: p3, 5: p4, 6: p5, 7: p6, 8: p7, 9: p8, 10: p9 };
 const defaultImg = p1;

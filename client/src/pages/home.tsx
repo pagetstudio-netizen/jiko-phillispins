@@ -13,7 +13,7 @@ import popupTelegramBtn from "@assets/20260411_144546_1775920729992.png";
 import popupCloseBtn from "@assets/20260411_144711_1775920729969.png";
 
 import heroImg from "@assets/20260408_191813_1775675938233.jpg";
-import rdBgImg from "@assets/review-energy-noticias-3217478400901_1775833296599.jpg";
+import rdBgImg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779479835636.png";
 import buildingImg from "@assets/file_00000000dc987243b80751c21ba23b22_1779479769826.png";
 
 import robotBonus   from "@assets/file_00000000aac471f49ed3613abb850ef5_1779479769787.png";

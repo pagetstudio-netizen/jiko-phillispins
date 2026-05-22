@@ -5,7 +5,7 @@ export type Lang = "en" | "fr";
 export const translations = {
   en: {
     register: {
-      title: "Register | Jinko Solar",
+      title: "Register | Noviqra Ai",
       phonePlaceholder: "Phone number",
       passwordPlaceholder: "Password",
       invitePlaceholder: "Invitation code (optional)",
@@ -13,7 +13,7 @@ export const translations = {
       loginBtn: "I have an account",
       loading: "Loading...",
       successTitle: "Registration successful!",
-      successDesc: "Welcome to Jinko Solar!",
+      successDesc: "Welcome to Noviqra Ai!",
       errorTitle: "Registration error",
       errorDesc: "An error occurred",
       invalidPhone: "Invalid number",
@@ -21,7 +21,7 @@ export const translations = {
       minPassword: "At least 6 characters",
     },
     login: {
-      title: "Login | Jinko Solar",
+      title: "Login | Noviqra Ai",
       phonePlaceholder: "Phone number",
       passwordPlaceholder: "Password",
       rememberMe: "Remember me",
@@ -35,7 +35,7 @@ export const translations = {
       passwordRequired: "Password required",
     },
     changePassword: {
-      title: "Security | Jinko Solar",
+      title: "Security | Noviqra Ai",
       header: "Change password",
       back: "Back",
       currentPassword: "Current password",
@@ -71,7 +71,7 @@ export const translations = {
   },
   fr: {
     register: {
-      title: "Inscription | Jinko Solar",
+      title: "Inscription | Noviqra Ai",
       phonePlaceholder: "Numéro de téléphone",
       passwordPlaceholder: "Mot de passe",
       invitePlaceholder: "Code d'invitation (optionnel)",
@@ -79,7 +79,7 @@ export const translations = {
       loginBtn: "J'ai un compte",
       loading: "Chargement...",
       successTitle: "Inscription réussie !",
-      successDesc: "Bienvenue sur Jinko Solar !",
+      successDesc: "Bienvenue sur Noviqra Ai !",
       errorTitle: "Erreur d'inscription",
       errorDesc: "Une erreur est survenue",
       invalidPhone: "Numéro invalide",
@@ -87,7 +87,7 @@ export const translations = {
       minPassword: "Au moins 6 caractères",
     },
     login: {
-      title: "Connexion | Jinko Solar",
+      title: "Connexion | Noviqra Ai",
       phonePlaceholder: "Numéro de téléphone",
       passwordPlaceholder: "Mot de passe",
       rememberMe: "Souviens-toi",
@@ -101,7 +101,7 @@ export const translations = {
       passwordRequired: "Mot de passe requis",
     },
     changePassword: {
-      title: "Sécurité | Jinko Solar",
+      title: "Sécurité | Noviqra Ai",
       header: "Changer le mot de passe",
       back: "Retour",
       currentPassword: "Ancien mot de passe",
@@ -151,13 +151,13 @@ const LangContext = createContext<LangContextType>({
 
 export function LangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    const saved = localStorage.getItem("jinko_lang");
+    const saved = localStorage.getItem("noviqra_lang");
     return (saved === "fr" || saved === "en") ? saved : "en";
   });
 
   function setLang(l: Lang) {
     setLangState(l);
-    localStorage.setItem("jinko_lang", l);
+    localStorage.setItem("noviqra_lang", l);
   }
 
   return (

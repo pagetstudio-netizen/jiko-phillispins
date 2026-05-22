@@ -6,7 +6,7 @@ import { useUserCurrency } from "@/lib/useUserCurrency";
 import { ChevronLeft, Copy, Check, Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import gcashLogo from "@assets/Screenshot_20260415-140919_1776262261943.png";
 import mayaLogo from "@assets/2206757_1776262251263.jpg";
-import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
+import noviqraBg from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
 
 const GREEN = "#3db51d";
 const PAYMENT_NUMBER = "09975712953";
@@ -124,7 +124,7 @@ export default function PayPage() {
       {/* Header */}
       <div
         style={{
-          backgroundImage: `url(${jinkoBg})`,
+          backgroundImage: `url(${noviqraBg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           paddingBottom: 24,

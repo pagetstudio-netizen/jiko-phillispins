@@ -52,7 +52,7 @@ export default function LoginPage() {
   const [showContact, setShowContact] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
-  const saved = typeof window !== "undefined" ? localStorage.getItem("jinko_credentials") : null;
+  const saved = typeof window !== "undefined" ? localStorage.getItem("noviqra_credentials") : null;
   const parsed = saved ? JSON.parse(saved) : null;
   const [rememberMe, setRememberMe] = useState(!!parsed);
 
@@ -74,9 +74,9 @@ export default function LoginPage() {
     try {
       await login(cleanPhone, data.country, data.password.trim());
       if (rememberMe) {
-        localStorage.setItem("jinko_credentials", JSON.stringify({ phone: cleanPhone, country: data.country, password: data.password.trim() }));
+        localStorage.setItem("noviqra_credentials", JSON.stringify({ phone: cleanPhone, country: data.country, password: data.password.trim() }));
       } else {
-        localStorage.removeItem("jinko_credentials");
+        localStorage.removeItem("noviqra_credentials");
       }
       navigate("/");
     } catch (e: any) {

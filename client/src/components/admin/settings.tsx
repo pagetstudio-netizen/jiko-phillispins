@@ -51,9 +51,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      supportLink: "https://t.me/Jinkosolarr",
-      support2Link: "https://t.me/Jinkosolarr",
-      channelLink: "https://t.me/Jinkosolarr",
+      supportLink: "https://t.me/noviqraai",
+      support2Link: "https://t.me/noviqraai",
+      channelLink: "https://t.me/noviqraai",
       groupLink: "https://t.me/+R9SFSGneBkg3NTFh",
       minDeposit: "3500",
       withdrawalFees: "15",
@@ -75,9 +75,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   useEffect(() => {
     if (settings) {
       form.reset({
-        supportLink: settings.supportLink || "https://t.me/Jinkosolarr",
-        support2Link: settings.support2Link || "https://t.me/Jinkosolarr",
-        channelLink: settings.channelLink || "https://t.me/Jinkosolarr",
+        supportLink: settings.supportLink || "https://t.me/noviqraai",
+        support2Link: settings.support2Link || "https://t.me/noviqraai",
+        channelLink: settings.channelLink || "https://t.me/noviqraai",
         groupLink: settings.groupLink || "https://t.me/+R9SFSGneBkg3NTFh",
         minDeposit: settings.minDeposit || "3500",
         withdrawalFees: settings.withdrawalFees || "15",

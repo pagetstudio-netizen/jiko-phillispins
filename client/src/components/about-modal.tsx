@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import jinkoLogo from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
+import buildingImg from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
 
 interface AboutModalProps {
   open: boolean;
@@ -12,31 +12,31 @@ export default function AboutModal({ open, onClose }: AboutModalProps) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
-              <img src={jinkoLogo} alt="Jinko Solar" className="w-full h-full object-cover" />
+            <div className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center overflow-hidden">
+              <img src={buildingImg} alt="Noviqra Ai" className="w-full h-full object-cover" />
             </div>
-            À propos de Jinko Solar
+            About Noviqra Ai
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Jinko Solar est l'un des plus grands fabricants de panneaux solaires au monde, présent dans plus de 160 pays avec une capacité installée dépassant 200 GW.
+            Noviqra Ai is a leading AI-powered industrial automation company, present in over 7 countries with an installed capacity exceeding 11,000 engineers worldwide.
           </p>
           <p>
-            Leader reconnu dans l'industrie de l'énergie solaire, Jinko Solar s'engage à fournir des solutions photovoltaïques innovantes et durables pour un avenir énergétique propre.
+            A recognized leader in intelligent automation, Noviqra Ai is committed to providing innovative and future-ready robotic solutions for sustainable industrial growth.
           </p>
           <div className="bg-secondary rounded-lg p-4 space-y-2">
-            <h4 className="font-medium text-foreground">Nos avantages :</h4>
+            <h4 className="font-medium text-foreground">Our advantages:</h4>
             <ul className="space-y-1">
-              <li>- Revenus quotidiens automatiques</li>
-              <li>- Investissements dans l'énergie solaire</li>
-              <li>- Système de parrainage attractif</li>
-              <li>- Support client disponible</li>
+              <li>- Automatic daily earnings</li>
+              <li>- AI-powered industrial investments</li>
+              <li>- Attractive referral system</li>
+              <li>- Customer support available</li>
             </ul>
           </div>
           <p className="text-xs">
-            Version 1.0.0 - Tous droits réservés
+            Version 1.0.0 - All rights reserved
           </p>
         </div>
       </DialogContent>

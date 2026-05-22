@@ -8,8 +8,8 @@ import { ChevronLeft, Loader2, Trophy, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Task } from "@shared/schema";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import wendysImg from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
-import jinkoLogo from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
+import wendysImg from "@assets/file_00000000aac471f49ed3613abb850ef5_1779479835696.png";
+import noviqraBuilding from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
 import iconBronze from "@assets/344464_1773318022355.png";
 import iconArgent from "@assets/817729_1773318022328.png";
 import iconOr from "@assets/sac-argent-gros-tas-illustration-icone-argent-comptant-icone-p_1773318022388.jpg";
@@ -82,7 +82,7 @@ export default function TasksPage() {
     <div className="flex flex-col min-h-full bg-gray-50">
 
       <div className="relative overflow-hidden" style={{ height: "260px" }}>
-        <img src={wendysImg} alt="Jinko Solar" className="w-full h-full object-cover object-center" />
+        <img src={wendysImg} alt="Noviqra Ai" className="w-full h-full object-cover object-center" />
         <div
           className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(200,16,46,0.80) 0%, rgba(160,13,37,0.70) 45%, rgba(80,3,15,0.95) 100%)" }}
@@ -98,7 +98,7 @@ export default function TasksPage() {
             </button>
           </Link>
           <div className="flex-1 flex justify-center">
-            <img src={jinkoLogo} alt="Jinko Solar" className="h-8 object-contain" />
+            <img src={noviqraBuilding} alt="Noviqra Ai" className="h-8 object-contain rounded" />
           </div>
           <div className="w-9" />
         </div>
