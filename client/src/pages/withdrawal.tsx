@@ -3,14 +3,12 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, DollarSign, ChevronRight, Info } from "lucide-react";
+import heroBg from "@assets/20260408_191813_1775805436406.jpg";
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
-import walletIcon from "@assets/20260410_193054_1775850084890.png";
-import jinkoBg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
+import bankCardIcon from "@assets/mine-mod-bankcard-CLOhqwHj_1779464171572.png";
 import { Link, useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-
-const GREEN = "#3db51d";
 
 interface WalletData {
   id: number;
@@ -32,36 +30,34 @@ export default function WithdrawalPage() {
   const { toast } = useToast();
   useEffect(() => { document.title = "Withdrawal | Noviqra Ai"; }, []);
   const queryClient = useQueryClient();
-  const [amount, setAmount] = useState<number | "">("");
+  const [amount, setAmount] = useState<string>("");
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
   const [, navigate] = useLocation();
-
   const { fmt, symbol, fromFcfa, toFcfa } = useUserCurrency();
-
-  const minWithdrawalFcfa = 1200;
-  const minWithdrawal = fromFcfa(minWithdrawalFcfa);
 
   const { data: withdrawalSettings } = useQuery<{
     withdrawalFees: number;
     withdrawalStartHour: number;
     withdrawalEndHour: number;
+    minWithdrawal: number;
   }>({
     queryKey: ["/api/settings/withdrawal"],
     staleTime: 0,
     refetchOnMount: true,
   });
 
-  const withdrawalFee = withdrawalSettings?.withdrawalFees ?? 17;
-  const withdrawalStartHour = withdrawalSettings?.withdrawalStartHour ?? 8;
-  const withdrawalEndHour = withdrawalSettings?.withdrawalEndHour ?? 17;
+  const { data: platformSettings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
 
-  const amountAfterFees = amount
-    ? Math.floor(Number(amount) * (1 - withdrawalFee / 100))
-    : 0;
+  const withdrawalFee = withdrawalSettings?.withdrawalFees ?? 0;
+  const withdrawalStartHour = withdrawalSettings?.withdrawalStartHour ?? 9;
+  const withdrawalEndHour = withdrawalSettings?.withdrawalEndHour ?? 18;
+  const minWithdrawalFcfa = parseInt(platformSettings?.minWithdrawal || "100");
+
+  const numAmount = parseFloat(amount) || 0;
+  const amountAfterFees = numAmount > 0 ? Math.floor(numAmount * (1 - withdrawalFee / 100)) : 0;
 
   const currentHour = new Date().getHours();
-  const isWithinWithdrawalHours =
-    currentHour >= withdrawalStartHour && currentHour < withdrawalEndHour;
+  const isWithinWithdrawalHours = currentHour >= withdrawalStartHour && currentHour < withdrawalEndHour;
 
   const { data: wallets = [], isLoading: walletsLoading } = useQuery<WalletData[]>({
     queryKey: ["/api/wallets"],
@@ -73,7 +69,6 @@ export default function WithdrawalPage() {
   });
 
   const hasActiveProduct = userProducts.some((p) => p.status === "active");
-  const hasWallets = wallets.length > 0;
 
   useEffect(() => {
     const savedWalletId = localStorage.getItem("selectedWalletId");
@@ -97,56 +92,41 @@ export default function WithdrawalPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Request submitted", description: "Your withdrawal request has been sent." });
+      toast({ title: "Demande soumise", description: "Votre demande de retrait a été envoyée." });
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ["/api/withdrawals"] });
       setAmount("");
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = () => {
     if (!isWithinWithdrawalHours) {
-      toast({
-        title: "Withdrawal hours",
-        description: `Withdrawals are available from ${withdrawalStartHour}:00 to ${withdrawalEndHour}:00`,
-        variant: "destructive",
-      });
+      toast({ title: "Heures de retrait", description: `Retraits disponibles de ${withdrawalStartHour}h à ${withdrawalEndHour}h`, variant: "destructive" });
       return;
     }
     if (!hasActiveProduct) {
-      toast({
-        title: "Product required",
-        description: "You must have an active product to make a withdrawal",
-        variant: "destructive",
-      });
+      toast({ title: "Produit requis", description: "Vous devez avoir un produit actif pour effectuer un retrait", variant: "destructive" });
       return;
     }
-    if (!amount || amount < minWithdrawal) {
-      toast({
-        title: "Invalid amount",
-        description: `Minimum withdrawal is ${fmt(minWithdrawalFcfa)}`,
-        variant: "destructive",
-      });
+    const amtNum = parseFloat(amount);
+    if (!amtNum || amtNum < fromFcfa(minWithdrawalFcfa)) {
+      toast({ title: "Montant invalide", description: `Montant minimum: ${fmt(minWithdrawalFcfa)}`, variant: "destructive" });
       return;
     }
     if (!selectedWallet) {
-      toast({
-        title: "Wallet required",
-        description: "Please select a payment account",
-        variant: "destructive",
-      });
+      toast({ title: "Portefeuille requis", description: "Veuillez sélectionner un compte de paiement", variant: "destructive" });
       return;
     }
-    withdrawMutation.mutate({ amount: toFcfa(amount as number), walletId: selectedWallet.id });
+    withdrawMutation.mutate({ amount: toFcfa(amtNum), walletId: selectedWallet.id });
   };
 
   if (walletsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: GREEN }}>
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111111" }}>
+        <Loader2 style={{ width: 32, height: 32, color: "#f59e0b" }} className="animate-spin" />
       </div>
     );
   }
@@ -156,153 +136,165 @@ export default function WithdrawalPage() {
   const balance = parseFloat(user?.balance || "0");
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#f5f5f5", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#111111", display: "flex", flexDirection: "column" }}>
 
-      <div style={{ backgroundImage: `url(${jinkoBg})`, backgroundSize: "cover", backgroundPosition: "center", paddingBottom: 32 }}>
+      {/* ── HERO HEADER ── */}
+      <div style={{ position: "relative" }}>
+        <img
+          src={heroBg}
+          alt=""
+          style={{ width: "100%", height: 200, objectFit: "cover", objectPosition: "center", display: "block" }}
+        />
+        {/* gradient overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.70) 100%)" }} />
 
-        <div className="flex items-center justify-between px-4 pt-10 pb-4">
+        {/* top bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "44px 16px 0" }}>
           <Link href="/account">
-            <button data-testid="button-back">
-              <ChevronLeft className="w-6 h-6 text-white" />
+            <button data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
+              <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
             </button>
           </Link>
-          <h1 className="text-lg font-bold text-white">Withdrawal</h1>
+          <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>Retrait</span>
           <Link href="/withdrawal-history">
-            <button data-testid="button-history">
-              <img src={historyIcon} alt="History" style={{ width: 26, height: 26, objectFit: "contain" }} />
+            <button data-testid="button-history" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
+              <img src={historyIcon} alt="History" style={{ width: 24, height: 24, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
             </button>
           </Link>
         </div>
 
-        <div className="bg-white shadow-lg overflow-hidden" style={{ marginLeft: 16, marginRight: 0, borderRadius: "24px 0 0 24px" }}>
-
-          <div className="flex items-center justify-between px-5 py-5" style={{ background: "#e8f8e0" }}>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: GREEN }}>Account Balance</p>
-              <p className="text-4xl font-extrabold mt-1 leading-tight" style={{ color: GREEN }} data-testid="text-balance">
-                {fmt(balance)}
-              </p>
-            </div>
-            <img src={walletIcon} alt="Wallet" style={{ width: 80, height: 80, objectFit: "contain" }} />
-          </div>
-
-          <div className="px-5 pt-4 pb-5">
-            <p className="text-sm mb-3" style={{ color: GREEN }}>Please enter the withdrawal amount</p>
-
-            <div className="flex items-center rounded-xl px-4 py-3 border" style={{ borderColor: "#e5e7eb" }}>
-              <span className="text-gray-400 font-semibold mr-2">{symbol}</span>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : "")}
-                placeholder="amount"
-                className="flex-1 text-lg text-gray-600 outline-none bg-transparent"
-                data-testid="input-withdrawal-amount"
-              />
-            </div>
-
-            <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-              <span>Amount received: {symbol}{amountAfterFees.toLocaleString()}</span>
-              <span>Fee: {withdrawalFee.toFixed(2)}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-4 mt-4">
-        <button
-          onClick={() => navigate(hasWallets ? "/wallet?from=withdrawal" : "/wallet")}
-          className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-white font-semibold text-sm shadow"
-          style={{ background: GREEN }}
-          data-testid="button-select-wallet"
-        >
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <rect x="1" y="4" width="20" height="14" rx="3" stroke="white" strokeWidth="1.8" />
-            <rect x="1" y="8" width="20" height="3" fill="white" />
-            <rect x="4" y="13" width="6" height="2" rx="1" fill="white" />
-          </svg>
-          <span className="flex-1 text-left">
-            {selectedWallet
-              ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
-              : "Choose your wallet"}
+        {/* Balance */}
+        <div style={{ position: "absolute", bottom: 14, left: 16 }}>
+          <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 16, fontWeight: 500 }}>Solde </span>
+          <span style={{ color: "white", fontSize: 32, fontWeight: 900, letterSpacing: -0.5 }} data-testid="text-balance">
+            {fromFcfa(balance).toFixed(2)}
           </span>
-          <span className="text-white text-lg font-bold">›</span>
-        </button>
+        </div>
       </div>
 
-      {!isWithinWithdrawalHours && (
-        <div className="mx-4 mt-3 bg-white rounded-2xl px-4 py-3 text-sm" style={{ color: GREEN }}>
-          ⏰ Withdrawal hours: {withdrawalStartHour}:00 – {withdrawalEndHour}:00 (Currently closed)
-        </div>
-      )}
-      {!hasActiveProduct && (
-        <div className="mx-4 mt-3 bg-white rounded-2xl px-4 py-3 text-sm" style={{ color: GREEN }}>
-          ⚠️ You must have an active product to make a withdrawal.
-        </div>
-      )}
+      {/* ── CONTENT ── */}
+      <div style={{ flex: 1, padding: "14px 12px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 20, marginBottom: 4 }}>
+        {/* ── BANK CARD SELECTOR ── */}
+        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Sélectionner une carte bancaire</p>
+          <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
+          <button
+            onClick={() => navigate(wallets.length > 0 ? "/wallet?from=withdrawal" : "/wallet")}
+            data-testid="button-select-wallet"
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%",
+              border: "2px solid rgba(255,255,255,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, overflow: "hidden",
+            }}>
+              <img src={bankCardIcon} alt="Card" style={{ width: 30, height: 30, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+            </div>
+            <span style={{
+              flex: 1,
+              color: selectedWallet ? "white" : "#6b7280",
+              fontSize: 14,
+              textAlign: "left",
+            }}>
+              {selectedWallet
+                ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
+                : "Veuillez sélectionner une carte bancaire"}
+            </span>
+            <ChevronRight style={{ width: 18, height: 18, color: "#6b7280", flexShrink: 0 }} />
+          </button>
+        </div>
+
+        {/* ── AMOUNT INPUT ── */}
+        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Montant du retrait</p>
+          <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: "1.5px solid rgba(255,255,255,0.18)", paddingBottom: 10 }}>
+            <DollarSign style={{ width: 22, height: 22, color: "#9ca3af", flexShrink: 0 }} />
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Veuillez saisir le montant du retrait"
+              data-testid="input-withdrawal-amount"
+              style={{ flex: 1, fontSize: 15, color: "white", background: "transparent", border: "none", outline: "none" }}
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 13 }}>
+            <span style={{ color: "#9ca3af" }}>
+              Montant reçu : <span style={{ color: "white" }}>{symbol}{amountAfterFees.toLocaleString()}</span>
+            </span>
+            <span style={{ color: "#9ca3af" }}>
+              Frais : <span style={{ color: "white" }}>{withdrawalFee}%</span>
+            </span>
+          </div>
+        </div>
+
+        {/* ── WARNINGS ── */}
+        {!isWithinWithdrawalHours && (
+          <div style={{ background: "#1a1a1a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#f59e0b", display: "flex", gap: 8, alignItems: "center" }}>
+            <span>⏰</span>
+            <span>Retraits disponibles de {withdrawalStartHour}h à {withdrawalEndHour}h (actuellement fermé)</span>
+          </div>
+        )}
+        {!hasActiveProduct && (
+          <div style={{ background: "#1a1a1a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#f59e0b", display: "flex", gap: 8, alignItems: "center" }}>
+            <span>⚠️</span>
+            <span>Vous devez avoir un produit actif pour effectuer un retrait.</span>
+          </div>
+        )}
+
+        {/* ── CONFIRM BUTTON ── */}
         <button
           onClick={handleSubmit}
-          disabled={withdrawMutation.isPending || !amount || !selectedWallet || !hasActiveProduct}
+          disabled={withdrawMutation.isPending}
           data-testid="button-submit-withdrawal"
           style={{
-            width: 220,
-            height: 50,
-            borderRadius: 999,
-            background: GREEN,
+            width: "100%", height: 54,
+            background: "#0d0d0d",
+            border: "1.5px solid #f59e0b",
+            borderRadius: 12,
             color: "white",
             fontWeight: 700,
-            fontSize: 15,
-            border: "none",
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(61,181,29,0.35)",
-            opacity: (withdrawMutation.isPending || !amount || !selectedWallet || !hasActiveProduct) ? 0.4 : 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
+            fontSize: 17,
+            cursor: withdrawMutation.isPending ? "not-allowed" : "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            opacity: withdrawMutation.isPending ? 0.7 : 1,
           }}
         >
-          {withdrawMutation.isPending ? (
-            <>
-              <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} />
-              Sending...
-            </>
-          ) : (
-            "Withdraw Now"
-          )}
+          {withdrawMutation.isPending
+            ? <><Loader2 style={{ width: 20, height: 20 }} className="animate-spin" /> Traitement...</>
+            : "Confirmer"
+          }
         </button>
-      </div>
 
-      <div className="flex-1 bg-gray-50 mt-4 px-5 pt-5 pb-10 space-y-4">
-        <p className="font-bold text-gray-800 text-sm flex items-center gap-2">
-          💳 Withdrawal Instructions:
-        </p>
-        <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p><span className="font-bold">Minimum withdrawal amount:</span> {fmt(minWithdrawalFcfa)}</p>
+        {/* ── IMPORTANT INFO ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Info style={{ width: 14, height: 14, color: "white" }} />
+            </div>
+            <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Informations importantes :</span>
           </div>
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p><span className="font-bold">Withdrawals available anytime</span>, with no limit on time, amount, or frequency</p>
-          </div>
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p><span className="font-bold">Withdrawal fee:</span> {withdrawalFee}% per transaction</p>
-          </div>
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p><span className="font-bold">Processing time:</span> usually within 2 hours, up to 24h in exceptional cases</p>
-          </div>
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>If the withdrawal fails, check that your wallet information is correct and resubmit the request.</p>
-          </div>
-          <div className="flex gap-2 items-start">
-            <span className="mt-0.5 font-bold" style={{ color: "#1565C0" }}>◆</span>
-            <p>Make your first deposit and activate a Noviqra Ai product to unlock the withdrawal feature.</p>
+          <div style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 6 }}>
+            {[
+              `1. Montant minimum de retrait : ${fmt(minWithdrawalFcfa)}.`,
+              `2. Frais de retrait : ${withdrawalFee} % du montant retiré.`,
+              `3. Vous pouvez effectuer des retraits à tout moment. Les retraits sont disponibles sous 4 à 24 heures.`,
+              `4. Afin de protéger les intérêts de la plateforme et de ses membres, vous devez disposer d'au moins un appareil pour activer la fonction de retrait.`,
+            ].map((text, i) => (
+              <p key={i} style={{ margin: 0 }}>{text}</p>
+            ))}
           </div>
         </div>
       </div>
