@@ -8,20 +8,28 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getPaymentMethodsForCountry } from "@/lib/countries";
 import { Loader2, Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, Shield, Check } from "lucide-react";
-import { Link, useLocation, useSearch } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import type { WithdrawalWallet } from "@shared/schema";
+import { useLang } from "@/lib/i18n";
+import heroBg from "@assets/addbankcard-title-icon-D4FNm2p7_1779480104681.png";
 
 const walletSchema = z.object({
-  accountName: z.string().min(2, "Account name is required"),
-  accountNumber: z.string().min(8, "Account number is required"),
-  paymentMethod: z.string().min(2, "Payment method is required"),
+  accountName: z.string().min(2, "Requis"),
+  accountNumber: z.string().min(4, "Requis"),
+  paymentMethod: z.string().min(2, "Requis"),
 });
 
 type WalletForm = z.infer<typeof walletSchema>;
 
+const ORANGE = "#e07020";
+const DARK_CARD = "#1a1a1a";
+const BORDER = "#2a2a2a";
+
 export default function WalletPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
+  const fr = lang === "fr";
   useEffect(() => { document.title = "Wallet | Noviqra Ai"; }, []);
   const [, navigate] = useLocation();
   const searchString = useSearch();
@@ -42,10 +50,7 @@ export default function WalletPage() {
 
   const addMutation = useMutation({
     mutationFn: async (data: WalletForm) => {
-      const response = await apiRequest("POST", "/api/wallets", {
-        ...data,
-        country: user!.country,
-      });
+      const response = await apiRequest("POST", "/api/wallets", { ...data, country: user!.country });
       if (!response.ok) {
         const result = await response.json();
         throw new Error(result.message || "Error");
@@ -54,13 +59,13 @@ export default function WalletPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wallets"] });
-      toast({ title: "Wallet added!" });
+      toast({ title: fr ? "Compte ajouté !" : "Account added!" });
       form.reset();
       setSelectedMethod("");
       setShowForm(false);
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -75,10 +80,10 @@ export default function WalletPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wallets"] });
-      toast({ title: "Wallet removed!" });
+      toast({ title: fr ? "Compte supprimé !" : "Account removed!" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -95,7 +100,7 @@ export default function WalletPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/wallets"] });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -121,111 +126,180 @@ export default function WalletPage() {
   const paymentMethods = getPaymentMethodsForCountry(user.country);
   const backLink = selectMode ? "/withdrawal" : "/account";
 
+  // ── ADD FORM VIEW ──────────────────────────────────────────────
   if (showForm) {
     return (
-      <div className="flex flex-col min-h-full bg-gray-50">
+      <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
 
-        <div className="flex items-center px-4 py-4" style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}>
+        {/* Hero with overlaid title */}
+        <div style={{ position: "relative" }}>
+          <img
+            src={heroBg}
+            alt=""
+            style={{ width: "100%", height: 200, objectFit: "cover", objectPosition: "center", display: "block" }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} />
+
+          {/* Back button */}
           <button
-            onClick={() => { setShowForm(false); form.reset(); setSelectedMethod(""); }}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20"
             data-testid="button-back-form"
+            onClick={() => { setShowForm(false); form.reset(); setSelectedMethod(""); }}
+            style={{ position: "absolute", top: 44, left: 16, background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
           >
-            <ChevronLeft className="w-5 h-5 text-white" />
+            <ChevronLeft style={{ width: 26, height: 26, color: "#fff" }} />
           </button>
-          <h1 className="flex-1 text-center text-white font-bold text-base mr-9">
-            Add Payment Account
-          </h1>
+
+          {/* Title */}
+          <div style={{
+            position: "absolute",
+            bottom: 16,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            fontWeight: 900,
+            fontSize: 28,
+            color: "#fff",
+            letterSpacing: 2,
+            lineHeight: 1.2,
+            textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+          }}>
+            {fr ? "LIER UNE CARTE\nBANCAIRE" : "LINK A BANK\nACCOUNT"}
+          </div>
         </div>
 
-        <div className="flex-1 bg-white mt-3 mx-4 rounded-2xl shadow-sm overflow-hidden">
+        {/* Form fields */}
+        <div style={{ background: "#000", padding: "0 20px" }}>
 
+          {/* Select bank */}
           <button
             type="button"
             onClick={() => setShowBankSheet(true)}
-            className="w-full px-5 py-4 flex items-center justify-between border-b border-gray-100"
+            style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", textAlign: "left", padding: "20px 0", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
             data-testid="button-select-bank"
           >
-            <div className="text-left">
-              <p className="text-xs text-gray-400 mb-0.5">Payment Method</p>
-              <p className={`text-sm font-medium ${selectedMethod ? "text-gray-800" : "text-gray-400"}`}>
-                {selectedMethod || "Select a payment method"}
+            <div>
+              <p style={{ fontSize: 11, color: "#e05050", fontWeight: 600, marginBottom: 4 }}>
+                * {fr ? "Sélectionnez la banque" : "Select bank"}
+              </p>
+              <p style={{ fontSize: 14, color: selectedMethod ? "#fff" : "#555" }}>
+                {selectedMethod || (fr ? "Veuillez choisir" : "Please choose")}
               </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight style={{ width: 18, height: 18, color: "#555" }} />
           </button>
 
-          <div className="px-5 py-4 border-b border-gray-100">
-            <p className="text-xs text-gray-400 mb-1">Account Name</p>
+          {/* Account name */}
+          <div style={{ padding: "20px 0", borderBottom: `1px solid ${BORDER}` }}>
+            <p style={{ fontSize: 11, color: "#e05050", fontWeight: 600, marginBottom: 4 }}>
+              * {fr ? "Nom du titulaire du compte" : "Account holder name"}
+            </p>
             <input
               {...form.register("accountName")}
-              placeholder="Account holder name"
-              className="w-full text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-300"
+              placeholder={fr ? "Veuillez saisir le nom du titulaire" : "Please enter account holder name"}
+              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#ccc" }}
               data-testid="input-wallet-name"
             />
             {form.formState.errors.accountName && (
-              <p className="text-xs text-[#3db51d] mt-1">{form.formState.errors.accountName.message}</p>
+              <p style={{ color: "#e05050", fontSize: 11, marginTop: 4 }}>{form.formState.errors.accountName.message}</p>
             )}
           </div>
 
-          <div className="px-5 py-4">
-            <p className="text-xs text-gray-400 mb-1">Account Number</p>
+          {/* Account number */}
+          <div style={{ padding: "20px 0", borderBottom: `1px solid ${BORDER}` }}>
+            <p style={{ fontSize: 11, color: "#e05050", fontWeight: 600, marginBottom: 4 }}>
+              * {fr ? "Compte bancaire" : "Account number"}
+            </p>
             <input
               {...form.register("accountNumber")}
               type="tel"
-              placeholder="Account number"
-              className="w-full text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-300"
+              placeholder={fr ? "Veuillez saisir le numéro de compte bancaire" : "Please enter account number"}
+              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#ccc" }}
               data-testid="input-wallet-number"
             />
             {form.formState.errors.accountNumber && (
-              <p className="text-xs text-[#3db51d] mt-1">{form.formState.errors.accountNumber.message}</p>
+              <p style={{ color: "#e05050", fontSize: 11, marginTop: 4 }}>{form.formState.errors.accountNumber.message}</p>
             )}
+          </div>
+
+          {/* Confirm button */}
+          <div style={{ paddingTop: 32 }}>
+            <button
+              onClick={handleSubmit}
+              disabled={addMutation.isPending}
+              data-testid="button-confirm-wallet"
+              style={{
+                width: "100%",
+                height: 52,
+                borderRadius: 8,
+                background: DARK_CARD,
+                border: `1px solid ${ORANGE}`,
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: "pointer",
+                opacity: addMutation.isPending ? 0.5 : 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              {addMutation.isPending ? (
+                <>
+                  <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
+                  {fr ? "En cours..." : "Saving..."}
+                </>
+              ) : (fr ? "Confirmer" : "Confirm")}
+            </button>
           </div>
         </div>
 
-        <div className="px-4 py-6 mt-auto">
-          <button
-            onClick={handleSubmit}
-            disabled={addMutation.isPending}
-            className="w-full py-4 rounded-full text-white font-bold text-base disabled:opacity-40 shadow-md"
-            style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}
-            data-testid="button-confirm-wallet"
-          >
-            {addMutation.isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </span>
-            ) : (
-              "Confirm"
-            )}
-          </button>
-        </div>
-
+        {/* Bank picker bottom sheet */}
         {showBankSheet && (
-          <div className="fixed inset-0 z-50" onClick={() => setShowBankSheet(false)}>
-            <div className="absolute inset-0 bg-black/40" />
+          <div style={{ position: "fixed", inset: 0, zIndex: 50 }} onClick={() => setShowBankSheet(false)}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
             <div
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl"
+              style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#111", borderRadius: "20px 20px 0 0" }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              {/* Sheet header */}
+              <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
+                <div style={{ width: 40, height: 4, background: "#333", borderRadius: 2 }} />
               </div>
-              <h2 className="text-center font-bold text-gray-800 text-base pt-3 pb-4 border-b border-gray-100">
-                Choose a payment method
-              </h2>
-              <div className="pb-8">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px 10px", borderBottom: "1px solid #222" }}>
+                <button onClick={() => setShowBankSheet(false)} style={{ background: "transparent", border: "none", color: "#4a9eff", fontSize: 14, cursor: "pointer", fontWeight: 500 }}>
+                  {fr ? "Annuler" : "Cancel"}
+                </button>
+                <span style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>
+                  {fr ? "Selectionner une banque" : "Select a bank"}
+                </span>
+                <button onClick={() => setShowBankSheet(false)} style={{ background: "transparent", border: "none", color: "#4a9eff", fontSize: 14, cursor: "pointer", fontWeight: 500 }}>
+                  {fr ? "Confirmer" : "Confirm"}
+                </button>
+              </div>
+
+              {/* Bank list */}
+              <div style={{ maxHeight: 320, overflowY: "auto", paddingBottom: 24 }}>
                 {paymentMethods.map((method) => (
                   <button
                     key={method}
                     onClick={() => handleChooseMethod(method)}
-                    className="w-full py-4 px-5 flex items-center justify-between border-b border-gray-50 last:border-0"
                     data-testid={`button-bank-${method}`}
+                    style={{
+                      width: "100%",
+                      padding: "16px 20px",
+                      background: "transparent",
+                      border: "none",
+                      borderBottom: "1px solid #222",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
                   >
-                    <span className="text-gray-700 font-medium text-sm">{method}</span>
+                    <span style={{ color: "#ddd", fontSize: 14 }}>{method}</span>
                     {selectedMethod === method && (
-                      <Check className="w-4 h-4 text-[#3db51d]" />
+                      <Check style={{ width: 16, height: 16, color: ORANGE }} />
                     )}
                   </button>
                 ))}
@@ -237,109 +311,124 @@ export default function WalletPage() {
     );
   }
 
+  // ── LIST VIEW ──────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-full bg-gray-50">
+    <div style={{ minHeight: "100vh", background: "#000", color: "#fff", display: "flex", flexDirection: "column" }}>
 
-      <div className="flex items-center px-4 py-4" style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}>
-        <Link href={backLink}>
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20" data-testid="button-back">
-            <ChevronLeft className="w-5 h-5 text-white" />
-          </button>
-        </Link>
-        <h1 className="flex-1 text-center text-white font-bold text-base">
-          {selectMode ? "Select an Account" : "Payment Accounts"}
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", padding: "16px", paddingTop: 48 }}>
+        <button
+          data-testid="button-back"
+          onClick={() => window.history.length > 1 ? window.history.back() : navigate(backLink)}
+          style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
+        >
+          <ChevronLeft style={{ width: 24, height: 24, color: "#fff" }} />
+        </button>
+        <h1 style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 16, color: "#fff" }}>
+          {selectMode
+            ? (fr ? "Sélectionner un compte" : "Select an account")
+            : (fr ? "Gestion des comptes bancaires" : "Bank accounts")}
         </h1>
         {!selectMode ? (
           <button
             onClick={() => setShowForm(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20"
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
             data-testid="button-add-wallet-icon"
           >
-            <Plus className="w-5 h-5 text-white" />
+            <Plus style={{ width: 22, height: 22, color: "#fff" }} />
           </button>
         ) : (
-          <div className="w-9" />
+          <div style={{ width: 30 }} />
         )}
       </div>
 
-      <div className="flex-1 px-4 pt-4 pb-28 space-y-3">
+      {/* Wallet list */}
+      <div style={{ flex: 1, padding: "8px 16px 120px" }}>
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-[#3db51d]" />
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 48 }}>
+            <Loader2 style={{ width: 24, height: 24, color: ORANGE }} className="animate-spin" />
           </div>
         ) : wallets && wallets.length > 0 ? (
-          wallets.map((wallet) => (
-            <div
-              key={wallet.id}
-              onClick={() => selectMode && handleSelectWallet(wallet)}
-              className={`bg-white rounded-2xl shadow-sm p-4 flex items-center gap-3 ${
-                selectMode ? "cursor-pointer active:opacity-80" : ""
-              } ${wallet.isDefault ? "border-l-4 border-[#3db51d]" : ""}`}
-              data-testid={`wallet-card-${wallet.id}`}
-            >
-              <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <CreditCard className="w-5 h-5 text-gray-500" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800 text-sm">{wallet.paymentMethod}</p>
-                <p className="text-xs text-gray-500 mt-0.5 truncate">{wallet.accountName}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{wallet.accountNumber}</p>
-                {wallet.isDefault && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <Shield className="w-3 h-3 text-[#3db51d]" />
-                    <span className="text-xs text-[#3db51d] font-medium">Default</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {wallets.map((wallet) => (
+              <div
+                key={wallet.id}
+                onClick={() => selectMode && handleSelectWallet(wallet)}
+                data-testid={`wallet-card-${wallet.id}`}
+                style={{
+                  background: DARK_CARD,
+                  borderRadius: 12,
+                  padding: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  cursor: selectMode ? "pointer" : "default",
+                  borderLeft: wallet.isDefault ? `3px solid ${ORANGE}` : "none",
+                }}
+              >
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <CreditCard style={{ width: 20, height: 20, color: "#888" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>{wallet.paymentMethod}</p>
+                  <p style={{ fontSize: 12, color: "#888", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{wallet.accountName}</p>
+                  <p style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{wallet.accountNumber}</p>
+                  {wallet.isDefault && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                      <Shield style={{ width: 12, height: 12, color: ORANGE }} />
+                      <span style={{ fontSize: 11, color: ORANGE, fontWeight: 600 }}>{fr ? "Défaut" : "Default"}</span>
+                    </div>
+                  )}
+                </div>
+                {!selectMode && (
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {!wallet.isDefault && (
+                      <button
+                        onClick={() => setDefaultMutation.mutate(wallet.id)}
+                        disabled={setDefaultMutation.isPending}
+                        style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6 }}
+                        data-testid={`button-set-default-${wallet.id}`}
+                      >
+                        <Check style={{ width: 18, height: 18, color: "#4caf50" }} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteMutation.mutate(wallet.id)}
+                      disabled={deleteMutation.isPending}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6 }}
+                      data-testid={`button-delete-wallet-${wallet.id}`}
+                    >
+                      <Trash2 style={{ width: 18, height: 18, color: "#e05050" }} />
+                    </button>
                   </div>
                 )}
+                {selectMode && (
+                  <ChevronRight style={{ width: 16, height: 16, color: "#444", flexShrink: 0 }} />
+                )}
               </div>
-
-              {!selectMode && (
-                <div className="flex items-center gap-1">
-                  {!wallet.isDefault && (
-                    <button
-                      onClick={() => setDefaultMutation.mutate(wallet.id)}
-                      disabled={setDefaultMutation.isPending}
-                      className="p-2"
-                      data-testid={`button-set-default-${wallet.id}`}
-                    >
-                      <Check className="w-4 h-4 text-green-500" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteMutation.mutate(wallet.id)}
-                    disabled={deleteMutation.isPending}
-                    className="p-2"
-                    data-testid={`button-delete-wallet-${wallet.id}`}
-                  >
-                    <Trash2 className="w-4 h-4 text-[#3db51d]" />
-                  </button>
-                </div>
-              )}
-
-              {selectMode && (
-                <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-              )}
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="w-8 h-8 text-[#3db51d]" />
-            </div>
-            <p className="text-gray-500 text-sm">No payment accounts registered</p>
-            <p className="text-gray-400 text-xs mt-1">Add an account to make withdrawals</p>
+            ))}
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gray-50">
+      {/* Add button fixed at bottom */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 16px 32px", background: "#000" }}>
         <button
           onClick={() => setShowForm(true)}
-          className="w-full py-4 rounded-full text-white font-bold text-base shadow-md"
-          style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}
           data-testid="button-add-wallet"
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 8,
+            background: DARK_CARD,
+            border: `1px solid ${ORANGE}`,
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: "pointer",
+          }}
         >
-          Add Account
+          {fr ? "Ajouter" : "Add Account"}
         </button>
       </div>
     </div>

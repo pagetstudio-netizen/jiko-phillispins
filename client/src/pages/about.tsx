@@ -1,42 +1,70 @@
 import { ChevronLeft } from "lucide-react";
-import { Link } from "wouter";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useLang } from "@/lib/i18n";
 
 export default function AboutPage() {
+  const [, navigate] = useLocation();
+  const { lang } = useLang();
+  const fr = lang === "fr";
+  useEffect(() => { document.title = "À propos | Noviqra Ai"; }, []);
+
   return (
-    <div className="flex flex-col min-h-full bg-white">
-      <header className="flex items-center px-4 py-3 border-b bg-white">
-        <Link href="/account">
-          <button className="p-1" data-testid="button-back">
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-        </Link>
-        <h1 className="flex-1 text-center text-lg font-semibold text-gray-800 pr-6">A propos de nous</h1>
-      </header>
+    <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Qui sommes-nous ?</h2>
-          <p className="text-gray-600 leading-relaxed">
-            Noviqra Ai est une plateforme d'investissement innovante basée sur l'intelligence artificielle, présente dans plus de 7 pays africains. Reconnue pour la performance et la fiabilité de ses solutions d'investissement, Noviqra Ai est un acteur incontournable de la finance numérique en Afrique.
-          </p>
-          <p className="text-gray-600 leading-relaxed">
-            Grâce à notre technologie IA de pointe et à notre réseau mondial, nous offrons à nos utilisateurs des opportunités uniques de générer des revenus quotidiens stables en participant à nos programmes d'investissement intelligents.
-          </p>
-        </div>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", padding: "16px", paddingTop: 48 }}>
+        <button
+          data-testid="button-back"
+          onClick={() => window.history.length > 1 ? window.history.back() : navigate("/account")}
+          style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
+        >
+          <ChevronLeft style={{ width: 24, height: 24, color: "#fff" }} />
+        </button>
+        <h1 style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 16, color: "#fff", marginRight: 32 }}>
+          {fr ? "À propos de nous" : "About us"}
+        </h1>
+      </div>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Notre héritage</h2>
-          <p className="text-gray-600 leading-relaxed">
-            Aujourd'hui, Noviqra Ai est présent dans de nombreux pays avec des milliers d'utilisateurs actifs et propose une large gamme de produits d'investissement haute performance, devenant ainsi une marque reconnue dans le secteur de la finance digitale africaine.
-          </p>
-        </div>
+      {/* Content */}
+      <div style={{ padding: "16px 20px 48px", lineHeight: 1.75 }}>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold" style={{ color: "#3db51d" }}>Sécurité et Fiabilité</h2>
-          <p className="text-gray-600 leading-relaxed">
-            La sécurité de vos fonds et la transparence de nos opérations sont nos priorités absolues. L'empreinte de Noviqra Ai dans le domaine de l'investissement numérique illustre parfaitement la capacité d'une entreprise à conjuguer qualité, innovation et stratégie de marque pérenne.
-          </p>
-        </div>
+        <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
+          {fr
+            ? "Noviqra Ai est une entreprise technologique mondiale spécialisée dans l'automatisation industrielle intelligente et l'intelligence artificielle. Portant la devise « Intelligent Automation. Limitless Solutions. », Noviqra Ai s'engage à promouvoir la transformation numérique et le développement durable grâce à l'innovation technologique et à des robots de haute performance, offrant ainsi des opportunités de revenus quotidiens stables à ses utilisateurs."
+            : "Noviqra Ai is a global technology company specializing in intelligent industrial automation and artificial intelligence. With the motto \"Intelligent Automation. Limitless Solutions.\", Noviqra Ai is committed to promoting digital transformation and sustainable development through technological innovation and high-performance robots, offering users stable daily income opportunities."}
+        </p>
+
+        <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
+          {fr
+            ? "Noviqra Ai se concentre sur le segment des robots industriels intelligents, avec une gamme de produits allant du Nano AI Robot à l'Ultra AI Robot. Ses concepts de design avant-gardistes, ses performances supérieures et ses fonctionnalités intelligentes lui ont valu une reconnaissance internationale. L'entreprise investit continuellement dans la R&D dans des domaines clés tels que la robotique, la conduite autonome, les systèmes de contrôle intelligent et la technologie de l'IA embarquée."
+            : "Noviqra Ai focuses on the intelligent industrial robot segment, with a product range from the Nano AI Robot to the Ultra AI Robot. Its cutting-edge design concepts, superior performance and intelligent features have earned it international recognition. The company continuously invests in R&D in key areas such as robotics, autonomous control, intelligent systems and embedded AI technology."}
+        </p>
+
+        <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
+          {fr
+            ? "En matière d'investissement, Noviqra Ai a été pionnière dans le développement d'un système de revenus passifs basé sur des robots industriels qu'elle perfectionne constamment. Elle a mis en place un réseau d'investisseurs dans plus de 7 pays africains pour offrir aux utilisateurs une expérience d'investissement efficace et pratique, réduisant ainsi l'écart d'accès aux opportunités financières mondiales."
+            : "In terms of investment, Noviqra Ai has been a pioneer in developing a passive income system based on industrial robots that it constantly improves. It has built an investor network across more than 7 African countries to offer users an efficient and practical investment experience, bridging the gap in access to global financial opportunities."}
+        </p>
+
+        <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
+          {fr
+            ? "Noviqra Ai accorde une grande importance au service client et au développement de sa communauté, créant un écosystème complet intégrant services d'investissement, parrainage, missions et services liés à la finance digitale. À travers ses canaux Telegram et ses plateformes communautaires en ligne, Noviqra Ai a tissé des liens étroits et durables avec ses utilisateurs, forgeant ainsi une véritable communauté d'investisseurs."
+            : "Noviqra Ai places great importance on customer service and community development, creating a complete ecosystem integrating investment services, referrals, missions, and digital finance services. Through its Telegram channels and online community platforms, Noviqra Ai has built close and lasting bonds with its users, forging a true investor community."}
+        </p>
+
+        <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
+          {fr
+            ? "Actif dans 7 pays africains, Noviqra Ai travaille avec plusieurs opérateurs de mobile money (Orange Money, MTN, Moov, Wave, Airtel) afin d'offrir des solutions de dépôt et de retrait fluides et adaptées à chaque marché local."
+            : "Active in 7 African countries, Noviqra Ai works with several mobile money operators (Orange Money, MTN, Moov, Wave, Airtel) to offer smooth deposit and withdrawal solutions adapted to each local market."}
+        </p>
+
+        <p style={{ color: "#cccccc", fontSize: 14 }}>
+          {fr
+            ? "La sécurité de vos fonds et la transparence de nos opérations sont nos priorités absolues. L'empreinte de Noviqra Ai dans le domaine de l'investissement numérique illustre parfaitement la capacité d'une entreprise à conjuguer qualité, innovation et stratégie de marque pérenne."
+            : "The security of your funds and the transparency of our operations are our absolute priorities. Noviqra Ai's footprint in the digital investment space perfectly illustrates a company's ability to combine quality, innovation and lasting brand strategy."}
+        </p>
+
       </div>
     </div>
   );
