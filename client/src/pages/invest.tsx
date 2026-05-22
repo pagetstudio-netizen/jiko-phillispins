@@ -9,17 +9,17 @@ import { useUserCurrency } from "@/lib/useUserCurrency";
 import { useLang } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
-import heroImg    from "@assets/20260408_191813_1775675938233.jpg";
-import car1       from "@assets/20260408_190507_1775675626941.jpg";
-import car2       from "@assets/20260408_191018_1775675626871.jpg";
-import car3       from "@assets/20260408_191416_1775675670071.jpg";
-import car4       from "@assets/20260408_191416_1775676009094.jpg";
-import car5       from "@assets/20260408_191416_1775676156902.jpg";
-import car6       from "@assets/20260408_191416_1775728687952.jpg";
-import car7       from "@assets/20260408_191813_1775805436406.jpg";
-import car8       from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
+import heroImg from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
+import r1 from "@assets/ROBOTIQUE-ET-IA_1779479959842.jpg";
+import r2 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479959906.png";
+import r3 from "@assets/robot-humanoide_1779479959935.jpg";
+import r4 from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779479959968.png";
+import r5 from "@assets/images_(30)_1779479959995.jpeg";
+import r6 from "@assets/photo-1737644467636-6b0053476bb2_1779479960022.jpeg";
+import r7 from "@assets/images_(29)_1779479856301.jpeg";
+import r8 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
 
-const CAR_IMAGES = [car1, car2, car3, car4, car5, car6, car7, car8];
+const CAR_IMAGES = [r1, r2, r3, r4, r5, r6, r7, r8];
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;
@@ -28,14 +28,14 @@ interface ProductWithOwnership extends Product {
 }
 
 const VIP_NAMES = [
-  "VIP1 Noviqra AI ET5",
-  "VIP2 Noviqra AI ET5 S",
-  "VIP3 Noviqra AI ET7",
-  "VIP4 Noviqra AI EC6",
-  "VIP5 Noviqra AI ES6",
-  "VIP6 Noviqra AI ES8",
-  "VIP7 Noviqra AI EP9",
-  "VIP8 Noviqra AI ET9",
+  "Nano AI Robot",
+  "Smart AI Robot",
+  "Pro AI Robot",
+  "Elite AI Robot",
+  "Premium AI Robot",
+  "Expert AI Robot",
+  "Master AI Robot",
+  "Ultra AI Robot",
 ];
 
 export default function InvestPage() {

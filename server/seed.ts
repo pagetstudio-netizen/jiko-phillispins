@@ -45,7 +45,7 @@ export async function seed() {
     console.log("Super admin password synced.");
   }
 
-  // Check if products exist - update all products to match VIP structure
+  // Check if products exist - update all products to match robot structure
   const existingProducts = await db.select().from(products);
   const requiredProducts = [
     {
@@ -58,72 +58,72 @@ export async function seed() {
       sortOrder: 0,
     },
     {
-      name: "Mini Solar Panel",
-      price: 3000,
-      dailyEarnings: 500,
-      cycleDays: 120,
-      totalReturn: 60000,
+      name: "Nano AI Robot",
+      price: 500,
+      dailyEarnings: 50,
+      cycleDays: 80,
+      totalReturn: 4000,
       sortOrder: 1,
     },
     {
-      name: "Basic Solar Kit",
-      price: 8000,
-      dailyEarnings: 1000,
-      cycleDays: 120,
-      totalReturn: 120000,
+      name: "Smart AI Robot",
+      price: 2000,
+      dailyEarnings: 200,
+      cycleDays: 80,
+      totalReturn: 16000,
       sortOrder: 2,
     },
     {
-      name: "Solar Panel 100W",
-      price: 15000,
-      dailyEarnings: 1600,
-      cycleDays: 120,
-      totalReturn: 192000,
+      name: "Pro AI Robot",
+      price: 5000,
+      dailyEarnings: 500,
+      cycleDays: 80,
+      totalReturn: 40000,
       sortOrder: 3,
     },
     {
-      name: "Solar Panel 200W",
-      price: 25000,
-      dailyEarnings: 2400,
-      cycleDays: 120,
-      totalReturn: 288000,
+      name: "Elite AI Robot",
+      price: 10000,
+      dailyEarnings: 1000,
+      cycleDays: 80,
+      totalReturn: 80000,
       sortOrder: 4,
     },
     {
-      name: "Home Solar System",
-      price: 50000,
-      dailyEarnings: 5000,
-      cycleDays: 120,
-      totalReturn: 600000,
+      name: "Premium AI Robot",
+      price: 20000,
+      dailyEarnings: 2000,
+      cycleDays: 80,
+      totalReturn: 160000,
       sortOrder: 5,
     },
     {
-      name: "Mini Solar Plant",
-      price: 120000,
-      dailyEarnings: 13000,
-      cycleDays: 120,
-      totalReturn: 1560000,
+      name: "Expert AI Robot",
+      price: 50000,
+      dailyEarnings: 5000,
+      cycleDays: 80,
+      totalReturn: 400000,
       sortOrder: 6,
     },
     {
-      name: "Advanced Solar Station",
-      price: 350000,
-      dailyEarnings: 25000,
-      cycleDays: 120,
-      totalReturn: 3000000,
+      name: "Master AI Robot",
+      price: 100000,
+      dailyEarnings: 10000,
+      cycleDays: 80,
+      totalReturn: 800000,
       sortOrder: 7,
     },
     {
-      name: "Industrial Solar Plant",
-      price: 550000,
-      dailyEarnings: 57000,
-      cycleDays: 120,
-      totalReturn: 6840000,
+      name: "Ultra AI Robot",
+      price: 200000,
+      dailyEarnings: 20000,
+      cycleDays: 80,
+      totalReturn: 1600000,
       sortOrder: 8,
     },
   ];
 
-  // Update existing products by matching price, or insert new ones
+  // Update existing products by matching name, price, or sortOrder (to preserve IDs)
   // Hide old products that don't match any new product by setting them inactive
   const usedIds = new Set<number>();
 
@@ -131,6 +131,9 @@ export async function seed() {
     let existing = existingProducts.find(p => p.name === productData.name);
     if (!existing) {
       existing = existingProducts.find(p => p.price === productData.price && !usedIds.has(p.id));
+    }
+    if (!existing && productData.sortOrder !== undefined) {
+      existing = existingProducts.find(p => p.sortOrder === productData.sortOrder && !usedIds.has(p.id));
     }
     if (existing) {
       usedIds.add(existing.id);
@@ -194,9 +197,9 @@ export async function seed() {
   // Check if settings exist
   const existingSettings = await db.select().from(platformSettings);
   const requiredSettings = [
-    { key: "supportLink", value: "https://t.me/Jinkosolarr" },
-    { key: "support2Link", value: "https://t.me/Jinkosolarr" },
-    { key: "channelLink", value: "https://t.me/Jinkosolarr" },
+    { key: "supportLink", value: "https://t.me/noviqraai" },
+    { key: "support2Link", value: "https://t.me/noviqraai" },
+    { key: "channelLink", value: "https://t.me/noviqraai" },
     { key: "groupLink", value: "https://t.me/+R9SFSGneBkg3NTFh" },
     { key: "minDeposit", value: "500" },
     { key: "minWithdrawal", value: "100" },

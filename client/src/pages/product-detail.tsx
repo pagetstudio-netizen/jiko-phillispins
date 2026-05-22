@@ -8,18 +8,17 @@ import { ChevronLeft, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@shared/schema";
 
-import p1 from "@assets/panneaux-solaires-3d-realiste_625553-173_1775768333512.jpg";
-import p2 from "@assets/images_(33)_1775768333811.jpeg";
-import p3 from "@assets/panneau-solaire-detoure-min_1775768333844.png";
-import p4 from "@assets/panneau-solaire-hybride_1775768333929.jpg";
-import p5 from "@assets/images_(30)_1775768333959.jpeg";
-import p6 from "@assets/images_(29)_1775768333985.jpeg";
-import p7 from "@assets/images_(28)_1775768334009.jpeg";
-import p8 from "@assets/images_(26)_1775768334029.jpeg";
-import p9 from "@assets/images_(29)_1779479856301.jpeg";
+import r1 from "@assets/ROBOTIQUE-ET-IA_1779479959842.jpg";
+import r2 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479959906.png";
+import r3 from "@assets/robot-humanoide_1779479959935.jpg";
+import r4 from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779479959968.png";
+import r5 from "@assets/images_(30)_1779479959995.jpeg";
+import r6 from "@assets/photo-1737644467636-6b0053476bb2_1779479960022.jpeg";
+import r7 from "@assets/images_(29)_1779479856301.jpeg";
+import r8 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
 
-const productImages: Record<number, string> = { 2: p1, 3: p2, 4: p3, 5: p4, 6: p5, 7: p6, 8: p7, 9: p8, 10: p9 };
-const defaultImg = p1;
+const ROBOT_IMAGES = [r1, r2, r3, r4, r5, r6, r7, r8];
+const defaultImg = r1;
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;
@@ -28,14 +27,14 @@ interface ProductWithOwnership extends Product {
 }
 
 const descriptions: Record<string, string> = {
-  "Mini Solar Panel": "The Mini Solar Panel by Noviqra Ai is the perfect entry-level investment to start your AI-powered investment journey. This product generates stable daily earnings and provides reliable passive income. Invest now and benefit from our smart technology.",
-  "Basic Solar Kit": "The Basic Solar Kit offers increased power and higher returns. Ideal for investors who want to optimize their daily earnings while contributing to the energy transition.",
-  "Solar Panel 100W": "The Solar Panel 100W is a high-performance panel that maximizes solar energy production. With an excellent return on investment rate, it represents a strategic choice for your portfolio.",
-  "Solar Panel 200W": "The Solar Panel 200W is designed for ambitious investors. Its advanced technology guarantees optimal energy production and attractive daily income throughout the full cycle.",
-  "Home Solar System": "The Home Solar System combines performance and profitability. With this premium product, enjoy a high daily income and an exceptional total return on your solar investment.",
-  "Mini Solar Plant": "The Mini Solar Plant is reserved for experienced investors seeking maximum returns. Noviqra Ai's cutting-edge technology ensures constant daily earnings and substantial gains.",
-  "Advanced Solar Station": "The Advanced Solar Station represents excellence in solar investment. Enjoy very high daily income and an optimized investment cycle to maximize your profits.",
-  "Industrial Solar Plant": "The Industrial Solar Plant is our flagship product for large investors. It combines state-of-the-art technology and exceptional returns for a unique and highly profitable solar investment experience.",
+  "Nano AI Robot": "The Nano AI Robot by Noviqra Ai is the perfect entry-level investment to start your AI-powered automation journey. Generates stable daily earnings with our intelligent robotic technology.",
+  "Smart AI Robot": "The Smart AI Robot offers enhanced processing power and higher returns. Ideal for investors who want to grow their daily earnings through cutting-edge automation.",
+  "Pro AI Robot": "The Pro AI Robot is a high-performance unit that maximizes AI-driven productivity. With an excellent return rate, it represents a strategic choice for your investment portfolio.",
+  "Elite AI Robot": "The Elite AI Robot is designed for ambitious investors. Its advanced AI guarantees optimal performance and attractive daily income throughout the full cycle.",
+  "Premium AI Robot": "The Premium AI Robot combines performance and profitability. Enjoy high daily income and an exceptional total return on your automation investment.",
+  "Expert AI Robot": "The Expert AI Robot is reserved for experienced investors seeking maximum returns. Noviqra Ai's cutting-edge technology ensures constant daily earnings and substantial gains.",
+  "Master AI Robot": "The Master AI Robot represents excellence in AI automation investment. Enjoy very high daily income and an optimized investment cycle to maximize your profits.",
+  "Ultra AI Robot": "The Ultra AI Robot is our flagship product for large investors. State-of-the-art AI technology delivers exceptional returns for a unique and highly profitable investment experience.",
 };
 
 export default function ProductDetailPage() {
@@ -81,7 +80,7 @@ export default function ProductDetailPage() {
   const totalReturn = Number(product.totalReturn);
   const dailyEarnings = Number(product.dailyEarnings);
   const returnRate = price > 0 ? Math.round((totalReturn / price) * 100) : 0;
-  const imgSrc = productImages[product.id] || defaultImg;
+  const imgSrc = product.sortOrder > 0 ? (ROBOT_IMAGES[(product.sortOrder - 1) % ROBOT_IMAGES.length] || defaultImg) : defaultImg;
   const desc = descriptions[product.name] || `${product.name} is a Noviqra Ai investment product offering attractive daily returns and an excellent return on investment.`;
 
   return (
