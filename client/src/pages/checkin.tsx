@@ -3,10 +3,10 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2, Gift } from "lucide-react";
-import { Link } from "wouter";
-import robotGift from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773319220043.png";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import { useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
+import { useLang } from "@/lib/i18n";
 
 interface BonusStatus {
   canClaim: boolean;
@@ -15,13 +15,26 @@ interface BonusStatus {
   daysPointed: number;
 }
 
-const DAILY_BONUS_FCFA = 5;
+const DAILY_BONUS = 5;
+
+function NoviqraArc() {
+  return (
+    <svg width="56" height="44" viewBox="0 0 90 68" fill="none">
+      <path d="M6 64 C6 38 20 7 45 7 C70 7 84 38 84 64" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none" />
+      <path d="M20 64 C20 46 30 23 45 23 C60 23 70 46 70 64" stroke="white" strokeWidth="5.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
 
 export default function CheckinPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { fmt } = useUserCurrency();
-  useEffect(() => { document.title = "Daily Check-in | Noviqra Ai"; }, []);
+  const { lang } = useLang();
+  const fr = lang === "fr";
+  const [, navigate] = useLocation();
+
+  useEffect(() => { document.title = "Bonus de connexion | Noviqra Ai"; }, []);
 
   const { data: bonusStatus } = useQuery<BonusStatus>({
     queryKey: ["/api/daily-bonus-status"],
@@ -40,110 +53,171 @@ export default function CheckinPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/daily-bonus-status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({ title: "Bonus received!", description: `${fmt(DAILY_BONUS_FCFA)} added to your balance` });
+      toast({ title: fr ? "Pointage effectué avec succès" : "Check-in successful!", description: `+${fmt(DAILY_BONUS)}` });
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
   const totalBonusClaimed = bonusStatus?.totalBonusClaimed || 0;
-  const daysPointed = bonusStatus?.daysPointed || 0;
+  const daysPointed       = bonusStatus?.daysPointed || 0;
+  const canClaim          = bonusStatus?.canClaim ?? true;
+  const hoursLeft         = bonusStatus?.hoursRemaining || 0;
 
   return (
-    <div className="flex flex-col min-h-full bg-white">
-      <div className="flex-1 overflow-y-auto pb-24">
+    <div style={{ minHeight: "100vh", background: "#000", color: "#fff", display: "flex", flexDirection: "column", paddingBottom: 48 }}>
 
-        <header className="flex items-center px-4 py-3 bg-white border-b border-gray-100">
-          <Link href="/">
-            <button className="p-1" data-testid="button-back">
-              <ChevronLeft className="w-6 h-6 text-gray-700" />
-            </button>
-          </Link>
-          <h1 className="flex-1 text-center text-base font-semibold text-gray-800 pr-7">Daily Check-in</h1>
-        </header>
-
-        <div className="flex justify-center mt-6 mb-[-56px] relative z-10">
-          <img
-            src={robotGift}
-            alt="Gift"
-            className="w-36 h-36 object-contain drop-shadow-lg"
-            style={{ mixBlendMode: "multiply" }}
-          />
-        </div>
-
-        <div className="mx-4">
-          <div className="bg-[#3db51d] rounded-3xl pt-16 pb-6 px-5 shadow-lg">
-            <h2 className="text-white text-2xl font-bold text-center">Daily Check-in</h2>
-            <p className="text-white/80 text-sm text-center mt-1 mb-5">
-              Activate your daily rewards
-            </p>
-
-            <div className="flex items-stretch gap-0">
-              <div className="flex-1 flex flex-col items-center gap-1 border-r border-white/30 pr-4">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-1">
-                  <Gift className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-white text-xl font-bold">{fmt(DAILY_BONUS_FCFA)}</p>
-                <p className="text-white/75 text-xs text-center">Today's reward</p>
-              </div>
-
-              <div className="flex-1 flex flex-col items-center gap-1 pl-4">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-1">
-                  <span className="text-white font-bold text-base">$</span>
-                </div>
-                <p className="text-white text-xl font-bold">{daysPointed}</p>
-                <p className="text-white/75 text-xs text-center">Consecutive days</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-4 mt-3">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-5 px-6 text-center">
-            <p className="text-[#3db51d] text-2xl font-bold">{fmt(totalBonusClaimed)}</p>
-            <p className="text-gray-500 text-sm mt-1">Total bonuses claimed</p>
-          </div>
-        </div>
-
-        <div className="mx-4 mt-5">
-          {bonusStatus?.canClaim ? (
-            <button
-              onClick={() => claimMutation.mutate()}
-              disabled={claimMutation.isPending}
-              className="w-full py-4 rounded-full text-white font-bold text-lg shadow-md disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}
-              data-testid="button-pointer"
-            >
-              {claimMutation.isPending ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Loading...
-                </span>
-              ) : (
-                "Claim Daily Bonus"
-              )}
-            </button>
-          ) : (
-            <button
-              disabled
-              className="w-full py-4 rounded-full font-bold text-lg"
-              style={{ background: "#e0e0e0", color: "#9e9e9e" }}
-              data-testid="button-pointer-disabled"
-            >
-              Come back in {bonusStatus?.hoursRemaining || 0}h
-            </button>
-          )}
-        </div>
-
-        <div className="mx-4 mt-5 space-y-1.5">
-          <p className="text-gray-400 text-xs">1. Daily login reward: {fmt(DAILY_BONUS_FCFA)}</p>
-          <p className="text-gray-400 text-xs">2. Log in once per day to accumulate points.</p>
-        </div>
-
+      {/* Back button */}
+      <div style={{ padding: "44px 16px 0" }}>
+        <button
+          data-testid="button-back"
+          onClick={() => window.history.length > 1 ? window.history.back() : navigate("/")}
+          style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
+        >
+          <ChevronLeft style={{ width: 28, height: 28, color: "#fff" }} />
+        </button>
       </div>
+
+      {/* ── Circle with total bonus ── */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 24 }}>
+        <div style={{
+          width: 160,
+          height: 160,
+          borderRadius: "50%",
+          background: "#1a1a1a",
+          border: "3px solid #c87941",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+        }}>
+          <NoviqraArc />
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+            {fmt(totalBonusClaimed)}
+          </div>
+        </div>
+
+        {/* Bonus cumulé pill */}
+        <div style={{
+          marginTop: 14,
+          background: "linear-gradient(135deg, #d4976a, #c07040)",
+          borderRadius: 24,
+          padding: "8px 40px",
+          fontSize: 15,
+          fontWeight: 600,
+          color: "#fff",
+        }}>
+          {fr ? "Bonus cumulé" : "Total bonus"}
+        </div>
+      </div>
+
+      {/* Consecutive days text */}
+      <p style={{ textAlign: "center", color: "#fff", fontSize: 15, marginTop: 20, fontWeight: 400 }}>
+        {fr
+          ? `Vous avez pointé ${daysPointed} jours consécutifs`
+          : `You have checked in ${daysPointed} consecutive days`}
+      </p>
+
+      {/* Stats row */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0,
+        margin: "24px 32px 0",
+      }}>
+        <div style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>{daysPointed}</div>
+          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>{fr ? "Jours" : "Days"}</div>
+        </div>
+        <div style={{ width: 1, height: 48, background: "#333" }} />
+        <div style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>{fmt(totalBonusClaimed)}</div>
+          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>{fr ? "Récompenses" : "Rewards"}</div>
+        </div>
+      </div>
+
+      {/* Pointer button */}
+      <div style={{ margin: "28px 20px 0" }}>
+        {canClaim ? (
+          <button
+            onClick={() => claimMutation.mutate()}
+            disabled={claimMutation.isPending}
+            data-testid="button-pointer"
+            style={{
+              width: "100%",
+              height: 52,
+              borderRadius: 26,
+              background: "#111",
+              border: "1.5px solid #c87941",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 17,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              opacity: claimMutation.isPending ? 0.7 : 1,
+            }}
+          >
+            {claimMutation.isPending ? (
+              <Loader2 style={{ width: 20, height: 20 }} className="animate-spin" />
+            ) : (fr ? "Pointer" : "Check In")}
+          </button>
+        ) : (
+          <button
+            disabled
+            data-testid="button-pointer-disabled"
+            style={{
+              width: "100%",
+              height: 52,
+              borderRadius: 26,
+              background: "#1a1a1a",
+              border: "1.5px solid #333",
+              color: "#555",
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {fr ? `Revenez dans ${hoursLeft}h` : `Come back in ${hoursLeft}h`}
+          </button>
+        )}
+      </div>
+
+      {/* Conseils utiles */}
+      <div style={{
+        margin: "24px 20px 0",
+        background: "#1a1a1a",
+        borderRadius: 12,
+        padding: "16px 18px",
+      }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+          {fr ? "Conseils utiles" : "Useful tips"}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {(fr ? [
+            `1. Récompense pour la connexion quotidienne : ${fmt(DAILY_BONUS)} FCFA.`,
+            "2. Connectez-vous une fois par jour.",
+            "3. Connectez-vous à nouveau après minuit chaque jour.",
+          ] : [
+            `1. Daily login reward: ${fmt(DAILY_BONUS)}.`,
+            "2. Log in once per day to accumulate bonuses.",
+            "3. Log in again after midnight each day.",
+          ]).map((tip, i) => (
+            <p key={i} style={{ fontSize: 13, color: "#888", margin: 0, lineHeight: 1.5 }}>{tip}</p>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
