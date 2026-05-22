@@ -1,12 +1,9 @@
-import { useEffect } from "react";
-import { useAuth } from "@/lib/auth";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
-import { Link } from "wouter";
-import { EmptyState } from "@/components/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import historyIcon from "@assets/20260409_133235_1775847886254.png";
+import { useLocation, useSearch } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
+import { useLang } from "@/lib/i18n";
 
 interface Deposit {
   id: number;
@@ -16,81 +13,217 @@ interface Deposit {
   createdAt: string;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  approved: { label: "Successful", color: "#3db51d" },
-  pending:  { label: "Pending",    color: "#f97316" },
-  rejected: { label: "Rejected",   color: "#ef4444" },
+interface Withdrawal {
+  id: number;
+  amount: string;
+  netAmount?: string;
+  status: string;
+  createdAt: string;
+}
+
+const STATUS_FR: Record<string, string> = {
+  approved: "Réussi",
+  pending:  "En attente",
+  rejected: "Rejeté",
+};
+const STATUS_EN: Record<string, string> = {
+  approved: "Successful",
+  pending:  "Pending",
+  rejected: "Rejected",
+};
+const STATUS_COLOR: Record<string, string> = {
+  approved: "#3db51d",
+  pending:  "#f97316",
+  rejected: "#ef4444",
 };
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-export default function DepositOrdersPage() {
-  useEffect(() => { document.title = "Deposit History | Noviqra Ai"; }, []);
-  const { user } = useAuth();
-  const { fmt } = useUserCurrency();
+const DARK_CARD = "#1a1a1a";
+const BORDER    = "#2a2a2a";
+const GREEN     = "#3db51d";
 
-  const { data: deposits = [], isLoading } = useQuery<Deposit[]>({
+export default function DepositOrdersPage() {
+  const { fmt } = useUserCurrency();
+  const { lang } = useLang();
+  const fr = lang === "fr";
+  const [, navigate] = useLocation();
+  const searchStr = useSearch();
+  const params = new URLSearchParams(searchStr);
+  const defaultTab = params.get("tab") === "withdrawal" ? "withdrawal" : "deposit";
+  const [activeTab, setActiveTab] = useState<"deposit" | "withdrawal">(defaultTab as any);
+
+  useEffect(() => { document.title = "Historique | Noviqra Ai"; }, []);
+
+  const { data: deposits = [], isLoading: loadingDeposits } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],
   });
 
+  const { data: withdrawals = [], isLoading: loadingWithdrawals } = useQuery<Withdrawal[]>({
+    queryKey: ["/api/withdrawals/history"],
+  });
+
+  const isLoading = activeTab === "deposit" ? loadingDeposits : loadingWithdrawals;
+
+  const statusLabel = (status: string) =>
+    fr ? (STATUS_FR[status] || status) : (STATUS_EN[status] || status);
+
   return (
-    <div style={{ minHeight: "100vh", background: "#f3f4f6" }}>
+    <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
 
-      <header style={{ display: "flex", alignItems: "center", padding: "12px 16px", background: "white", borderBottom: "1px solid #e5e7eb" }}>
-        <Link href="/account">
-          <button style={{ padding: 4, marginRight: 8, background: "transparent", border: "none", cursor: "pointer" }} data-testid="button-back">
-            <ChevronLeft size={22} color="#3db51d" />
-          </button>
-        </Link>
-        <h1 style={{ flex: 1, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#111827", paddingRight: 30 }}>
-          Deposit History
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 0", paddingTop: 48 }}>
+        <button
+          data-testid="button-back"
+          onClick={() => window.history.length > 1 ? window.history.back() : navigate("/account")}
+          style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, flexShrink: 0 }}
+        >
+          <ChevronLeft style={{ width: 24, height: 24, color: "#fff" }} />
+        </button>
+        <h1 style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 17, color: "#fff", marginRight: 32 }}>
+          {fr ? "Détails du solde" : "Balance details"}
         </h1>
-      </header>
+      </div>
 
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* ── Tabs ── */}
+      <div style={{ display: "flex", margin: "16px 0 0", borderBottom: `1px solid ${BORDER}` }}>
+        {([
+          { key: "withdrawal", label: fr ? "Relevé de retrait" : "Withdrawal statement" },
+          { key: "deposit",    label: fr ? "Ordre de dépôt"    : "Deposit orders" },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            data-testid={`tab-${tab.key}`}
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: "12px 8px",
+              fontSize: 14,
+              fontWeight: activeTab === tab.key ? 700 : 400,
+              color: activeTab === tab.key ? "#fff" : "#666",
+              position: "relative",
+            }}
+          >
+            {tab.label}
+            {activeTab === tab.key && (
+              <div style={{
+                position: "absolute",
+                bottom: -1,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                background: "#3a7bd5",
+              }} />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ padding: "12px 12px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
+
         {isLoading ? (
           Array(4).fill(0).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+            <div key={i} style={{ background: DARK_CARD, borderRadius: 12, height: 68, opacity: 0.4 }} />
           ))
-        ) : deposits.length === 0 ? (
-          <EmptyState message="No deposits yet" />
+        ) : activeTab === "deposit" ? (
+
+          deposits.length === 0 ? (
+            <p style={{ textAlign: "center", color: "#555", marginTop: 48, fontSize: 14 }}>
+              {fr ? "Plus de données" : "No data"}
+            </p>
+          ) : (
+            <>
+              {deposits.map((d) => (
+                <div
+                  key={d.id}
+                  data-testid={`card-deposit-${d.id}`}
+                  style={{
+                    background: DARK_CARD,
+                    borderRadius: 10,
+                    padding: "14px 16px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: GREEN }}>
+                      {fr ? "Ordre de dépôt" : "Deposit order"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                      {formatDate(d.createdAt)}
+                    </div>
+                    <div style={{ fontSize: 11, color: STATUS_COLOR[d.status] || "#888", marginTop: 3, fontWeight: 600 }}>
+                      {statusLabel(d.status)}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: GREEN }}>
+                    +{fmt(parseFloat(d.amount))}
+                  </div>
+                </div>
+              ))}
+              <p style={{ textAlign: "center", color: "#444", fontSize: 13, marginTop: 8 }}>
+                {fr ? "Plus de données" : "No more data"}
+              </p>
+            </>
+          )
+
         ) : (
-          deposits.map((d) => {
-            const cfg = STATUS_CONFIG[d.status] || { label: d.status, color: "#6b7280" };
 
-            return (
-              <div
-                key={d.id}
-                style={{ background: "white", borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.07)", border: "1px solid #f0f0f0", display: "flex", alignItems: "stretch" }}
-                data-testid={`card-deposit-${d.id}`}
-              >
-                <div style={{ width: 76, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 10, background: "#f9fafb" }}>
-                  <img
-                    src={historyIcon}
-                    alt="Deposit"
-                    style={{ width: 56, height: 56, objectFit: "contain", borderRadius: 12 }}
-                  />
-                </div>
+          withdrawals.length === 0 ? (
+            <p style={{ textAlign: "center", color: "#555", marginTop: 48, fontSize: 14 }}>
+              {fr ? "Plus de données" : "No data"}
+            </p>
+          ) : (
+            <>
+              {withdrawals.map((w) => {
+                const displayAmt = parseFloat(w.netAmount || w.amount);
+                return (
+                  <div
+                    key={w.id}
+                    data-testid={`card-withdrawal-${w.id}`}
+                    style={{
+                      background: DARK_CARD,
+                      borderRadius: 10,
+                      padding: "14px 16px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: GREEN }}>
+                        {fr ? "Relevé de retrait" : "Withdrawal"}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                        {formatDate(w.createdAt)}
+                      </div>
+                      <div style={{ fontSize: 11, color: STATUS_COLOR[w.status] || "#888", marginTop: 3, fontWeight: 600 }}>
+                        {statusLabel(w.status)}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>
+                      -{fmt(displayAmt)}
+                    </div>
+                  </div>
+                );
+              })}
+              <p style={{ textAlign: "center", color: "#444", fontSize: 13, marginTop: 8 }}>
+                {fr ? "Plus de données" : "No more data"}
+              </p>
+            </>
+          )
 
-                <div style={{ flex: 1, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>Deposit</span>
-                    <span style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>
-                      {fmt(parseFloat(d.amount))}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: "#9ca3af" }}>{formatDate(d.createdAt)}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })
         )}
       </div>
     </div>
