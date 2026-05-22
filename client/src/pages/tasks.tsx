@@ -1,20 +1,14 @@
+import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, Loader2, Trophy, CheckCircle2 } from "lucide-react";
-import { Link } from "wouter";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import { useLocation } from "wouter";
 import type { Task } from "@shared/schema";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import wendysImg from "@assets/file_00000000aac471f49ed3613abb850ef5_1779479835696.png";
-import noviqraBuilding from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
-import iconBronze from "@assets/344464_1773318022355.png";
-import iconArgent from "@assets/817729_1773318022328.png";
-import iconOr from "@assets/sac-argent-gros-tas-illustration-icone-argent-comptant-icone-p_1773318022388.jpg";
-import iconPlatine from "@assets/1751761_1773318022264.png";
-import iconDiamant from "@assets/3275655_1773318022415.png";
+import { useLang } from "@/lib/i18n";
+import heroImg from "@assets/robot-humanoide_1779479959935.jpg";
 
 interface TaskWithStatus extends Task {
   isCompleted: boolean;
@@ -22,32 +16,19 @@ interface TaskWithStatus extends Task {
   currentInvites: number;
 }
 
-const TIER_LABELS = [
-  "Bronze Sponsor",
-  "Silver Sponsor",
-  "Gold Sponsor",
-  "Platinum Sponsor",
-  "Diamond Sponsor",
-  "Elite Sponsor",
-];
-
-const TIER_COLORS = [
-  { bg: "from-amber-700 to-amber-500" },
-  { bg: "from-gray-500 to-gray-400" },
-  { bg: "from-yellow-600 to-yellow-400" },
-  { bg: "from-cyan-600 to-cyan-400" },
-  { bg: "from-blue-700 to-blue-500" },
-  { bg: "from-purple-700 to-purple-500" },
-];
-
-const TIER_ICONS = [iconBronze, iconArgent, iconOr, iconPlatine, iconDiamant, iconBronze];
-
-const MIN_DEPOSIT_FCFA = 300;
+const ORANGE = "#e07020";
+const DARK_CARD = "#1a1a1a";
+const BORDER = "#2a2a2a";
 
 export default function TasksPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const { fmt } = useUserCurrency();
+  const { lang } = useLang();
+  const fr = lang === "fr";
+  const [, navigate] = useLocation();
+
+  useEffect(() => { document.title = "Centre de missions | Noviqra Ai"; }, []);
 
   const { data: tasks, isLoading } = useQuery<TaskWithStatus[]>({
     queryKey: ["/api/tasks"],
@@ -65,191 +46,196 @@ export default function TasksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       refreshUser();
-      toast({ title: "Reward claimed!", description: "The bonus has been added to your account." });
+      toast({ title: fr ? "Récompense réclamée !" : "Reward claimed!", description: fr ? "Le bonus a été ajouté à votre compte." : "The bonus has been added to your account." });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
-  const totalTaskRewards = tasks?.filter(t => t.isCompleted).reduce((sum, t) => sum + t.reward, 0) || 0;
-  const completedCount = tasks?.filter(t => t.isCompleted).length || 0;
-  const claimableCount = tasks?.filter(t => t.canClaim && !t.isCompleted).length || 0;
+  const totalClaimed = tasks?.filter(t => t.isCompleted).reduce((sum, t) => sum + t.reward, 0) || 0;
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50">
+    <div style={{ minHeight: "100vh", background: "#111111", color: "#fff", paddingBottom: 80 }}>
 
-      <div className="relative overflow-hidden" style={{ height: "260px" }}>
-        <img src={wendysImg} alt="Noviqra Ai" className="w-full h-full object-cover object-center" />
-        <div
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(200,16,46,0.80) 0%, rgba(160,13,37,0.70) 45%, rgba(80,3,15,0.95) 100%)" }}
+      {/* ── HERO ── */}
+      <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+        <img
+          src={heroImg}
+          alt="Centre de missions"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }}
         />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.70) 100%)" }} />
 
-        <div className="absolute top-0 left-0 right-0 flex items-center px-4 pt-4">
-          <Link href="/">
-            <button
-              className="w-9 h-9 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center"
-              data-testid="button-back"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-          </Link>
-          <div className="flex-1 flex justify-center">
-            <img src={noviqraBuilding} alt="Noviqra Ai" className="h-8 object-contain rounded" />
-          </div>
-          <div className="w-9" />
-        </div>
+        {/* Back button */}
+        <button
+          data-testid="button-back"
+          onClick={() => window.history.length > 1 ? window.history.back() : navigate("/")}
+          style={{ position: "absolute", top: 44, left: 16, background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
+        >
+          <ChevronLeft style={{ width: 28, height: 28, color: "#fff" }} />
+        </button>
 
-        <div className="absolute left-4 right-4" style={{ bottom: "60px" }}>
-          <h1 className="text-white font-bold text-xl leading-tight" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-            Referral Program
-          </h1>
-          <p className="text-white text-xs mt-1" style={{ opacity: 0.92, textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
-            Invite friends and earn rewards
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-4 -mt-10 z-10 relative">
-        <div className="bg-white rounded-2xl shadow-lg p-4 flex items-center justify-between">
-          <div className="flex-1 text-center border-r border-gray-100">
-            <p className="text-[#3db51d] text-xl font-bold" data-testid="text-total-rewards">
-              {fmt(totalTaskRewards)}
-            </p>
-            <p className="text-gray-500 text-[11px] mt-0.5">Earned</p>
-          </div>
-          <div className="flex-1 text-center border-r border-gray-100">
-            <p className="text-[#3db51d] text-xl font-bold">{completedCount}</p>
-            <p className="text-gray-500 text-[11px] mt-0.5">Completed</p>
-          </div>
-          <div className="flex-1 text-center">
-            <p className="text-[#3db51d] text-xl font-bold">{claimableCount}</p>
-            <p className="text-gray-500 text-[11px] mt-0.5">To claim</p>
-          </div>
+        {/* Title */}
+        <div style={{
+          position: "absolute",
+          bottom: 24,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontWeight: 900,
+          fontSize: 30,
+          color: "#fff",
+          letterSpacing: 3,
+          textShadow: "0 2px 12px rgba(0,0,0,0.7)",
+          textTransform: "uppercase",
+        }}>
+          {fr ? "CENTRE DE MISSIONS" : "MISSION CENTER"}
         </div>
       </div>
 
-      <div className="mx-4 mt-4 mb-24">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-[#3db51d]" />
-            <h2 className="text-gray-800 font-bold text-sm">Referral Tiers</h2>
-          </div>
-          {claimableCount > 0 && (
-            <button
-              onClick={async () => {
-                const claimable = tasks?.filter(t => t.canClaim && !t.isCompleted) || [];
-                for (const task of claimable) {
-                  try { await claimMutation.mutateAsync(task.id); } catch {}
-                }
-              }}
-              disabled={claimMutation.isPending}
-              className="text-xs text-[#3db51d] font-semibold bg-green-50 px-3 py-1.5 rounded-full"
-              data-testid="button-claim-rewards"
-            >
-              Claim all ({claimableCount})
-            </button>
-          )}
+      {/* ── TOTAL REWARDS CARD ── */}
+      <div style={{ margin: "20px 16px 0", background: DARK_CARD, borderRadius: 12, border: `1px solid ${ORANGE}`, padding: "20px 16px", textAlign: "center" }}>
+        <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", letterSpacing: 1 }} data-testid="text-total-rewards">
+          {fmt(totalClaimed)}
         </div>
+        <div style={{ fontSize: 13, color: "#888", marginTop: 6 }}>
+          {fr ? "Récompenses cumulées" : "Total rewards earned"}
+        </div>
+      </div>
 
+      {/* ── MISSION CARDS ── */}
+      <div style={{ padding: "20px 16px 0", display: "flex", flexDirection: "column", gap: 16 }}>
         {isLoading ? (
-          <div className="space-y-3">
-            {Array(6).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-            ))}
-          </div>
+          Array(5).fill(0).map((_, i) => (
+            <div key={i} style={{ background: DARK_CARD, borderRadius: 12, height: 140, opacity: 0.5 }} />
+          ))
         ) : tasks && tasks.length > 0 ? (
-          <div className="space-y-3">
-            {tasks.map((task, index) => {
-              const tier = TIER_COLORS[index] || TIER_COLORS[0];
-              const label = TIER_LABELS[index] || `Tier ${index + 1}`;
-              const icon = TIER_ICONS[index] || TIER_ICONS[0];
-              const progress = Math.min((task.currentInvites / task.requiredInvites) * 100, 100);
+          tasks.map((task, index) => {
+            const missionNum = index + 1;
+            const progress = task.currentInvites;
+            const target = task.requiredInvites;
+            const progressStr = `${progress}/${target}`;
 
-              return (
-                <div
-                  key={task.id}
-                  className={`bg-white rounded-2xl overflow-hidden shadow-sm border ${
-                    task.isCompleted
-                      ? "border-green-200"
-                      : task.canClaim
-                      ? "border-[#3db51d]/40"
-                      : "border-gray-100"
-                  }`}
-                  data-testid={`task-item-${task.id}`}
-                >
-                  <div className={`bg-gradient-to-r ${tier.bg} px-4 py-2.5 flex items-center justify-between`}>
-                    <span className="text-white font-bold text-sm">{label}</span>
-                    {task.isCompleted && <CheckCircle2 className="w-4 h-4 text-white" />}
+            return (
+              <div
+                key={task.id}
+                data-testid={`task-item-${task.id}`}
+                style={{
+                  background: DARK_CARD,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  border: task.isCompleted ? "1px solid #4caf50" : task.canClaim ? `1px solid ${ORANGE}` : `1px solid ${BORDER}`,
+                }}
+              >
+                {/* Card top: mission number + description */}
+                <div style={{ padding: "16px 16px 12px", display: "flex", gap: 14 }}>
+                  {/* Left: Mission number */}
+                  <div style={{ flexShrink: 0, textAlign: "center" }}>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: "#fff" }}>Mission</div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{missionNum}</div>
                   </div>
 
-                  <div className="p-3 flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 flex items-center justify-center">
-                      <img src={icon} alt={label} className="w-12 h-12 object-contain" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-gray-700 text-xs leading-snug mb-0.5">
-                        Invite{" "}
-                        <span className="font-bold text-gray-900">{task.requiredInvites}</span>{" "}
-                        people to deposit (min. {fmt(MIN_DEPOSIT_FCFA)})
-                      </p>
-                      <p className="text-[#3db51d] font-bold text-base">
-                        {fmt(task.reward)}
-                      </p>
-
-                      <div className="mt-1.5">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-gray-400 text-[10px]">
-                            {task.currentInvites} / {task.requiredInvites} invitations
-                          </span>
-                          <span className="text-gray-400 text-[10px]">{Math.round(progress)}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              task.isCompleted ? "bg-green-500" : "bg-[#3db51d]"
-                            }`}
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex-shrink-0">
-                      {task.isCompleted ? (
-                        <span className="bg-green-100 text-green-700 text-[10px] font-semibold px-2.5 py-1.5 rounded-full block text-center">
-                          ✓ Done
-                        </span>
-                      ) : task.canClaim ? (
-                        <button
-                          onClick={() => !claimMutation.isPending && claimMutation.mutate(task.id)}
-                          disabled={claimMutation.isPending}
-                          className="bg-[#3db51d] text-white text-[11px] font-semibold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-sm"
-                          data-testid={`button-claim-${task.id}`}
-                        >
-                          {claimMutation.isPending ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            "Claim"
-                          )}
-                        </button>
-                      ) : (
-                        <span className="bg-gray-100 text-gray-400 text-[10px] font-semibold px-2.5 py-1.5 rounded-full block text-center">
-                          In progress
-                        </span>
-                      )}
-                    </div>
+                  {/* Right: Description */}
+                  <div style={{ flex: 1, fontSize: 13, color: "#ccc", lineHeight: 1.5 }}>
+                    {task.description}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Stats row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
+                  {[
+                    { label: fr ? "Actuel" : "Current",     value: String(progress) },
+                    { label: fr ? "Objectif" : "Target",    value: String(target) },
+                    { label: fr ? "Progression" : "Progress", value: progressStr },
+                  ].map((col, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        textAlign: "center",
+                        padding: "12px 8px",
+                        borderRight: i < 2 ? `1px solid ${BORDER}` : "none",
+                      }}
+                    >
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{col.value}</div>
+                      <div style={{ fontSize: 11, color: "#777", marginTop: 3 }}>{col.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action button */}
+                <div style={{ padding: "12px 16px" }}>
+                  {task.isCompleted ? (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 40,
+                        borderRadius: 8,
+                        background: "#2a3a2a",
+                        border: "1px solid #4caf50",
+                        color: "#4caf50",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      ✓ {fr ? "Réclamé" : "Claimed"}
+                    </div>
+                  ) : task.canClaim ? (
+                    <button
+                      onClick={() => !claimMutation.isPending && claimMutation.mutate(task.id)}
+                      disabled={claimMutation.isPending}
+                      data-testid={`button-claim-${task.id}`}
+                      style={{
+                        width: "100%",
+                        height: 40,
+                        borderRadius: 8,
+                        background: ORANGE,
+                        border: "none",
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                      }}
+                    >
+                      {claimMutation.isPending ? (
+                        <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
+                      ) : (fr ? "Réclamer" : "Claim")}
+                    </button>
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 40,
+                        borderRadius: 8,
+                        background: "#2a2a2a",
+                        color: "#666",
+                        fontWeight: 600,
+                        fontSize: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {fr ? "En cours" : "In progress"}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
         ) : (
-          <EmptyState message="No tasks available" />
+          <div style={{ textAlign: "center", padding: "48px 0", color: "#555" }}>
+            {fr ? "Aucune mission disponible" : "No missions available"}
+          </div>
         )}
       </div>
     </div>

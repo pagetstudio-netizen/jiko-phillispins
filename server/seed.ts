@@ -163,35 +163,45 @@ export async function seed() {
   }
   console.log("Products updated to VIP structure");
 
-  // Check if tasks exist
+  // Check if tasks exist - update to 5 referral bonus missions (PHP rewards)
   const existingTasks = await db.select().from(tasks);
   const requiredTasks = [
-    { name: "Bronze Referrer", description: "Invite 3 people to invest", requiredInvites: 3, reward: 35, sortOrder: 1 },
-    { name: "Silver Referrer", description: "Invite 5 people to invest", requiredInvites: 5, reward: 75, sortOrder: 2 },
-    { name: "Gold Referrer", description: "Invite 10 people to invest", requiredInvites: 10, reward: 250, sortOrder: 3 },
-    { name: "Platinum Referrer", description: "Invite 30 people to invest", requiredInvites: 30, reward: 650, sortOrder: 4 },
-    { name: "Diamond Referrer", description: "Invite 100 people to invest", requiredInvites: 100, reward: 1500, sortOrder: 5 },
-    { name: "Elite Referrer", description: "Invite 300 people to invest", requiredInvites: 300, reward: 5000, sortOrder: 6 },
+    { name: "Mission 1 - Referral", description: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir PHP 200", requiredInvites: 5,  reward: 200,  sortOrder: 1 },
+    { name: "Mission 2 - Referral", description: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir PHP 500", requiredInvites: 10, reward: 500,  sortOrder: 2 },
+    { name: "Mission 3 - Referral", description: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir PHP 1,000", requiredInvites: 20, reward: 1000, sortOrder: 3 },
+    { name: "Mission 4 - Referral", description: "Invitez 30 utilisateurs d'investissement de niveau 1 pour obtenir PHP 3,000", requiredInvites: 30, reward: 3000, sortOrder: 4 },
+    { name: "Mission 5 - Referral", description: "Invitez 50 utilisateurs d'investissement de niveau 1 pour obtenir PHP 5,000", requiredInvites: 50, reward: 5000, sortOrder: 5 },
   ];
 
+  const usedTaskIds = new Set<number>();
   for (const taskData of requiredTasks) {
-    const existing = existingTasks.find(t => t.name === taskData.name);
+    let existing = existingTasks.find(t => t.name === taskData.name);
     if (!existing) {
+      existing = existingTasks.find(t => t.sortOrder === taskData.sortOrder && !usedTaskIds.has(t.id));
+    }
+    if (existing) {
+      usedTaskIds.add(existing.id);
+      await db.update(tasks).set({
+        name: taskData.name,
+        reward: taskData.reward,
+        requiredInvites: taskData.requiredInvites,
+        description: taskData.description,
+        sortOrder: taskData.sortOrder,
+      }).where(eq(tasks.id, existing.id));
+      console.log(`Task updated: ${taskData.name}`);
+    } else {
       await db.insert(tasks).values(taskData);
       console.log(`Task added: ${taskData.name}`);
-    } else {
-      if (existing.reward !== taskData.reward || existing.requiredInvites !== taskData.requiredInvites || existing.description !== taskData.description) {
-        await db.update(tasks).set({
-          reward: taskData.reward,
-          requiredInvites: taskData.requiredInvites,
-          description: taskData.description,
-          sortOrder: taskData.sortOrder,
-        }).where(eq(tasks.id, existing.id));
-        console.log(`Task updated: ${taskData.name}`);
-      }
     }
   }
-  console.log("Tasks check complete (existing values preserved)");
+  // Remove tasks that no longer exist in required list
+  for (const existing of existingTasks) {
+    if (!usedTaskIds.has(existing.id)) {
+      await db.delete(tasks).where(eq(tasks.id, existing.id));
+      console.log(`Task removed: ${existing.name}`);
+    }
+  }
+  console.log("Tasks updated to 5 referral bonus missions");
 
 
   // Check if settings exist
