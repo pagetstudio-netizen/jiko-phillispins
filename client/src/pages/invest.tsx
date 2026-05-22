@@ -1,18 +1,25 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import ContactSheet from "@/components/contact-sheet";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2, AlertTriangle, Settings } from "lucide-react";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import { Loader2, AlertTriangle, Settings } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLang } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
-import jinkoLogoFull from "@assets/20260311_220915_1773268242686.png";
-import serviceIcon from "@assets/20260311_214852_1773265973964.png";
-import productHeroImg from "@assets/jinko-solar-logo-png_seeklogo-265492_1775671142176.png";
+import heroImg    from "@assets/20260408_191813_1775675938233.jpg";
+import car1       from "@assets/20260408_190507_1775675626941.jpg";
+import car2       from "@assets/20260408_191018_1775675626871.jpg";
+import car3       from "@assets/20260408_191416_1775675670071.jpg";
+import car4       from "@assets/20260408_191416_1775676009094.jpg";
+import car5       from "@assets/20260408_191416_1775676156902.jpg";
+import car6       from "@assets/20260408_191416_1775728687952.jpg";
+import car7       from "@assets/20260408_191813_1775805436406.jpg";
+import car8       from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
+
+const CAR_IMAGES = [car1, car2, car3, car4, car5, car6, car7, car8];
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;
@@ -20,26 +27,38 @@ interface ProductWithOwnership extends Product {
   ownedCount?: number;
 }
 
+const VIP_NAMES = [
+  "VIP1 NIO ET5",
+  "VIP2 NIO ET5 S",
+  "VIP3 NIO ET7",
+  "VIP4 NIO EC6",
+  "VIP5 NIO ES6",
+  "VIP6 NIO ES8",
+  "VIP7 NIO EP9",
+  "VIP8 NIO ET9",
+];
+
 export default function InvestPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const { fmt, symbol } = useUserCurrency();
-  useEffect(() => { document.title = "Invest | Noviqra Ai"; }, []);
+  const { fmt } = useUserCurrency();
+  const { lang } = useLang();
+  useEffect(() => { document.title = "Produit | Noviqra Ai"; }, []);
   const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
-  const [showContactSheet, setShowContactSheet] = useState(false);
 
   const { data: products, isLoading } = useQuery<ProductWithOwnership[]>({
     queryKey: ["/api/products"],
   });
 
+  const { data: userProducts = [] } = useQuery<any[]>({
+    queryKey: ["/api/user/products"],
+  });
+
   const purchaseMutation = useMutation({
     mutationFn: async (productId: number) => {
       const response = await apiRequest("POST", `/api/products/${productId}/purchase`, {});
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Error");
-      }
+      if (!response.ok) { const data = await response.json(); throw new Error(data.message || "Error"); }
       return response.json();
     },
     onSuccess: () => {
@@ -47,185 +66,199 @@ export default function InvestPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/user/products"] });
       refreshUser();
       setConfirmProduct(null);
-      toast({ title: "Product purchased!", description: "You will start receiving earnings tomorrow." });
+      toast({ title: lang === "fr" ? "Produit acheté !" : "Product purchased!", description: lang === "fr" ? "Vos revenus commenceront demain." : "You will start receiving earnings tomorrow." });
     },
     onError: (error: any) => {
       setConfirmProduct(null);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: lang === "fr" ? "Erreur" : "Error", description: error.message, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
   const balance = parseFloat(user.balance || "0");
-
-  const handleBuyClick = (product: ProductWithOwnership) => {
-    setConfirmProduct(product);
-  };
-
-  const confirmPurchase = () => {
-    if (confirmProduct) {
-      purchaseMutation.mutate(confirmProduct.id);
-    }
-  };
+  const totalEarnings = parseFloat((user as any).totalEarnings || "0");
+  const myProductCount = userProducts.length;
 
   const paidProducts = products?.filter(p => !p.isFree) || [];
 
+  const confirmPurchase = () => {
+    if (confirmProduct) purchaseMutation.mutate(confirmProduct.id);
+  };
+
   return (
-    <div className="flex flex-col min-h-full bg-gray-100">
-      <ContactSheet open={showContactSheet} onClose={() => setShowContactSheet(false)} />
-      <div className="flex items-center justify-between px-4 py-3 shadow-sm" style={{ background: "linear-gradient(135deg, #3db51d 0%, #2a8d13 100%)" }}>
-        <img src={jinkoLogoFull} alt="Jinko Solar" className="h-9 w-auto object-contain" data-testid="img-jinko-logo" />
-        <button
-          onClick={() => setShowContactSheet(true)}
-          className="flex items-center justify-center"
-          data-testid="button-service"
-        >
-          <img src={serviceIcon} alt="Customer Service" className="w-8 h-8 object-contain" />
-        </button>
+    <div style={{ minHeight: "100vh", background: "#111111", paddingBottom: 80 }}>
+
+      {/* ── HERO ── */}
+      <div style={{ position: "relative", height: 180 }}>
+        <img src={heroImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%)" }} />
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-20 px-3 pt-4">
+      {/* ── STATS CARD ── */}
+      <div style={{ margin: "0 12px", marginTop: -1 }}>
+        <div style={{
+          background: "#0d0d0d",
+          border: "1.5px solid #f59e0b",
+          borderRadius: 12,
+          display: "flex",
+          overflow: "hidden",
+        }}>
+          {/* Left: My products */}
+          <button
+            onClick={() => navigate("/my-products")}
+            data-testid="button-my-products"
+            style={{ flex: 1, padding: "14px 10px", background: "transparent", border: "none", borderRight: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", textAlign: "center" }}
+          >
+            <p style={{ color: "white", fontWeight: 800, fontSize: 22, margin: 0 }}>{myProductCount}</p>
+            <p style={{ color: "#9ca3af", fontSize: 12, margin: "4px 0 0" }}>
+              {lang === "fr" ? "Mes produits ›" : "My products ›"}
+            </p>
+          </button>
+          {/* Right: Total revenue */}
+          <button
+            onClick={() => navigate("/my-products")}
+            data-testid="button-total-revenue"
+            style={{ flex: 1, padding: "14px 10px", background: "transparent", border: "none", cursor: "pointer", textAlign: "center" }}
+          >
+            <p style={{ color: "white", fontWeight: 800, fontSize: 22, margin: 0 }}>{fmt(totalEarnings)}</p>
+            <p style={{ color: "#9ca3af", fontSize: 12, margin: "4px 0 0" }}>
+              {lang === "fr" ? "Revenu total ›" : "Total revenue ›"}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      {/* ── PRODUCT LIST ── */}
+      <div style={{ padding: "12px 0 0" }}>
         {isLoading ? (
-          <div className="space-y-4">
-            {Array(4).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-64 w-full rounded-2xl" />
-            ))}
+          <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+            <Loader2 style={{ width: 32, height: 32, color: "#f59e0b" }} className="animate-spin" />
           </div>
-        ) : paidProducts.length > 0 ? (
-          <div className="space-y-5">
-            {paidProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-2xl shadow-sm overflow-hidden"
-                data-testid={`product-card-${product.id}`}
-              >
-                <div className="px-4 pt-3 pb-5">
-                  <h3 className="font-bold text-gray-900 text-base" data-testid={`text-product-name-${product.id}`}>
-                    {product.name}
-                  </h3>
-                </div>
-
-                <div className="mx-3 rounded-2xl relative" style={{ background: "#E28075", paddingTop: "126px", marginBottom: "0" }}>
-                  <div
-                    className="absolute overflow-hidden rounded-xl"
-                    style={{ top: "-14px", height: "132px", left: "8px", right: "8px" }}
-                  >
-                    <img
-                      src={productHeroImg}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="px-4 pb-4 pt-2 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Cycle (Days)</span>
-                      <span className="text-sm font-bold text-white">{product.cycleDays}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Daily Income ({symbol})</span>
-                      <span className="text-sm font-bold text-white">{fmt(product.dailyEarnings)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/90">Total Return ({symbol})</span>
-                      <span className="text-sm font-bold text-white">
-                        {fmt(product.price)}+{fmt(product.totalReturn)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div>
-                    <span className="text-xs text-gray-400">Price ({symbol})</span>
-                    <p className="text-base font-bold text-orange-500">{fmt(product.price)}</p>
-                  </div>
-                  <button
-                    onClick={() => handleBuyClick(product)}
-                    className="px-7 py-2.5 rounded-full text-sm font-bold text-white shadow-md"
-                    style={{ background: "#3db51d" }}
-                    data-testid={`button-purchase-${product.id}`}
-                  >
-                    Invest
-                  </button>
-                </div>
-              </div>
-            ))}
+        ) : paidProducts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "#6b7280" }}>
+            <Settings style={{ width: 40, height: 40, margin: "0 auto 12px" }} />
+            <p>{lang === "fr" ? "Aucun produit disponible" : "No products available"}</p>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Settings className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-400">No products available</p>
-          </div>
+          paidProducts.map((product, idx) => {
+            const carImg = CAR_IMAGES[idx % CAR_IMAGES.length];
+            const vipName = VIP_NAMES[idx] || product.name;
+            return (
+              <div key={product.id} data-testid={`product-card-${product.id}`}>
+                <div style={{ padding: "14px 12px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  {/* Car thumbnail */}
+                  <img
+                    src={carImg}
+                    alt={vipName}
+                    style={{ width: 110, height: 80, objectFit: "cover", borderRadius: 10, flexShrink: 0 }}
+                  />
+                  {/* Details */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+                      <p style={{ color: "white", fontWeight: 700, fontSize: 14, margin: 0 }}>{vipName}</p>
+                      <button
+                        onClick={() => setConfirmProduct(product)}
+                        data-testid={`button-purchase-${product.id}`}
+                        style={{
+                          background: "white",
+                          color: "#111111",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "5px 14px",
+                          fontWeight: 800,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          letterSpacing: 0.5,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {lang === "fr" ? "ACHETER" : "BUY"}
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {[
+                        [lang === "fr" ? "Prix" : "Price",              fmt(product.price)],
+                        [lang === "fr" ? "Jours de revenu" : "Revenue days", `${product.cycleDays}`],
+                        [lang === "fr" ? "Revenu quotidien" : "Daily revenue", fmt(product.dailyEarnings)],
+                        [lang === "fr" ? "Revenu total" : "Total revenue", fmt(product.totalReturn)],
+                      ].map(([label, value]) => (
+                        <p key={label} style={{ color: "#9ca3af", fontSize: 12, margin: 0 }}>
+                          {label} : <span style={{ color: "#d1d5db" }}>{value}</span>
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "0 12px" }} />
+              </div>
+            );
+          })
         )}
       </div>
 
+      {/* ── CONFIRM MODAL ── */}
       {confirmProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/50" onClick={() => setConfirmProduct(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-
-            <div className="pt-6 pb-2 text-center">
-              <h3 className="text-xl font-bold text-gray-900">{confirmProduct.name}</h3>
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px", background: "rgba(0,0,0,0.75)" }}
+          onClick={() => setConfirmProduct(null)}
+        >
+          <div
+            style={{ background: "#1a1a1a", borderRadius: 20, width: "100%", maxWidth: 360, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: "20px 20px 10px", textAlign: "center" }}>
+              <p style={{ color: "white", fontWeight: 800, fontSize: 16, margin: 0 }}>
+                {VIP_NAMES[paidProducts.findIndex(p => p.id === confirmProduct.id)] || confirmProduct.name}
+              </p>
             </div>
-
-            <div className="flex justify-center px-6 py-3">
+            <div style={{ padding: "0 20px 8px", textAlign: "center" }}>
               <img
-                src={productHeroImg}
+                src={CAR_IMAGES[paidProducts.findIndex(p => p.id === confirmProduct.id) % CAR_IMAGES.length]}
                 alt={confirmProduct.name}
-                className="w-36 h-28 object-cover rounded-2xl"
+                style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 12 }}
               />
             </div>
-
-            <p className="text-center text-sm text-gray-500 px-6 pb-3">
-              Settlement income every 24 hours
+            <p style={{ color: "#9ca3af", fontSize: 13, textAlign: "center", padding: "4px 20px 10px", margin: 0 }}>
+              {lang === "fr" ? "Revenus réglés toutes les 24h" : "Settlement income every 24 hours"}
             </p>
-
-            <div className="px-6 pb-2 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Price:</span>
-                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.price)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Daily Income:</span>
-                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.dailyEarnings)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Total Return:</span>
-                <span className="text-[#3db51d] font-bold text-sm">{fmt(confirmProduct.totalReturn)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 text-sm">Duration:</span>
-                <span className="text-gray-900 font-bold text-sm">{confirmProduct.cycleDays} days</span>
-              </div>
-
+            <div style={{ padding: "0 20px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                [lang === "fr" ? "Prix" : "Price",              fmt(confirmProduct.price)],
+                [lang === "fr" ? "Revenu quotidien" : "Daily Income", fmt(confirmProduct.dailyEarnings)],
+                [lang === "fr" ? "Revenu total" : "Total Return", fmt(confirmProduct.totalReturn)],
+                [lang === "fr" ? "Durée" : "Duration",           `${confirmProduct.cycleDays} ${lang === "fr" ? "jours" : "days"}`],
+              ].map(([label, value]) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#9ca3af", fontSize: 13 }}>{label} :</span>
+                  <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{value}</span>
+                </div>
+              ))}
               {balance < confirmProduct.price && (
-                <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-red-200 rounded-xl mt-1">
-                  <AlertTriangle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <p className="text-xs text-green-500">
-                    Insufficient balance. You need {formatCurrency(confirmProduct.price - balance, user.country)}.
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "8px 10px", marginTop: 4 }}>
+                  <AlertTriangle style={{ width: 16, height: 16, color: "#ef4444", flexShrink: 0 }} />
+                  <p style={{ fontSize: 12, color: "#ef4444", margin: 0 }}>
+                    {lang === "fr" ? "Solde insuffisant." : "Insufficient balance."}
                   </p>
                 </div>
               )}
             </div>
-
-            <div className="flex gap-3 px-6 py-5">
+            <div style={{ display: "flex", gap: 10, padding: "16px 20px 20px" }}>
               <button
                 onClick={() => setConfirmProduct(null)}
-                className="flex-1 py-3 rounded-full bg-gray-100 text-gray-600 font-semibold text-sm"
                 data-testid="button-cancel-purchase"
+                style={{ flex: 1, height: 46, borderRadius: 999, background: "rgba(255,255,255,0.08)", color: "white", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer" }}
               >
-                Cancel
+                {lang === "fr" ? "Annuler" : "Cancel"}
               </button>
               <button
                 onClick={confirmPurchase}
                 disabled={purchaseMutation.isPending || balance < confirmProduct.price}
-                className="flex-1 py-3 rounded-full text-white font-semibold text-sm flex items-center justify-center gap-1 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #3db51d, #2a8d13)" }}
                 data-testid="button-confirm-purchase"
+                style={{ flex: 1, height: 46, borderRadius: 999, background: "#f59e0b", color: "#111111", fontWeight: 800, fontSize: 14, border: "none", cursor: "pointer", opacity: (purchaseMutation.isPending || balance < confirmProduct.price) ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
               >
-                {purchaseMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Confirm
+                {purchaseMutation.isPending && <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />}
+                {lang === "fr" ? "Confirmer" : "Confirm"}
               </button>
             </div>
           </div>
