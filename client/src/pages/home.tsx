@@ -1,6 +1,5 @@
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
-import ContactSheet from "@/components/contact-sheet";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useUserCurrency } from "@/lib/useUserCurrency";
@@ -48,7 +47,7 @@ const ACTIONS = [
   { icon: iconDeposit,  label: "Dépôt",   path: "/deposit"    },
   { icon: iconWithdraw, label: "Retrait",  path: "/withdrawal" },
   { icon: iconGift,     label: "Cadeau",   path: "__gift__"    },
-  { icon: iconHelp,     label: "Aide",     path: "__help__"    },
+  { icon: iconHelp,     label: "Aide",     path: "/service"    },
 ];
 
 export default function HomePage() {
@@ -59,7 +58,6 @@ export default function HomePage() {
 
   const [showPopup, setShowPopup]           = useState(true);
   const [showGiftModal, setShowGiftModal]   = useState(false);
-  const [showContactSheet, setShowContactSheet] = useState(false);
   const [giftCode, setGiftCode]             = useState("");
 
   const { data: platformSettings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
@@ -85,14 +83,11 @@ export default function HomePage() {
 
   const handleAction = (path: string) => {
     if (path === "__gift__") navigate("/gift-code");
-    else if (path === "__help__") setShowContactSheet(true);
     else navigate(path);
   };
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#111111", paddingBottom: 80 }}>
-
-      <ContactSheet open={showContactSheet} onClose={() => setShowContactSheet(false)} />
 
       {/* ── POPUP ── */}
       {showPopup && (

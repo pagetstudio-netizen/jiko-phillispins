@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { SiTelegram } from "react-icons/si";
 import { useLang } from "@/lib/i18n";
 import heroBg from "@assets/20260408_191018_1775675626871.jpg";
 
 export default function ServicePage() {
   const { lang, t } = useLang();
+  const [, navigate] = useLocation();
   useEffect(() => { document.title = "Service client | Noviqra Ai"; }, []);
 
   const { data: settings } = useQuery<{
@@ -69,11 +70,13 @@ export default function ServicePage() {
 
         {/* back button */}
         <div style={{ position: "absolute", top: 44, left: 16 }}>
-          <Link href="/account">
-            <button data-testid="button-back" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
-              <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
-            </button>
-          </Link>
+          <button
+            data-testid="button-back"
+            onClick={() => window.history.length > 1 ? window.history.back() : navigate("/")}
+            style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}
+          >
+            <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
+          </button>
         </div>
 
         {/* centered text */}

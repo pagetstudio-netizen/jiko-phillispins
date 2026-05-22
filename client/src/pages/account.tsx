@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getCountryByCode } from "@/lib/countries";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { Loader2, Shield, LogOut } from "lucide-react";
-import ContactSheet from "@/components/contact-sheet";
+
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +35,6 @@ export default function AccountPage() {
 
   const [showPinModal, setShowPinModal]     = useState(false);
   const [adminPin, setAdminPin]             = useState("");
-  const [showContactSheet, setShowContactSheet] = useState(false);
 
   const { data: products } = useQuery<any[]>({ queryKey: ["/api/user-products"] });
 
@@ -79,7 +78,7 @@ export default function AccountPage() {
     { icon: iconAbout,    label: fr ? "À propos"              : "About",           action: () => navigate("/about") },
     { icon: iconRegle,    label: fr ? "Réglementation"        : "Rules",           action: () => navigate("/rules") },
     { icon: iconRecords,  label: fr ? "Historique"            : "History",         action: () => navigate("/deposit-orders") },
-    { icon: iconSupport,  label: fr ? "Service client"        : "Support",         action: () => setShowContactSheet(true) },
+    { icon: iconSupport,  label: fr ? "Service client"        : "Support",         action: () => navigate("/service") },
     { icon: iconDownload, label: fr ? "Télécharger l'app"     : "Download app",    action: () => {} },
     { icon: iconBankcard, label: fr ? "Lier une carte bancaire": "Bank card",      action: () => navigate("/wallet") },
     { icon: iconPassword, label: fr ? "Changer le mot de passe": "Change password",action: () => navigate("/change-password") },
@@ -88,7 +87,6 @@ export default function AccountPage() {
 
   return (
     <div className="flex flex-col min-h-full" style={{ background: "#111111" }}>
-      <ContactSheet open={showContactSheet} onClose={() => setShowContactSheet(false)} />
 
       <div className="flex-1 overflow-y-auto pb-24">
 
