@@ -14,10 +14,10 @@ import popupCloseBtn from "@assets/20260411_144711_1775920729969.png";
 
 import heroImg from "@assets/20260408_191813_1775675938233.jpg";
 import rdBgImg from "@assets/review-energy-noticias-3217478400901_1775833296599.jpg";
-import newModelImg from "@assets/15502488526db98c02ac135d0ac0e262d31dee111d_1775833317804.jpg";
+import buildingImg from "@assets/file_00000000dc987243b80751c21ba23b22_1779479769826.png";
 
-import robotBonus   from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773319220043.png";
-import robotMission from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773273784524.png";
+import robotBonus   from "@assets/file_00000000aac471f49ed3613abb850ef5_1779479769787.png";
+import robotMission from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779479769721.png";
 
 import iconDeposit  from "@assets/recharge-icon-BZHWSjQZ_(1)_1779463427355.png";
 import iconWithdraw from "@assets/withdraw-icon-DFsum39V_(1)_1779463427337.png";
@@ -26,7 +26,7 @@ import iconHelp     from "@assets/téléchargement_(67)_1779463427299.png";
 import iconBell     from "@assets/téléchargement_(65)_1779463427321.png";
 
 const TICKER_TEXT =
-  "73 a rechargé 35,000 ★★★★★★3765 a rechargé 15,000 ★★★★★8829 a rechargé 30,000 ★★★★★★1234 a rechargé 10,000 ★★★★★5678 a rechargé 50,000 ★★★★★9012 a rechargé 8,000 ★★★★★★3456 a rechargé 25,000 ★★★★7890 a rechargé 12,000 ★★★★★★";
+  "★★★★★73 recharged 35,000 ★★★★★★3765 recharged 15,000 ★★★★★8829 recharged 30,000 ★★★★★★1234 recharged 10,000 ★★★★★5678 recharged 50,000 ★★★★★9012 recharged 8,000 ★★★★★★3456 recharged 25,000 ★★★★7890 recharged 12,000 ★★★★★★";
 
 function NioArcLogo() {
   return (
@@ -38,10 +38,10 @@ function NioArcLogo() {
 }
 
 const RD_STATS = [
-  { value: "7",       label: "Pays",                   orange: false },
-  { value: "11,000+", label: "Ingénieurs R&D",          orange: true  },
-  { value: "12",      label: "Domaines technologiques", orange: false },
-  { value: "9300+",   label: "Brevets",                 orange: true  },
+  { value: "7",       label: "Countries",      orange: false },
+  { value: "11,000+", label: "R&D Engineers",  orange: true  },
+  { value: "12",      label: "Tech Domains",   orange: false },
+  { value: "9300+",   label: "Patents",        orange: true  },
 ];
 
 const ACTIONS = [
@@ -245,7 +245,7 @@ export default function HomePage() {
           }}
         >
           <p style={{ color: "white", fontWeight: 700, fontSize: 14, textAlign: "center", marginBottom: 18 }}>
-            Réalisations en R&amp;D technologique et brevets
+            R&amp;D Technology Achievements &amp; Patents
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {RD_STATS.map((stat) => (
@@ -258,17 +258,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── NOUVEAUX MODÈLES CARD ── */}
+      {/* ── NOVIQRA AI BANNER ── */}
       <div style={{ margin: "10px 10px 0", borderRadius: 16, overflow: "hidden" }}>
         <div
           style={{
             height: 155,
-            background: `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.55)), url(${newModelImg}) center/cover no-repeat`,
+            background: `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.60)), url(${buildingImg}) center/cover no-repeat`,
             display: "flex", alignItems: "center", justifyContent: "center",
+            flexDirection: "column", gap: 6,
           }}
         >
-          <p style={{ color: "white", fontWeight: 900, fontSize: 28, textAlign: "center", lineHeight: 1.25, textShadow: "0 2px 10px rgba(0,0,0,0.6)" }}>
-            Nouveaux modèles<br />nio es6
+          <p style={{ color: "white", fontWeight: 900, fontSize: 26, textAlign: "center", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.6)", margin: 0 }}>
+            Noviqra Ai
+          </p>
+          <p style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500, fontSize: 13, textAlign: "center", textShadow: "0 1px 6px rgba(0,0,0,0.5)", margin: 0 }}>
+            Intelligent Automation. Limitless Solutions.
           </p>
         </div>
       </div>
