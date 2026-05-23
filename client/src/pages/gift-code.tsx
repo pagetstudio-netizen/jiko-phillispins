@@ -7,7 +7,7 @@ import { SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/lib/i18n";
-import carImg from "@assets/20260408_191416_1775675670071.jpg";
+import carImg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
 
 export default function GiftCodePage() {
   const { refreshUser } = useAuth();

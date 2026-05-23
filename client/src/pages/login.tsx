@@ -10,7 +10,7 @@ import { CountrySelector } from "@/components/country-selector";
 import ContactSheet from "@/components/contact-sheet";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
-import skyBg from "@assets/20260408_191813_1775839627189.jpg";
+import skyBg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
 import serviceAgent from "@assets/service_p1_1775839314312.png";
 
 function NioLogo() {

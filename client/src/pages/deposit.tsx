@@ -5,7 +5,7 @@ import { ChevronLeft, Loader2, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { apiRequest } from "@/lib/queryClient";
-import heroImg from "@assets/20260408_191813_1775675938233.jpg";
+import heroImg from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779519826156.png";
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import mayaLogo from "@assets/2206757_1777781237200.jpg";
 import gcashLogo from "@assets/Screenshot_20260415-140919_1777781311304.png";

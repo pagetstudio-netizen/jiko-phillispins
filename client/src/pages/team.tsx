@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import heroBg from "@assets/20260408_191813_1775839627189.jpg";
+import heroBg from "@assets/file_00000000aac471f49ed3613abb850ef5_1779519851679.png";
 import carLeft from "@/assets/images/apercu-left.png";
 import carRight from "@/assets/images/apercu-right.png";
 
