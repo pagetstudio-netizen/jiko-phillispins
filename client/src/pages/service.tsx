@@ -9,7 +9,7 @@ import heroBg from "@assets/20260408_191018_1775675626871.jpg";
 export default function ServicePage() {
   const { lang, t } = useLang();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Service client | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Customer Service | Noviqra Ai"; }, []);
 
   const { data: settings } = useQuery<{
     supportLink: string;

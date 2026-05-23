@@ -28,7 +28,7 @@ export default function TasksPage() {
   const fr = lang === "fr";
   const [, navigate] = useLocation();
 
-  useEffect(() => { document.title = "Centre de missions | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Mission Center | Noviqra Ai"; }, []);
 
   const { data: tasks, isLoading } = useQuery<TaskWithStatus[]>({
     queryKey: ["/api/tasks"],

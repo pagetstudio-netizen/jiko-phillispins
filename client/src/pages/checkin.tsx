@@ -34,7 +34,7 @@ export default function CheckinPage() {
   const fr = lang === "fr";
   const [, navigate] = useLocation();
 
-  useEffect(() => { document.title = "Bonus de connexion | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Daily Bonus | Noviqra Ai"; }, []);
 
   const { data: bonusStatus } = useQuery<BonusStatus>({
     queryKey: ["/api/daily-bonus-status"],

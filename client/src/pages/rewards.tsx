@@ -22,7 +22,7 @@ export default function RewardsPage() {
       const res = await apiRequest("POST", `/api/tasks/${taskId}/claim`);
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || "Erreur");
+        throw new Error(data.message || "Error");
       }
       return res.json();
     },
@@ -30,13 +30,13 @@ export default function RewardsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
-        title: "Felicitations",
-        description: "Recompense recue avec succes !",
+        title: "Congratulations!",
+        description: "Reward received successfully!",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erreur",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -59,7 +59,7 @@ export default function RewardsPage() {
           <button onClick={() => navigate("/account")} className="mb-3" data-testid="button-back">
             <ArrowLeft className="w-6 h-6 text-gray-700" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900 mb-4">Recevoir</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-4">Rewards</h1>
 
           <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: "#2196F3" }}>
             <img src={globeImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
@@ -68,7 +68,7 @@ export default function RewardsPage() {
                 <p className="text-white/80 text-sm">{symbol}</p>
                 <p className="text-white text-3xl font-black" data-testid="text-claimed-reward">{fmt(claimedReward)}</p>
                 <p className="text-white/70 text-xs mt-1">
-                  Remplissez ces taches pour obtenir {fmt(totalReward)}
+                  Complete all tasks to earn {fmt(totalReward)}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-2">
@@ -81,12 +81,12 @@ export default function RewardsPage() {
         <div className="px-4 mt-2">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full" style={{ backgroundColor: "#2196F3" }} />
-            <h2 className="text-base font-bold text-gray-900">Liste des taches</h2>
+            <h2 className="text-base font-bold text-gray-900">Task List</h2>
           </div>
 
           {isLoading ? (
             <div className="bg-white rounded-xl p-6 text-center text-gray-400 text-sm">
-              Chargement...
+              Loading...
             </div>
           ) : (
             <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
@@ -101,13 +101,13 @@ export default function RewardsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">{task.description}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Recompense: {fmt(task.reward)}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Reward: {fmt(task.reward)}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-gray-500">({task.currentInvites}/{task.requiredInvites})</span>
                     {task.isCompleted ? (
                       <span className="text-xs font-semibold px-3 py-1.5 rounded-md bg-green-50 text-green-600" data-testid={`task-completed-${task.id}`}>
-                        Complet
+                        Done
                       </span>
                     ) : task.canClaim ? (
                       <button
@@ -117,11 +117,11 @@ export default function RewardsPage() {
                         style={{ backgroundColor: "#2196F3" }}
                         data-testid={`button-claim-${task.id}`}
                       >
-                        Recevoir
+                        Claim
                       </button>
                     ) : (
                       <span className="text-xs font-semibold px-3 py-1.5 rounded-md bg-gray-100 text-gray-400" data-testid={`task-locked-${task.id}`}>
-                        Recu
+                        Claimed
                       </span>
                     )}
                   </div>

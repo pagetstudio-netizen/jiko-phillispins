@@ -7,7 +7,7 @@ export default function AboutPage() {
   const [, navigate] = useLocation();
   const { lang } = useLang();
   const fr = lang === "fr";
-  useEffect(() => { document.title = "À propos | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "About | Noviqra Ai"; }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>

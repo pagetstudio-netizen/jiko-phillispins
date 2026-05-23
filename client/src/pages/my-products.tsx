@@ -22,7 +22,7 @@ export default function MyProductsPage() {
   const { user } = useAuth();
   const { fmt } = useUserCurrency();
   const { lang } = useLang();
-  useEffect(() => { document.title = "Mes produits | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "My Products | Noviqra Ai"; }, []);
 
   const { data: userProducts, isLoading } = useQuery<any[]>({
     queryKey: ["/api/user/products"],

@@ -20,7 +20,7 @@ export default function RulesPage() {
   const { lang } = useLang();
   const fr = lang === "fr";
   const { fmt } = useUserCurrency();
-  useEffect(() => { document.title = "Réglementation | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Rules | Noviqra Ai"; }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>

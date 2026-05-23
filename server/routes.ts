@@ -26,14 +26,14 @@ const PgSession = ConnectPgSimple(session);
 
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.session.userId) {
-    return res.status(401).json({ message: "Non authentifié" });
+    return res.status(401).json({ message: "Not authenticated" });
   }
   next();
 }
 
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.session.userId) {
-    return res.status(401).json({ message: "Non authentifié" });
+    return res.status(401).json({ message: "Not authenticated" });
   }
   const user = await storage.getUser(req.session.userId);
   if (!user?.isAdmin) {
@@ -104,7 +104,7 @@ export async function registerRoutes(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ message: error.message || "Erreur serveur" });
+      res.status(500).json({ message: error.message || "Server error" });
     }
   });
 
@@ -143,17 +143,17 @@ export async function registerRoutes(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ message: error.message || "Erreur serveur" });
+      res.status(500).json({ message: error.message || "Server error" });
     }
   });
 
   app.get("/api/auth/me", async (req, res) => {
     if (!req.session.userId) {
-      return res.status(401).json({ message: "Non authentifié" });
+      return res.status(401).json({ message: "Not authenticated" });
     }
     const user = await storage.getUser(req.session.userId);
     if (!user) {
-      return res.status(401).json({ message: "Non authentifié" });
+      return res.status(401).json({ message: "Not authenticated" });
     }
     res.json({ user: { ...user, password: undefined } });
   });
@@ -191,7 +191,7 @@ export async function registerRoutes(
 
       res.json({ success: true, message: "Mot de passe modifie avec succes" });
     } catch (error: any) {
-      res.status(500).json({ message: error.message || "Erreur serveur" });
+      res.status(500).json({ message: error.message || "Server error" });
     }
   });
 
@@ -237,7 +237,7 @@ export async function registerRoutes(
       }
       
       if (product.isFree) {
-        return res.status(400).json({ message: "Utilisez /claim-free pour ce produit" });
+        return res.status(400).json({ message: "Use /claim-free for this product" });
       }
 
       const userProduct = await storage.purchaseProduct(req.session.userId!, productId);
@@ -258,7 +258,7 @@ export async function registerRoutes(
 
       const user = await storage.getUser(req.session.userId!);
       if (!user) {
-        return res.status(401).json({ message: "Non authentifié" });
+        return res.status(401).json({ message: "Not authenticated" });
       }
 
       const today = new Date();
@@ -545,14 +545,14 @@ export async function registerRoutes(
             });
           } else {
             return res.status(400).json({ 
-              message: paymentResult.message || "Erreur Soleaspay",
+              message: paymentResult.message || "Soleaspay error",
               soleaspay: true
             });
           }
         } catch (soleaspayError: any) {
           console.error("[soleaspay] Payment error:", soleaspayError);
           return res.status(400).json({ 
-            message: soleaspayError.message || "Erreur de paiement Soleaspay",
+            message: soleaspayError.message || "Soleaspay payment error",
             soleaspay: true
           });
         }
@@ -640,7 +640,7 @@ export async function registerRoutes(
           return res.json({ 
             status: deposit.status,
             soleaspay: true,
-            error: "Erreur de verification"
+            error: "Verification error"
           });
         }
       }
@@ -688,7 +688,7 @@ export async function registerRoutes(
       }
 
       const user = await storage.getUser(req.session.userId!);
-      if (!user) return res.status(401).json({ message: "Non authentifié" });
+      if (!user) return res.status(401).json({ message: "Not authenticated" });
 
       const minDeposit = parseInt(settings.minDeposit || "300");
       if (amount < minDeposit) return res.status(400).json({ message: `Minimum deposit: ₱${minDeposit}` });
@@ -849,7 +849,7 @@ export async function registerRoutes(
       }
 
       const user = await storage.getUser(req.session.userId!);
-      if (!user) return res.status(401).json({ message: "Non authentifié" });
+      if (!user) return res.status(401).json({ message: "Not authenticated" });
 
       const minDeposit = parseInt(settings.minDeposit || "300");
       if (amount < minDeposit) {
@@ -1197,7 +1197,7 @@ export async function registerRoutes(
       const user = await storage.getUser(req.session.userId!);
       
       if (!user) {
-        return res.status(401).json({ message: "Non authentifié" });
+        return res.status(401).json({ message: "Not authenticated" });
       }
 
       if (amount < 120) {

@@ -13,7 +13,7 @@ export default function GiftCodePage() {
   const { refreshUser } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
-  useEffect(() => { document.title = "Échanger des cadeaux | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Gift Code | Noviqra Ai"; }, []);
 
   const [code, setCode] = useState("");
 

@@ -44,7 +44,7 @@ export default function InvestPage() {
   const [, navigate] = useLocation();
   const { fmt } = useUserCurrency();
   const { lang } = useLang();
-  useEffect(() => { document.title = "Produit | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Products | Noviqra Ai"; }, []);
   const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
 
   const { data: products, isLoading } = useQuery<ProductWithOwnership[]>({
