@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,11 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { ELIGIBLE_COUNTRIES } from "@/lib/countries";
 import { CountrySelector } from "@/components/country-selector";
-import ContactSheet from "@/components/contact-sheet";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import skyBg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
-import serviceAgent from "@assets/service_p1_1775839314312.png";
 
 function NioLogo() {
   return (
@@ -49,7 +47,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [countryModalOpen, setCountryModalOpen] = useState(false);
-  const [showContact, setShowContact] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
   const saved = typeof window !== "undefined" ? localStorage.getItem("noviqra_credentials") : null;
@@ -85,22 +82,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   }
-
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const dragging = useRef(false);
-  const startRef = useRef({ mx: 0, my: 0, bx: 0, by: 0 });
-
-  function onPointerDown(e: React.PointerEvent) {
-    dragging.current = true;
-    startRef.current = { mx: e.clientX, my: e.clientY, bx: pos.x, by: pos.y };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    e.preventDefault();
-  }
-  function onPointerMove(e: React.PointerEvent) {
-    if (!dragging.current) return;
-    setPos({ x: startRef.current.bx + (e.clientX - startRef.current.mx), y: startRef.current.by + (e.clientY - startRef.current.my) });
-  }
-  function onPointerUp() { dragging.current = false; }
 
   const inputStyle: React.CSSProperties = {
     background: "rgba(255,255,255,0.92)",
@@ -262,25 +243,11 @@ export default function LoginPage() {
 
       </div>
 
-      {/* Draggable service agent */}
-      <button
-        type="button"
-        onClick={() => { if (!dragging.current) setShowContact(true); }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        data-testid="button-contact-agent"
-        style={{ position: "fixed", bottom: 28 - pos.y, right: 20 - pos.x, width: 58, height: 58, borderRadius: "50%", overflow: "hidden", border: "3px solid white", boxShadow: "0 4px 20px rgba(0,0,0,0.3)", background: "white", cursor: "grab", padding: 0, zIndex: 100, touchAction: "none" }}
-      >
-        <img src={serviceAgent} alt="Contact us" style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
-      </button>
-
       <CountrySelector
         open={countryModalOpen}
         onClose={() => setCountryModalOpen(false)}
         onSelect={(code) => form.setValue("country", code, { shouldValidate: true })}
       />
-      <ContactSheet open={showContact} onClose={() => setShowContact(false)} />
     </div>
   );
 }
