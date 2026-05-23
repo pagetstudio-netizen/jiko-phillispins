@@ -5,6 +5,9 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { registerSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import ConnectPgSimple from "connect-pg-simple";
 import { 
   initiatePayment, 
@@ -1884,6 +1887,41 @@ export async function registerRoutes(
       }
       await storage.logAdminAction(req.session.userId!, "update_settings", null, `Paramètres modifiés`);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // APK upload route
+  const apkDir = path.resolve(process.cwd(), "uploads/apk");
+  if (!fs.existsSync(apkDir)) fs.mkdirSync(apkDir, { recursive: true });
+
+  const apkStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, apkDir),
+    filename: (_req, _file, cb) => cb(null, `noviqra-app.apk`),
+  });
+  const apkUpload = multer({
+    storage: apkStorage,
+    limits: { fileSize: 200 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      if (file.mimetype === "application/vnd.android.package-archive" || file.originalname.endsWith(".apk")) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only .apk files are allowed"));
+      }
+    },
+  });
+
+  app.use("/uploads/apk", express.static(apkDir));
+
+  app.post("/api/admin/upload-apk", requireAdmin, apkUpload.single("apk"), async (req: any, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const fileUrl = `${baseUrl}/uploads/apk/noviqra-app.apk`;
+      await storage.setSetting("appDownloadLink", fileUrl, req.session.userId);
+      await storage.logAdminAction(req.session.userId!, "upload_apk", null, `APK uploadé: ${req.file.originalname}`);
+      res.json({ success: true, url: fileUrl, filename: req.file.originalname, size: req.file.size });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

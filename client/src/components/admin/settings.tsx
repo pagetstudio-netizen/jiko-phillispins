@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download, UploadCloud, CheckCircle2 } from "lucide-react";
 
 
 const settingsSchema = z.object({
@@ -44,6 +44,9 @@ interface AdminSettingsProps {
 
 export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [apkUploading, setApkUploading] = useState(false);
+  const [apkUploaded, setApkUploaded] = useState<{ filename: string; url: string } | null>(null);
 
   const { data: settings, isLoading } = useQuery<Record<string, string>>({
     queryKey: ["/api/admin/settings"],
@@ -118,6 +121,32 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  async function handleApkUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".apk")) {
+      toast({ title: "Only .apk files allowed", variant: "destructive" });
+      return;
+    }
+    setApkUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("apk", file);
+      const res = await fetch("/api/admin/upload-apk", { method: "POST", body: formData, credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+      setApkUploaded({ filename: data.filename, url: data.url });
+      form.setValue("appDownloadLink", data.url);
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/links"] });
+      toast({ title: "APK uploaded!", description: `${data.filename} (${(data.size / 1024 / 1024).toFixed(1)} MB)` });
+    } catch (err: any) {
+      toast({ title: "Upload error", description: err.message, variant: "destructive" });
+    } finally {
+      setApkUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   if (isLoading) {
     return <Skeleton className="h-96" />;
@@ -248,22 +277,84 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+
+            {/* Option 1: URL */}
             <FormField
               control={form.control}
               name="appDownloadLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>APK / App Download Link</FormLabel>
+                  <FormLabel>Download Link (URL)</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://example.com/noviqra.apk" data-testid="input-app-download-link" />
                   </FormControl>
                   <FormDescription>
-                    Link that opens when users tap "Download app" on the Account page. Paste a direct APK link or any app store URL.
+                    Paste a direct APK URL or app store link. This is filled automatically when you upload an APK below.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-border" />
+              <span className="text-xs text-muted-foreground font-medium">OR UPLOAD APK DIRECTLY</span>
+              <div className="flex-1 border-t border-border" />
+            </div>
+
+            {/* Option 2: Upload APK */}
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".apk,application/vnd.android.package-archive"
+                className="hidden"
+                data-testid="input-apk-file"
+                onChange={handleApkUpload}
+              />
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-20 flex flex-col gap-1 border-dashed"
+                disabled={apkUploading}
+                data-testid="button-upload-apk"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {apkUploading ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <span className="text-sm">Uploading…</span>
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Click to select an APK file (max 200 MB)</span>
+                  </>
+                )}
+              </Button>
+
+              {/* Success state */}
+              {apkUploaded && (
+                <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-green-400 truncate">{apkUploaded.filename}</p>
+                    <p className="text-xs text-muted-foreground truncate">{apkUploaded.url}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Existing APK info if link looks like our server */}
+              {!apkUploaded && form.watch("appDownloadLink")?.includes("/uploads/apk/") && (
+                <div className="flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                  <p className="text-sm text-blue-300">APK already hosted on server</p>
+                </div>
+              )}
+            </div>
+
           </CardContent>
         </Card>
 
