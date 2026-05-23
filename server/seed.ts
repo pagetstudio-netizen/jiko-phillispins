@@ -166,11 +166,11 @@ export async function seed() {
   // Check if tasks exist - update to 5 referral bonus missions (PHP rewards)
   const existingTasks = await db.select().from(tasks);
   const requiredTasks = [
-    { name: "Mission 1 - Referral", description: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir PHP 200", requiredInvites: 5,  reward: 200,  sortOrder: 1 },
-    { name: "Mission 2 - Referral", description: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir PHP 500", requiredInvites: 10, reward: 500,  sortOrder: 2 },
-    { name: "Mission 3 - Referral", description: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir PHP 1,000", requiredInvites: 20, reward: 1000, sortOrder: 3 },
-    { name: "Mission 4 - Referral", description: "Invitez 30 utilisateurs d'investissement de niveau 1 pour obtenir PHP 3,000", requiredInvites: 30, reward: 3000, sortOrder: 4 },
-    { name: "Mission 5 - Referral", description: "Invitez 50 utilisateurs d'investissement de niveau 1 pour obtenir PHP 5,000", requiredInvites: 50, reward: 5000, sortOrder: 5 },
+    { name: "Mission 1 - Referral", description: "Reach 1,000 in total team investment to earn a reward of 100",    requiredInvites: 1000,   reward: 100,  sortOrder: 1 },
+    { name: "Mission 2 - Referral", description: "Reach 5,000 in total team investment to earn a reward of 500",    requiredInvites: 5000,   reward: 500,  sortOrder: 2 },
+    { name: "Mission 3 - Referral", description: "Reach 20,000 in total team investment to earn a reward of 1,000", requiredInvites: 20000,  reward: 1000, sortOrder: 3 },
+    { name: "Mission 4 - Referral", description: "Reach 50,000 in total team investment to earn a reward of 2,000", requiredInvites: 50000,  reward: 2000, sortOrder: 4 },
+    { name: "Mission 5 - Referral", description: "Reach 100,000 in total team investment to earn a reward of 5,000",requiredInvites: 100000, reward: 5000, sortOrder: 5 },
   ];
 
   const usedTaskIds = new Set<number>();

@@ -856,37 +856,18 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUser(userId);
     if (!user) return [];
 
-    const level1Refs = await this.getReferrals(userId, 1);
-    
-    let currentInvites = 0;
-    for (const ref of level1Refs) {
-      const hasApprovedDeposit = ref.hasDeposited === true;
-      
-      if (!hasApprovedDeposit) {
-        const refDeposits = await db.select().from(deposits)
-          .where(and(eq(deposits.userId, ref.id), eq(deposits.status, "approved")))
-          .limit(1);
-        if (refDeposits.length > 0) {
-          currentInvites++;
-          continue;
-        }
-      } else {
-        currentInvites++;
-        continue;
-      }
+    // Compute total team investment (sum of approved deposits across all 3 levels)
+    const level1 = await this.getReferrals(userId, 1);
+    const level2 = await this.getReferrals(userId, 2);
+    const level3 = await this.getReferrals(userId, 3);
+    const allTeam = [...level1, ...level2, ...level3];
 
-      const refProducts = await db.select()
-        .from(userProducts)
-        .innerJoin(products, eq(userProducts.productId, products.id))
-        .where(and(
-          eq(userProducts.userId, ref.id),
-          eq(products.isFree, false)
-        ))
-        .limit(1);
-
-      if (refProducts.length > 0) {
-        currentInvites++;
-      }
+    let totalTeamInvestment = 0;
+    for (const member of allTeam) {
+      const result = await db.select({ total: sql<string>`COALESCE(SUM(${deposits.amount}), 0)` })
+        .from(deposits)
+        .where(and(eq(deposits.userId, member.id), eq(deposits.status, "approved")));
+      totalTeamInvestment += parseFloat(result[0]?.total || "0");
     }
 
     const completedTasks = await db.select().from(userTasks).where(eq(userTasks.userId, userId));
@@ -895,8 +876,8 @@ export class DatabaseStorage implements IStorage {
     return allTasks.map(task => ({
       ...task,
       isCompleted: completedIds.has(task.id),
-      canClaim: !completedIds.has(task.id) && currentInvites >= task.requiredInvites,
-      currentInvites: currentInvites,
+      canClaim: !completedIds.has(task.id) && totalTeamInvestment >= task.requiredInvites,
+      currentInvites: Math.floor(totalTeamInvestment),
     }));
   }
 
@@ -904,12 +885,12 @@ export class DatabaseStorage implements IStorage {
     const tasksStatus = await this.getTasksWithStatus(userId);
     const taskStatus = tasksStatus.find(t => t.id === taskId);
 
-    if (!taskStatus) throw new Error("Tâche non trouvée");
-    if (taskStatus.isCompleted) throw new Error("Tâche déjà réclamée");
-    if (!taskStatus.canClaim) throw new Error("Conditions non remplies (recharge et achat requis)");
+    if (!taskStatus) throw new Error("Task not found");
+    if (taskStatus.isCompleted) throw new Error("Reward already claimed");
+    if (!taskStatus.canClaim) throw new Error("Team investment target not yet reached");
 
     const user = await this.getUser(userId);
-    if (!user) throw new Error("Utilisateur non trouvé");
+    if (!user) throw new Error("User not found");
 
     await db.insert(userTasks).values({ userId, taskId });
     
@@ -920,7 +901,7 @@ export class DatabaseStorage implements IStorage {
       userId,
       type: "task_reward",
       amount: taskStatus.reward.toString(),
-      description: `Récompense: ${taskStatus.name}`,
+      description: `Reward: ${taskStatus.name}`,
     });
   }
 
