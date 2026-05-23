@@ -7,9 +7,7 @@ import { X, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-import popupCharacters from "@assets/20260415_134352_1776260827812.png";
-import popupTelegramBtn from "@assets/20260411_144546_1775920729992.png";
-import popupCloseBtn from "@assets/20260411_144711_1775920729969.png";
+import popupRobotImg from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779519826292.png";
 
 import heroImg from "@assets/20260408_191813_1775675938233.jpg";
 import rdBgImg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779479835636.png";
@@ -92,30 +90,64 @@ export default function HomePage() {
       {/* ── POPUP ── */}
       {showPopup && (
         <div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.82)" }}
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.88)" }}
           onClick={() => setShowPopup(false)}
         >
           <div
-            style={{ width: "92vw", maxWidth: 420, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}
+            style={{ width: "92vw", maxWidth: 400, borderRadius: 20, overflow: "hidden", background: "#1a1a1a", border: "1px solid #2a2a2a", boxShadow: "0 24px 80px rgba(0,0,0,0.9)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <img src={popupCharacters} alt="Welcome" style={{ width: "100%", borderRadius: 20 }} data-testid="img-popup" />
-            <a
-              href={platformSettings?.groupLink || "https://t.me/+R9SFSGneBkg3NTFh"}
-              target="_blank" rel="noopener noreferrer"
-              data-testid="button-popup-telegram"
-              style={{ width: "90%", display: "block" }}
-            >
-              <img src={popupTelegramBtn} alt="Telegram Group" style={{ width: "100%", borderRadius: 50 }} />
-            </a>
-            <button
-              onClick={() => setShowPopup(false)}
-              data-testid="button-popup-close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, width: 64, height: 64 }}
-            >
-              <img src={popupCloseBtn} alt="Close" style={{ width: "100%", height: "100%" }} />
-            </button>
+            {/* Robot image with NOTICE overlay */}
+            <div style={{ position: "relative", height: 190 }}>
+              <img src={popupRobotImg} alt="Noviqra AI Robot" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} data-testid="img-popup" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)" }} />
+              <div style={{ position: "absolute", bottom: 14, left: 18 }}>
+                <p style={{ color: "#fff", fontWeight: 900, fontSize: 30, letterSpacing: 4, margin: 0, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>NOTICE</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "16px 18px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
+              <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
+                ① Register and receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(50)}</span>.
+              </p>
+              <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
+                ② Receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(5)}</span> every day by logging in.
+              </p>
+              <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
+                ③ Invite friends to invest and instantly receive a <span style={{ color: "#f59e0b", fontWeight: 700 }}>{platformSettings?.level1Commission || "20"}%</span> commission.
+              </p>
+              <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
+                ④ Product returns are paid automatically 24/7 for faster and easier receipt of your funds.
+              </p>
+              <div style={{ marginTop: 6, padding: "10px 14px", background: "#111", borderRadius: 10, borderLeft: "3px solid #f59e0b" }}>
+                <p style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, margin: "0 0 4px" }}>💼 Investment Return Plans</p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: 0 }}>• Invest <strong style={{ color: "#fff" }}>{fmt(500)}</strong> | Daily return: <strong style={{ color: "#fff" }}>{fmt(50)}</strong></p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: "2px 0 0" }}>• Invest <strong style={{ color: "#fff" }}>{fmt(2000)}</strong> | Daily return: <strong style={{ color: "#fff" }}>{fmt(200)}</strong></p>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 10, padding: "8px 18px 18px" }}>
+              <a
+                href="https://t.me/+0XwpNkuDYOAyMzk1"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="button-popup-telegram"
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "13px 0", borderRadius: 999, background: "transparent", border: "1.5px solid rgba(255,255,255,0.6)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+                Telegram
+              </a>
+              <button
+                onClick={() => setShowPopup(false)}
+                data-testid="button-popup-close"
+                style={{ flex: 1, padding: "13px 0", borderRadius: 999, background: "#fff", border: "none", color: "#111", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+              >
+                Home
+              </button>
+            </div>
           </div>
         </div>
       )}
