@@ -13,7 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/lib/i18n";
 
-import nioAvatar   from "@assets/téléchargement_(69)_1779463977899.png";
+import nioAvatar   from "@assets/IMG-20260522-WA0031_1779519908758.jpg";
 import iconRecharge  from "@assets/recharge-icon-BZHWSjQZ_1779464171620.png";
 import iconRetirer   from "@assets/withdraw-icon-DFsum39V_(1)_1779464171531.png";
 import iconRecords   from "@assets/mine-mod-records-DgHXSKa1_1779464171459.png";
@@ -117,10 +117,10 @@ export default function AccountPage() {
           {/* Avatar */}
           <div className="absolute top-8 right-4">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(255,255,255,0.12)", border: "2px solid rgba(255,255,255,0.25)" }}
+              className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
+              style={{ background: "#fff", border: "2px solid rgba(255,255,255,0.4)" }}
             >
-              <img src={nioAvatar} alt="Noviqra AI" className="w-10 h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+              <img src={nioAvatar} alt="Noviqra AI" className="w-full h-full object-cover" />
             </div>
           </div>
 
