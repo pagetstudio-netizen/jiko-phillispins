@@ -38,6 +38,10 @@ export default function AccountPage() {
 
   const { data: products } = useQuery<any[]>({ queryKey: ["/api/user-products"] });
 
+  const { data: appLinks } = useQuery<{ appDownloadLink: string }>({
+    queryKey: ["/api/settings/links"],
+  });
+
   const verifyPinMutation = useMutation({
     mutationFn: async (pin: string) => {
       const res = await apiRequest("POST", "/api/admin/verify-pin", { pin });
@@ -79,7 +83,7 @@ export default function AccountPage() {
     { icon: iconRegle,    label: fr ? "Réglementation"        : "Rules",           action: () => navigate("/rules") },
     { icon: iconRecords,  label: fr ? "Historique"            : "History",         action: () => navigate("/deposit-orders") },
     { icon: iconSupport,  label: fr ? "Service client"        : "Support",         action: () => navigate("/service") },
-    { icon: iconDownload, label: fr ? "Télécharger l'app"     : "Download app",    action: () => {} },
+    { icon: iconDownload, label: fr ? "Télécharger l'app"     : "Download app",    action: () => { const link = appLinks?.appDownloadLink; if (link) window.open(link, "_blank"); else toast({ title: fr ? "Lien non configuré" : "Link not configured yet", variant: "destructive" }); } },
     { icon: iconBankcard, label: fr ? "Lier une carte bancaire": "Bank card",      action: () => navigate("/wallet") },
     { icon: iconPassword, label: fr ? "Changer le mot de passe": "Change password",action: () => navigate("/change-password") },
     { icon: iconGift,     label: "GIFT",                                            action: () => navigate("/gift-code") },

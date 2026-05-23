@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download } from "lucide-react";
 
 
 const settingsSchema = z.object({
@@ -19,6 +19,7 @@ const settingsSchema = z.object({
   support2Link: z.string().min(5, "Link required"),
   channelLink: z.string().min(5, "Link required"),
   groupLink: z.string().min(5, "Link required"),
+  appDownloadLink: z.string(),
   minDeposit: z.string().min(1, "Amount required"),
   withdrawalFees: z.string().min(1, "Fees required"),
   withdrawalStartHour: z.string().min(1, "Hour required"),
@@ -55,6 +56,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       support2Link: "https://t.me/noviqraai",
       channelLink: "https://t.me/noviqraai",
       groupLink: "https://t.me/+R9SFSGneBkg3NTFh",
+      appDownloadLink: "",
       minDeposit: "3500",
       withdrawalFees: "15",
       withdrawalStartHour: "8",
@@ -79,6 +81,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         support2Link: settings.support2Link || "https://t.me/noviqraai",
         channelLink: settings.channelLink || "https://t.me/noviqraai",
         groupLink: settings.groupLink || "https://t.me/+R9SFSGneBkg3NTFh",
+        appDownloadLink: settings.appDownloadLink || "",
         minDeposit: settings.minDeposit || "3500",
         withdrawalFees: settings.withdrawalFees || "15",
         withdrawalStartHour: settings.withdrawalStartHour || "8",
@@ -233,6 +236,34 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               )}
             />
 
+          </CardContent>
+        </Card>
+
+        {/* App Download */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Download className="w-5 h-5 text-primary" />
+              App Download
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="appDownloadLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>APK / App Download Link</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="https://example.com/noviqra.apk" data-testid="input-app-download-link" />
+                  </FormControl>
+                  <FormDescription>
+                    Link that opens when users tap "Download app" on the Account page. Paste a direct APK link or any app store URL.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

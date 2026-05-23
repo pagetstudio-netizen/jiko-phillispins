@@ -1461,6 +1461,7 @@ export async function registerRoutes(
         support2Link: settings.support2Link || "https://t.me/Jinkosolarr",
         channelLink: settings.channelLink || "https://t.me/Jinkosolarr",
         groupLink: settings.groupLink || "https://t.me/Jinkosolarr",
+        appDownloadLink: settings.appDownloadLink || "",
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
