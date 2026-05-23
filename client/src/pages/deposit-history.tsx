@@ -55,7 +55,7 @@ export default function DepositHistoryPage() {
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
         </Link>
-        <h1 className="flex-1 text-center text-lg font-semibold text-gray-800 pr-8">Historique des retraits</h1>
+        <h1 className="flex-1 text-center text-lg font-semibold text-gray-800 pr-8">Withdrawal History</h1>
       </header>
 
       <div className="p-4 space-y-4">

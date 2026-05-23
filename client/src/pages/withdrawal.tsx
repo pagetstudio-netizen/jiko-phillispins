@@ -92,32 +92,32 @@ export default function WithdrawalPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Demande soumise", description: "Votre demande de retrait a été envoyée." });
+      toast({ title: "Request submitted", description: "Your withdrawal request has been sent." });
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ["/api/withdrawals"] });
       setAmount("");
     },
     onError: (error: Error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = () => {
     if (!isWithinWithdrawalHours) {
-      toast({ title: "Heures de retrait", description: `Retraits disponibles de ${withdrawalStartHour}h à ${withdrawalEndHour}h`, variant: "destructive" });
+      toast({ title: "Withdrawal hours", description: `Withdrawals available from ${withdrawalStartHour}h to ${withdrawalEndHour}h`, variant: "destructive" });
       return;
     }
     if (!hasActiveProduct) {
-      toast({ title: "Produit requis", description: "Vous devez avoir un produit actif pour effectuer un retrait", variant: "destructive" });
+      toast({ title: "Product required", description: "You must have an active product to withdraw", variant: "destructive" });
       return;
     }
     const amtNum = parseFloat(amount);
     if (!amtNum || amtNum < fromFcfa(minWithdrawalFcfa)) {
-      toast({ title: "Montant invalide", description: `Montant minimum: ${fmt(minWithdrawalFcfa)}`, variant: "destructive" });
+      toast({ title: "Invalid amount", description: `Minimum amount: ${fmt(minWithdrawalFcfa)}`, variant: "destructive" });
       return;
     }
     if (!selectedWallet) {
-      toast({ title: "Portefeuille requis", description: "Veuillez sélectionner un compte de paiement", variant: "destructive" });
+      toast({ title: "Wallet required", description: "Please select a payment account", variant: "destructive" });
       return;
     }
     withdrawMutation.mutate({ amount: toFcfa(amtNum), walletId: selectedWallet.id });
@@ -155,7 +155,7 @@ export default function WithdrawalPage() {
               <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />
             </button>
           </Link>
-          <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>Retrait</span>
+          <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>Withdrawal</span>
           <Link href="/withdrawal-history">
             <button data-testid="button-history" style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}>
               <img src={historyIcon} alt="History" style={{ width: 24, height: 24, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
@@ -165,7 +165,7 @@ export default function WithdrawalPage() {
 
         {/* Balance */}
         <div style={{ position: "absolute", bottom: 14, left: 16 }}>
-          <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 16, fontWeight: 500 }}>Solde </span>
+          <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 16, fontWeight: 500 }}>Balance </span>
           <span style={{ color: "white", fontSize: 32, fontWeight: 900, letterSpacing: -0.5 }} data-testid="text-balance">
             {fromFcfa(balance).toFixed(2)}
           </span>
@@ -177,7 +177,7 @@ export default function WithdrawalPage() {
 
         {/* ── BANK CARD SELECTOR ── */}
         <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
-          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Sélectionner une carte bancaire</p>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Select a payment account</p>
           <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
           <button
             onClick={() => navigate(wallets.length > 0 ? "/wallet?from=withdrawal" : "/wallet")}
@@ -209,7 +209,7 @@ export default function WithdrawalPage() {
             }}>
               {selectedWallet
                 ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
-                : "Veuillez sélectionner une carte bancaire"}
+                : "Please select a payment account"}
             </span>
             <ChevronRight style={{ width: 18, height: 18, color: "#6b7280", flexShrink: 0 }} />
           </button>
@@ -217,7 +217,7 @@ export default function WithdrawalPage() {
 
         {/* ── AMOUNT INPUT ── */}
         <div style={{ background: "#1a1a1a", borderRadius: 14, padding: "16px 14px" }}>
-          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Montant du retrait</p>
+          <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>Withdrawal amount</p>
           <div style={{ borderTop: "1px dashed rgba(255,255,255,0.15)", marginBottom: 14 }} />
           <div style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: "1.5px solid rgba(255,255,255,0.18)", paddingBottom: 10 }}>
             <DollarSign style={{ width: 22, height: 22, color: "#9ca3af", flexShrink: 0 }} />
@@ -225,17 +225,17 @@ export default function WithdrawalPage() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Veuillez saisir le montant du retrait"
+              placeholder="Enter withdrawal amount"
               data-testid="input-withdrawal-amount"
               style={{ flex: 1, fontSize: 15, color: "white", background: "transparent", border: "none", outline: "none" }}
             />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 13 }}>
             <span style={{ color: "#9ca3af" }}>
-              Montant reçu : <span style={{ color: "white" }}>{symbol}{amountAfterFees.toLocaleString()}</span>
+              Amount received: <span style={{ color: "white" }}>{symbol}{amountAfterFees.toLocaleString()}</span>
             </span>
             <span style={{ color: "#9ca3af" }}>
-              Frais : <span style={{ color: "white" }}>{withdrawalFee}%</span>
+              Fees: <span style={{ color: "white" }}>{withdrawalFee}%</span>
             </span>
           </div>
         </div>
@@ -244,13 +244,13 @@ export default function WithdrawalPage() {
         {!isWithinWithdrawalHours && (
           <div style={{ background: "#1a1a1a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#f59e0b", display: "flex", gap: 8, alignItems: "center" }}>
             <span>⏰</span>
-            <span>Retraits disponibles de {withdrawalStartHour}h à {withdrawalEndHour}h (actuellement fermé)</span>
+            <span>Withdrawals available from {withdrawalStartHour}h to {withdrawalEndHour}h (currently closed)</span>
           </div>
         )}
         {!hasActiveProduct && (
           <div style={{ background: "#1a1a1a", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#f59e0b", display: "flex", gap: 8, alignItems: "center" }}>
             <span>⚠️</span>
-            <span>Vous devez avoir un produit actif pour effectuer un retrait.</span>
+            <span>You must have an active product to make a withdrawal.</span>
           </div>
         )}
 
@@ -273,8 +273,8 @@ export default function WithdrawalPage() {
           }}
         >
           {withdrawMutation.isPending
-            ? <><Loader2 style={{ width: 20, height: 20 }} className="animate-spin" /> Traitement...</>
-            : "Confirmer"
+            ? <><Loader2 style={{ width: 20, height: 20 }} className="animate-spin" /> Processing...</>
+            : "Confirm"
           }
         </button>
 
@@ -284,14 +284,14 @@ export default function WithdrawalPage() {
             <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Info style={{ width: 14, height: 14, color: "white" }} />
             </div>
-            <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Informations importantes :</span>
+            <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Important information:</span>
           </div>
           <div style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.7, display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              `1. Montant minimum de retrait : ${fmt(minWithdrawalFcfa)}.`,
-              `2. Frais de retrait : ${withdrawalFee} % du montant retiré.`,
-              `3. Vous pouvez effectuer des retraits à tout moment. Les retraits sont disponibles sous 4 à 24 heures.`,
-              `4. Afin de protéger les intérêts de la plateforme et de ses membres, vous devez disposer d'au moins un appareil pour activer la fonction de retrait.`,
+              `1. Minimum withdrawal amount: ${fmt(minWithdrawalFcfa)}.`,
+              `2. Withdrawal fee: ${withdrawalFee}% of the withdrawn amount.`,
+              `3. You can make withdrawals at any time. Withdrawals are processed within 4 to 24 hours.`,
+              `4. To protect the interests of the platform and its members, you must have at least one active product to enable the withdrawal function.`,
             ].map((text, i) => (
               <p key={i} style={{ margin: 0 }}>{text}</p>
             ))}

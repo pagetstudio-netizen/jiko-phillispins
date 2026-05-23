@@ -33,7 +33,7 @@ export default function TeamPage() {
   const [, navigate] = useLocation();
   const { fmt } = useUserCurrency();
 
-  useEffect(() => { document.title = "Équipe | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Team | Noviqra Ai"; }, []);
 
   const { data: stats } = useQuery<TeamStats>({
     queryKey: ["/api/team/stats"],
@@ -62,12 +62,12 @@ export default function TeamPage() {
 
   const copyCode = () => {
     navigator.clipboard.writeText(referralCode);
-    toast({ title: "Code copié !" });
+    toast({ title: "Code copied!" });
   };
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
-    toast({ title: "Lien copié !" });
+    toast({ title: "Link copied!" });
   };
 
   return (
@@ -87,7 +87,7 @@ export default function TeamPage() {
 
         {/* Invitation code */}
         <div style={{ paddingTop: 20, paddingBottom: 16, borderBottom: "1px solid #222" }}>
-          <p style={{ color: "#aaa", fontSize: 13, marginBottom: 6 }}>Code d'invitation</p>
+          <p style={{ color: "#aaa", fontSize: 13, marginBottom: 6 }}>Invitation Code</p>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ color: "#fff", fontSize: 22, fontWeight: 800, letterSpacing: 1 }} data-testid="text-referral-code">
               {referralCode}
@@ -97,14 +97,14 @@ export default function TeamPage() {
               data-testid="button-copy-code"
               style={{ background: "transparent", border: "1.5px solid #fff", borderRadius: 6, color: "#fff", fontWeight: 700, fontSize: 13, padding: "6px 18px", cursor: "pointer", letterSpacing: 1 }}
             >
-              COPIER
+              COPY
             </button>
           </div>
         </div>
 
         {/* Invitation link */}
         <div style={{ paddingTop: 16, paddingBottom: 20, borderBottom: "1px solid #222" }}>
-          <p style={{ color: "#aaa", fontSize: 13, marginBottom: 6 }}>Lien d'invitation</p>
+          <p style={{ color: "#aaa", fontSize: 13, marginBottom: 6 }}>Invitation Link</p>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <span style={{ color: "#888", fontSize: 11, flex: 1, wordBreak: "break-all" }} data-testid="text-referral-link">
               {referralLink}
@@ -114,7 +114,7 @@ export default function TeamPage() {
               data-testid="button-copy-link"
               style={{ background: "transparent", border: "1.5px solid #fff", borderRadius: 6, color: "#fff", fontWeight: 700, fontSize: 13, padding: "6px 18px", cursor: "pointer", letterSpacing: 1, flexShrink: 0 }}
             >
-              COPIER
+              COPY
             </button>
           </div>
         </div>
@@ -150,11 +150,11 @@ export default function TeamPage() {
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 16 }}>
                   <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }} data-testid={`text-lv${i+1}-count`}>{lv.count}</div>
-                    <div style={{ color: "#888", fontSize: 11 }}>Personnes</div>
+                    <div style={{ color: "#888", fontSize: 11 }}>Members</div>
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }} data-testid={`text-lv${i+1}-reward`}>CFA {lv.reward.toFixed(0)}</div>
-                    <div style={{ color: "#888", fontSize: 11 }}>Recompense</div>
+                    <div style={{ color: "#888", fontSize: 11 }}>Reward</div>
                   </div>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export default function TeamPage() {
               {totalPersonnes}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 8 }}>
-              <span style={{ color: "#ccc", fontSize: 13, fontWeight: 500 }}>Total personnes</span>
+              <span style={{ color: "#ccc", fontSize: 13, fontWeight: 500 }}>Total Members</span>
               <ChevronRight size={14} color="#ccc" />
             </div>
           </button>
@@ -192,7 +192,7 @@ export default function TeamPage() {
               CFA {totalRecompenses.toFixed(0)}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 8 }}>
-              <span style={{ color: "#ccc", fontSize: 13, fontWeight: 500 }}>Total recompenses</span>
+              <span style={{ color: "#ccc", fontSize: 13, fontWeight: 500 }}>Total Rewards</span>
               <ChevronRight size={14} color="#ccc" />
             </div>
           </button>
@@ -202,16 +202,16 @@ export default function TeamPage() {
         {/* Info text */}
         <div style={{ marginTop: 24, paddingBottom: 16 }}>
           <p style={{ color: "#ccc", fontSize: 13, lineHeight: 1.7, marginBottom: 10 }}>
-            Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez immédiatement une commission de {level1Rate} sur son investissement.
+            When a friend you invite registers and invests, you immediately receive a {level1Rate} commission on their investment.
           </p>
           <p style={{ color: "#ccc", fontSize: 13, lineHeight: 1.7, marginBottom: 10 }}>
-            Lorsque les membres de votre équipe de deuxième niveau investissent, vous recevez une commission de {level2Rate}.
+            When members of your level 2 team invest, you receive a {level2Rate} commission.
           </p>
           <p style={{ color: "#ccc", fontSize: 13, lineHeight: 1.7, marginBottom: 10 }}>
-            Lorsque les membres de votre équipe de troisième niveau investissent, vous recevez également une commission de {level3Rate}.
+            When members of your level 3 team invest, you also receive a {level3Rate} commission.
           </p>
           <p style={{ color: "#ccc", fontSize: 13, lineHeight: 1.7 }}>
-            Dès que les membres de votre équipe investissent, la commission est immédiatement créditée sur votre compte et vous pouvez la retirer instantanément.
+            As soon as your team members invest, the commission is immediately credited to your account and you can withdraw it instantly.
           </p>
         </div>
 

@@ -63,7 +63,7 @@ export default function TeamDetailsPage() {
           <ChevronLeft size={24} color="#fff" />
         </button>
         <h1 style={{ flex: 1, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#fff", margin: 0 }} data-testid="text-page-title">
-          Historique d equipe
+          Team History
         </h1>
         <div style={{ width: 32 }} />
       </div>
@@ -97,13 +97,13 @@ export default function TeamDetailsPage() {
       <div style={{ margin: "0 16px 16px" }}>
         <div style={{ background: "#111", borderRadius: 12, display: "flex", overflow: "hidden" }}>
           <div style={{ flex: 1, padding: "20px 16px", textAlign: "center", borderRight: "1px solid #222" }}>
-            <p style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>Membres de l equipe</p>
+            <p style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>Team Members</p>
             <p style={{ color: "#fff", fontWeight: 800, fontSize: 22, margin: 0 }} data-testid="text-members-count">
               {membersCount}
             </p>
           </div>
           <div style={{ flex: 1, padding: "20px 16px", textAlign: "center" }}>
-            <p style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>Recharge de l equipe</p>
+            <p style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>Team Deposits</p>
             <p style={{ color: "#fff", fontWeight: 800, fontSize: 22, margin: 0 }} data-testid="text-recharge-amount">
               {fmt(invested)}
             </p>
@@ -114,7 +114,7 @@ export default function TeamDetailsPage() {
       {/* Empty state */}
       {membersCount === 0 && (
         <div style={{ textAlign: "center", paddingTop: 40, color: "#555", fontSize: 14 }}>
-          Plus de donnees
+          No data available
         </div>
       )}
 

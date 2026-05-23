@@ -44,10 +44,10 @@ const RD_STATS = [
 ];
 
 const ACTIONS = [
-  { icon: iconDeposit,  label: "Dépôt",   path: "/deposit"    },
-  { icon: iconWithdraw, label: "Retrait",  path: "/withdrawal" },
-  { icon: iconGift,     label: "Cadeau",   path: "__gift__"    },
-  { icon: iconHelp,     label: "Aide",     path: "/service"    },
+  { icon: iconDeposit,  label: "Deposit",  path: "/deposit"    },
+  { icon: iconWithdraw, label: "Withdraw", path: "/withdrawal" },
+  { icon: iconGift,     label: "Gift",     path: "__gift__"    },
+  { icon: iconHelp,     label: "Help",     path: "/service"    },
 ];
 
 export default function HomePage() {
@@ -71,9 +71,9 @@ export default function HomePage() {
     },
     onSuccess: (data) => {
       setGiftCode(""); setShowGiftModal(false);
-      toast({ title: "Félicitations!", description: data.message });
+      toast({ title: "Congratulations!", description: data.message });
     },
-    onError: (err: any) => toast({ title: "Erreur", description: err.message, variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   if (!user) return <div style={{ minHeight: "100vh", backgroundColor: "#111111" }} />;
@@ -100,7 +100,7 @@ export default function HomePage() {
             style={{ width: "92vw", maxWidth: 420, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <img src={popupCharacters} alt="Bienvenue" style={{ width: "100%", borderRadius: 20 }} data-testid="img-popup" />
+            <img src={popupCharacters} alt="Welcome" style={{ width: "100%", borderRadius: 20 }} data-testid="img-popup" />
             <a
               href={platformSettings?.groupLink || "https://t.me/+R9SFSGneBkg3NTFh"}
               target="_blank" rel="noopener noreferrer"
@@ -114,7 +114,7 @@ export default function HomePage() {
               data-testid="button-popup-close"
               style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, width: 64, height: 64 }}
             >
-              <img src={popupCloseBtn} alt="Fermer" style={{ width: "100%", height: "100%" }} />
+              <img src={popupCloseBtn} alt="Close" style={{ width: "100%", height: "100%" }} />
             </button>
           </div>
         </div>
@@ -136,13 +136,13 @@ export default function HomePage() {
         {/* Dark account card */}
         <div style={{ margin: "0 10px", borderRadius: "18px 18px 0 0", background: "rgba(12,12,12,0.93)", padding: "18px 14px 14px" }}>
 
-          <p style={{ color: "white", fontWeight: 700, fontSize: 17, textAlign: "center", marginBottom: 14 }}>Mon compte</p>
+          <p style={{ color: "white", fontWeight: 700, fontSize: 17, textAlign: "center", marginBottom: 14 }}>My Account</p>
 
-          {/* Balance + Cumul */}
+          {/* Balance + Earnings */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             {[
-              { label: "Solde",  value: fmt(balance)       },
-              { label: "Cumul",  value: fmt(totalEarnings) },
+              { label: "Balance",  value: fmt(balance)       },
+              { label: "Earnings", value: fmt(totalEarnings) },
             ].map((card) => (
               <div
                 key={card.label}
@@ -162,10 +162,10 @@ export default function HomePage() {
               data-testid="button-bonus-quotidien"
               style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
             >
-              <img src={robotBonus} alt="Bonus quotidien" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={robotBonus} alt="Daily Bonus" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
               <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
-                Bonus quotidien &gt;
+                Daily Bonus &gt;
               </p>
             </button>
 
@@ -174,10 +174,10 @@ export default function HomePage() {
               data-testid="button-centre-missions"
               style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
             >
-              <img src={robotMission} alt="Centre de missions" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={robotMission} alt="Mission Center" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
               <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
-                Centre de missions &gt;
+                Mission Center &gt;
               </p>
             </button>
           </div>

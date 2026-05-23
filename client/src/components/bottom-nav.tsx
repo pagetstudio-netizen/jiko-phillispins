@@ -9,10 +9,10 @@ const whiteFilter = "brightness(0) invert(1)";
 const greenFilter = "brightness(0) saturate(100%) invert(42%) sepia(98%) saturate(500%) hue-rotate(80deg) brightness(95%)";
 
 const navItems = [
-  { path: "/",            label: "Accueil",    icon: iconHome,   needsWhite: false },
-  { path: "/invest",      label: "Produit",    icon: iconRevenu, needsWhite: false },
-  { path: "/team",        label: "Equipes",    icon: iconEquipe, needsWhite: true  },
-  { path: "/account",     label: "Mon compte", icon: iconCompte, needsWhite: false },
+  { path: "/",            label: "Home",     icon: iconHome,   needsWhite: false },
+  { path: "/invest",      label: "Products", icon: iconRevenu, needsWhite: false },
+  { path: "/team",        label: "Team",     icon: iconEquipe, needsWhite: true  },
+  { path: "/account",     label: "Account",  icon: iconCompte, needsWhite: false },
 ];
 
 export default function BottomNav() {

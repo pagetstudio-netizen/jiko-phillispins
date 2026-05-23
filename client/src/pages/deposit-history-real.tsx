@@ -55,7 +55,7 @@ export default function DepositHistoryRealPage() {
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
         </Link>
-        <h1 className="flex-1 text-center text-lg font-semibold text-gray-800 pr-8">Historique des depots</h1>
+        <h1 className="flex-1 text-center text-lg font-semibold text-gray-800 pr-8">Deposit History</h1>
       </header>
 
       <div className="p-4 space-y-4">
