@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
-import skyBg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
 
 export default function RegisterPage() {
   const [, navigate] = useLocation();
@@ -95,17 +94,24 @@ export default function RegisterPage() {
       margin: "0 auto",
       position: "relative",
       overflow: "hidden",
-      background: `#c9a87c url(${skyBg}) center/cover no-repeat`,
+      background: "#c9a87c",
     }}>
 
       {/* Content layer */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 20px 40px" }}>
 
-        {/* Title */}
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ color: "white", fontSize: 32, fontWeight: 800, margin: 0, textShadow: "0 1px 8px rgba(0,0,0,0.2)" }}>
-            {lang === "fr" ? "Inscription" : "Register"}
-          </h1>
+        {/* Logo + title */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+              <circle cx="22" cy="22" r="21" stroke="white" strokeWidth="2.5" fill="none" />
+              <path d="M8 28 Q15 14 22 20 Q29 26 36 12" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
+            </svg>
+            <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>Noviqra AI</span>
+          </div>
+          <p style={{ color: "white", fontSize: 22, fontWeight: 700, margin: 0, textShadow: "0 1px 6px rgba(0,0,0,0.15)" }}>
+            {lang === "fr" ? "Créer un compte" : "Create an account"}
+          </p>
         </div>
 
         {/* Form */}

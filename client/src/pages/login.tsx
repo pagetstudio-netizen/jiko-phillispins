@@ -9,7 +9,6 @@ import { ELIGIBLE_COUNTRIES } from "@/lib/countries";
 import { CountrySelector } from "@/components/country-selector";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
-import skyBg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
 
 function NioLogo() {
   return (
@@ -110,7 +109,7 @@ export default function LoginPage() {
       margin: "0 auto",
       position: "relative",
       overflow: "hidden",
-      background: `#c9a87c url(${skyBg}) center/cover no-repeat`,
+      background: "#c9a87c",
     }}>
 
       {/* Content layer */}
