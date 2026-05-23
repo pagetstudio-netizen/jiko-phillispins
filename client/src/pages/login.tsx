@@ -112,6 +112,16 @@ export default function LoginPage() {
     overflow: "hidden",
   };
 
+  useEffect(() => {
+    const prev = document.documentElement.style.background;
+    document.documentElement.style.background = "#c9a87c";
+    document.body.style.background = "#c9a87c";
+    return () => {
+      document.documentElement.style.background = prev;
+      document.body.style.background = "";
+    };
+  }, []);
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -119,14 +129,8 @@ export default function LoginPage() {
       margin: "0 auto",
       position: "relative",
       overflow: "hidden",
-      background: "#c9a87c",
+      background: `#c9a87c url(${skyBg}) center/cover no-repeat`,
     }}>
-      {/* Full-screen background */}
-      <img
-        src={skyBg}
-        alt=""
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", zIndex: 0 }}
-      />
 
       {/* Content layer */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 20px 40px" }}>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "jinko-v3";
+const CACHE_NAME = "noviqra-v1";
 const STATIC_ASSETS = ["/", "/manifest.json", "/favicon.png"];
 
 self.addEventListener("install", (event) => {
