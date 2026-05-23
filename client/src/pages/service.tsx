@@ -69,10 +69,10 @@ export default function ServicePage() {
         }} />
 
         {/* back button */}
-        <div style={{ position: "absolute", top: 44, left: 16 }}>
+        <div style={{ position: "absolute", top: 44, left: 16, zIndex: 10 }}>
           <button
             data-testid="button-back"
-            onClick={() => window.history.length > 1 ? window.history.back() : navigate("/")}
+            onClick={() => navigate("/account")}
             style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer" }}
           >
             <ChevronLeft style={{ width: 26, height: 26, color: "white" }} />

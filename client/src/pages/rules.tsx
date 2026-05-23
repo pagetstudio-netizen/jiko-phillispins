@@ -5,14 +5,14 @@ import { useLang } from "@/lib/i18n";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 
 const PRODUCTS = [
-  { vip: "VIP1", name: "Nano AI Robot",    price: 500,      daily: 50,       days: 80 },
-  { vip: "VIP2", name: "Smart AI Robot",   price: 2000,     daily: 200,      days: 80 },
-  { vip: "VIP3", name: "Pro AI Robot",     price: 5000,     daily: 500,      days: 80 },
-  { vip: "VIP4", name: "Elite AI Robot",   price: 10000,    daily: 1000,     days: 80 },
-  { vip: "VIP5", name: "Premium AI Robot", price: 20000,    daily: 2000,     days: 80 },
-  { vip: "VIP6", name: "Expert AI Robot",  price: 50000,    daily: 5000,     days: 80 },
-  { vip: "VIP7", name: "Master AI Robot",  price: 100000,   daily: 10000,    days: 80 },
-  { vip: "VIP8", name: "Ultra AI Robot",   price: 200000,   daily: 20000,    days: 80 },
+  { vip: "VIP1", name: "Nano AI Robot",    price: 500,      daily: 50,       days: 30 },
+  { vip: "VIP2", name: "Smart AI Robot",   price: 2000,     daily: 200,      days: 30 },
+  { vip: "VIP3", name: "Pro AI Robot",     price: 5000,     daily: 500,      days: 30 },
+  { vip: "VIP4", name: "Elite AI Robot",   price: 10000,    daily: 1000,     days: 30 },
+  { vip: "VIP5", name: "Premium AI Robot", price: 20000,    daily: 2000,     days: 30 },
+  { vip: "VIP6", name: "Expert AI Robot",  price: 50000,    daily: 5000,     days: 30 },
+  { vip: "VIP7", name: "Master AI Robot",  price: 100000,   daily: 10000,    days: 30 },
+  { vip: "VIP8", name: "Ultra AI Robot",   price: 200000,   daily: 20000,    days: 30 },
 ];
 
 export default function RulesPage() {
@@ -83,7 +83,7 @@ export default function RulesPage() {
               <span style={{ fontSize: 10, color: "#ddd", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
               <span style={{ fontSize: 10, color: "#fff", textAlign: "right" }}>{fmt(p.price)}</span>
               <span style={{ fontSize: 10, color: "#4caf50", textAlign: "right", fontWeight: 700 }}>{fmt(p.daily)}</span>
-              <span style={{ fontSize: 10, color: "#aaa", textAlign: "right" }}>{p.days}j</span>
+              <span style={{ fontSize: 10, color: "#aaa", textAlign: "right" }}>{p.days}d</span>
             </div>
           ))}
 
@@ -132,7 +132,7 @@ export default function RulesPage() {
             <ul style={{ paddingLeft: 18, color: "#ccc", fontSize: 13, lineHeight: 1.8, margin: 0 }}>
               <li>{fr ? "Chaque utilisateur peut posséder plusieurs produits d'investissement simultanément." : "Each user can own several investment products simultaneously."}</li>
               <li>{fr ? "Les revenus sont générés quotidiennement et crédités sur votre solde toutes les 24 heures." : "Earnings are generated daily and credited to your balance every 24 hours."}</li>
-              <li>{fr ? "Le cycle d'investissement standard est de 80 jours." : "The standard investment cycle is 80 days."}</li>
+              <li>{fr ? "Le cycle d'investissement standard est de 30 jours." : "The standard investment cycle is 30 days."}</li>
             </ul>
           </section>
 

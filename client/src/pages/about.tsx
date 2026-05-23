@@ -43,8 +43,8 @@ export default function AboutPage() {
 
         <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
           {fr
-            ? "En matière d'investissement, Noviqra Ai a été pionnière dans le développement d'un système de revenus passifs basé sur des robots industriels qu'elle perfectionne constamment. Elle a mis en place un réseau d'investisseurs dans plus de 7 pays africains pour offrir aux utilisateurs une expérience d'investissement efficace et pratique, réduisant ainsi l'écart d'accès aux opportunités financières mondiales."
-            : "In terms of investment, Noviqra Ai has been a pioneer in developing a passive income system based on industrial robots that it constantly improves. It has built an investor network across more than 7 African countries to offer users an efficient and practical investment experience, bridging the gap in access to global financial opportunities."}
+            ? "En matière d'investissement, Noviqra Ai a été pionnière dans le développement d'un système de revenus passifs basé sur des robots industriels qu'elle perfectionne constamment. Elle a mis en place un réseau d'investisseurs aux Philippines pour offrir aux utilisateurs une expérience d'investissement efficace et pratique, réduisant ainsi l'écart d'accès aux opportunités financières mondiales."
+            : "In terms of investment, Noviqra Ai has been a pioneer in developing a passive income system based on industrial robots that it constantly improves. It has built an investor network across the Philippines to offer users an efficient and practical investment experience, bridging the gap in access to global financial opportunities."}
         </p>
 
         <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
@@ -55,8 +55,8 @@ export default function AboutPage() {
 
         <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
           {fr
-            ? "Actif dans 7 pays africains, Noviqra Ai travaille avec plusieurs opérateurs de mobile money (Orange Money, MTN, Moov, Wave, Airtel) afin d'offrir des solutions de dépôt et de retrait fluides et adaptées à chaque marché local."
-            : "Active in 7 African countries, Noviqra Ai works with several mobile money operators (Orange Money, MTN, Moov, Wave, Airtel) to offer smooth deposit and withdrawal solutions adapted to each local market."}
+            ? "Disponible aux Philippines, Noviqra Ai travaille avec les deux principaux portefeuilles numériques (GCash et Maya) afin d'offrir des solutions de dépôt et de retrait fluides et adaptées au marché local."
+            : "Available in the Philippines, Noviqra Ai works with the two leading digital wallets (GCash and Maya) to offer smooth deposit and withdrawal solutions adapted to the local market."}
         </p>
 
         <p style={{ color: "#cccccc", fontSize: 14 }}>
