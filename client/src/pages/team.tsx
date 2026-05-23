@@ -153,7 +153,7 @@ export default function TeamPage() {
                     <div style={{ color: "#888", fontSize: 11 }}>Members</div>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }} data-testid={`text-lv${i+1}-reward`}>CFA {lv.reward.toFixed(0)}</div>
+                    <div style={{ color: "#fff", fontWeight: 700, fontSize: 15 }} data-testid={`text-lv${i+1}-reward`}>{fmt(lv.reward)}</div>
                     <div style={{ color: "#888", fontSize: 11 }}>Reward</div>
                   </div>
                 </div>
@@ -189,7 +189,7 @@ export default function TeamPage() {
           >
             <img src={carRight} alt="" style={{ width: "100%", maxWidth: 130, height: 70, objectFit: "contain", marginBottom: 8 }} />
             <span style={{ color: "#fff", fontWeight: 800, fontSize: 22, lineHeight: 1 }} data-testid="text-total-recompenses">
-              CFA {totalRecompenses.toFixed(0)}
+              {fmt(totalRecompenses)}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 8 }}>
               <span style={{ color: "#ccc", fontSize: 13, fontWeight: 500 }}>Total Rewards</span>

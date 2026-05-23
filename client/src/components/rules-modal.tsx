@@ -1,5 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUserCurrency } from "@/lib/useUserCurrency";
+import { useQuery } from "@tanstack/react-query";
 
 interface RulesModalProps {
   open: boolean;
@@ -7,73 +9,65 @@ interface RulesModalProps {
 }
 
 export default function RulesModal({ open, onClose }: RulesModalProps) {
+  const { fmt } = useUserCurrency();
+  const { data: settings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
+  const minDeposit = parseInt(settings?.minDeposit || "500");
+  const minWithdrawal = parseInt(settings?.minWithdrawal || "100");
+  const withdrawalFees = settings?.withdrawalFees || "0";
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Règles de la plateforme</DialogTitle>
+          <DialogTitle>Platform Rules</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-4 text-sm text-muted-foreground">
             <section>
-              <h4 className="font-medium text-foreground mb-2">1. Dépôts</h4>
+              <h4 className="font-medium text-foreground mb-2">1. Deposits</h4>
               <ul className="space-y-1">
-                <li>- Montant minimum : 3 000 FCFA</li>
-                <li>- Les dépôts sont traités dans les plus brefs délais</li>
-                <li>- Assurez-vous que les informations de paiement sont correctes</li>
+                <li>- Minimum amount: {fmt(minDeposit)}</li>
+                <li>- Deposits are processed as quickly as possible</li>
+                <li>- Ensure payment information is correct</li>
               </ul>
             </section>
 
             <section>
-              <h4 className="font-medium text-foreground mb-2">2. Retraits</h4>
+              <h4 className="font-medium text-foreground mb-2">2. Withdrawals</h4>
               <ul className="space-y-1">
-                <li>- Montant minimum : 1 200 FCFA</li>
-                <li>- Frais de retrait : 15%</li>
-                <li>- Horaires : 8h - 17h (tous les pays)</li>
-                <li>- Cameroun et Bénin : 9h - 18h</li>
-                <li>- Maximum 3 retraits par jour</li>
-                <li>- Un produit actif est requis pour retirer</li>
-                <li>- Un portefeuille de retrait doit être enregistré</li>
+                <li>- Minimum amount: {fmt(minWithdrawal)}</li>
+                <li>- Withdrawal fee: {withdrawalFees}%</li>
+                <li>- Hours: 9am - 6pm</li>
+                <li>- Maximum 2 withdrawals per day</li>
+                <li>- An active product is required to withdraw</li>
+                <li>- A withdrawal wallet must be registered</li>
               </ul>
             </section>
 
             <section>
-              <h4 className="font-medium text-foreground mb-2">3. Produits</h4>
+              <h4 className="font-medium text-foreground mb-2">3. Products</h4>
               <ul className="space-y-1">
-                <li>- Cycle standard : 80 jours</li>
-                <li>- Gains journaliers automatiques</li>
-                <li>- Les gains sont crédités 24h après l'achat</li>
-                <li>- Produit gratuit : réclamez 50 FCFA/jour</li>
+                <li>- Standard cycle: 80 days</li>
+                <li>- Automatic daily earnings</li>
+                <li>- Earnings credited 24h after purchase</li>
+                <li>- Free product: claim {fmt(5)}/day</li>
               </ul>
             </section>
 
             <section>
-              <h4 className="font-medium text-foreground mb-2">4. Parrainage</h4>
+              <h4 className="font-medium text-foreground mb-2">4. Referral</h4>
               <ul className="space-y-1">
-                <li>- Niveau 1 : 27% de commission</li>
-                <li>- Niveau 2 : 2% de commission</li>
-                <li>- Niveau 3 : 1% de commission</li>
-                <li>- Commissions sur les achats de produits</li>
+                <li>- Level 1: 20% commission</li>
+                <li>- Level 2: 3% commission</li>
+                <li>- Level 3: 2% commission</li>
+                <li>- Commissions on product purchases</li>
               </ul>
             </section>
 
             <section>
-              <h4 className="font-medium text-foreground mb-2">5. Bonus d'inscription</h4>
-              <p>Chaque nouveau membre reçoit 700 FCFA de bonus à l'inscription.</p>
-            </section>
-
-            <section>
-              <h4 className="font-medium text-foreground mb-2">6. Pays éligibles</h4>
-              <ul className="space-y-1">
-                <li>- Cameroun</li>
-                <li>- Burkina Faso</li>
-                <li>- Togo</li>
-                <li>- Bénin</li>
-                <li>- Côte d'Ivoire</li>
-                <li>- Congo Brazzaville</li>
-                <li>- RDC (1 FCFA = 4 CDF)</li>
-              </ul>
+              <h4 className="font-medium text-foreground mb-2">5. Sign-up Bonus</h4>
+              <p>Each new member receives a {fmt(50)} bonus upon registration.</p>
             </section>
           </div>
         </ScrollArea>

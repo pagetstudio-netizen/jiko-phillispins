@@ -204,15 +204,11 @@ export default function CheckinPage() {
           {fr ? "Conseils utiles" : "Useful tips"}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {(fr ? [
-            `1. Récompense pour la connexion quotidienne : ${fmt(DAILY_BONUS)} FCFA.`,
-            "2. Connectez-vous une fois par jour.",
-            "3. Connectez-vous à nouveau après minuit chaque jour.",
-          ] : [
+          {[
             `1. Daily login reward: ${fmt(DAILY_BONUS)}.`,
             "2. Log in once per day to accumulate bonuses.",
             "3. Log in again after midnight each day.",
-          ]).map((tip, i) => (
+          ].map((tip, i) => (
             <p key={i} style={{ fontSize: 13, color: "#888", margin: 0, lineHeight: 1.5 }}>{tip}</p>
           ))}
         </div>

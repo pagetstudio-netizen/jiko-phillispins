@@ -2,22 +2,24 @@ import { ChevronLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useLang } from "@/lib/i18n";
+import { useUserCurrency } from "@/lib/useUserCurrency";
 
 const PRODUCTS = [
-  { vip: "VIP1", name: "Nano AI Robot",    price: "500",      daily: "50",       total: "4,000",       days: 80 },
-  { vip: "VIP2", name: "Smart AI Robot",   price: "2,000",    daily: "200",      total: "16,000",      days: 80 },
-  { vip: "VIP3", name: "Pro AI Robot",     price: "5,000",    daily: "500",      total: "40,000",      days: 80 },
-  { vip: "VIP4", name: "Elite AI Robot",   price: "10,000",   daily: "1,000",    total: "80,000",      days: 80 },
-  { vip: "VIP5", name: "Premium AI Robot", price: "20,000",   daily: "2,000",    total: "160,000",     days: 80 },
-  { vip: "VIP6", name: "Expert AI Robot",  price: "50,000",   daily: "5,000",    total: "400,000",     days: 80 },
-  { vip: "VIP7", name: "Master AI Robot",  price: "100,000",  daily: "10,000",   total: "800,000",     days: 80 },
-  { vip: "VIP8", name: "Ultra AI Robot",   price: "200,000",  daily: "20,000",   total: "1,600,000",   days: 80 },
+  { vip: "VIP1", name: "Nano AI Robot",    price: 500,      daily: 50,       days: 80 },
+  { vip: "VIP2", name: "Smart AI Robot",   price: 2000,     daily: 200,      days: 80 },
+  { vip: "VIP3", name: "Pro AI Robot",     price: 5000,     daily: 500,      days: 80 },
+  { vip: "VIP4", name: "Elite AI Robot",   price: 10000,    daily: 1000,     days: 80 },
+  { vip: "VIP5", name: "Premium AI Robot", price: 20000,    daily: 2000,     days: 80 },
+  { vip: "VIP6", name: "Expert AI Robot",  price: 50000,    daily: 5000,     days: 80 },
+  { vip: "VIP7", name: "Master AI Robot",  price: 100000,   daily: 10000,    days: 80 },
+  { vip: "VIP8", name: "Ultra AI Robot",   price: 200000,   daily: 20000,    days: 80 },
 ];
 
 export default function RulesPage() {
   const [, navigate] = useLocation();
   const { lang } = useLang();
   const fr = lang === "fr";
+  const { fmt } = useUserCurrency();
   useEffect(() => { document.title = "Réglementation | Noviqra Ai"; }, []);
 
   return (
@@ -79,8 +81,8 @@ export default function RulesPage() {
             >
               <span style={{ fontSize: 10, fontWeight: 700, color: "#e07020" }}>{p.vip}</span>
               <span style={{ fontSize: 10, color: "#ddd", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
-              <span style={{ fontSize: 10, color: "#fff", textAlign: "right" }}>{p.price}</span>
-              <span style={{ fontSize: 10, color: "#4caf50", textAlign: "right", fontWeight: 700 }}>{p.daily}</span>
+              <span style={{ fontSize: 10, color: "#fff", textAlign: "right" }}>{fmt(p.price)}</span>
+              <span style={{ fontSize: 10, color: "#4caf50", textAlign: "right", fontWeight: 700 }}>{fmt(p.daily)}</span>
               <span style={{ fontSize: 10, color: "#aaa", textAlign: "right" }}>{p.days}j</span>
             </div>
           ))}
@@ -115,8 +117,8 @@ export default function RulesPage() {
         </p>
 
         <div style={{ color: "#cccccc", fontSize: 13, lineHeight: 1.9 }}>
-          <p>① {fr ? "Inscrivez-vous et recevez 50 FCFA." : "Sign up and receive 50 FCFA."}</p>
-          <p>② {fr ? "Recevez 5 FCFA chaque jour avec le produit gratuit." : "Receive 5 FCFA every day with the free product."}</p>
+          <p>① {fr ? `Inscrivez-vous et recevez ${fmt(50)}.` : `Sign up and receive ${fmt(50)}.`}</p>
+          <p>② {fr ? `Recevez ${fmt(5)} chaque jour avec le produit gratuit.` : `Receive ${fmt(5)} every day with the free product.`}</p>
           <p>③ {fr ? "Invitez des amis à investir et recevez instantanément une commission avantageuse de 20 %." : "Invite friends to invest and instantly receive an advantageous 20% commission."}</p>
         </div>
 
@@ -139,8 +141,8 @@ export default function RulesPage() {
               2. {fr ? "Dépôts et Retraits" : "Deposits & Withdrawals"}
             </h2>
             <ul style={{ paddingLeft: 18, color: "#ccc", fontSize: 13, lineHeight: 1.8, margin: 0 }}>
-              <li>{fr ? "Le montant minimum de dépôt est de 500 FCFA." : "The minimum deposit amount is 500 FCFA."}</li>
-              <li>{fr ? "Le montant minimum de retrait est de 100 FCFA." : "The minimum withdrawal amount is 100 FCFA."}</li>
+              <li>{fr ? `Le montant minimum de dépôt est de ${fmt(500)}.` : `The minimum deposit amount is ${fmt(500)}.`}</li>
+              <li>{fr ? `Le montant minimum de retrait est de ${fmt(100)}.` : `The minimum withdrawal amount is ${fmt(100)}.`}</li>
               <li>{fr ? "Les frais de retrait sont de 0 %." : "Withdrawal fees are 0%."}</li>
               <li>{fr ? "Les retraits sont traités entre 9h et 18h les jours ouvrables." : "Withdrawals are processed between 9am and 6pm on business days."}</li>
               <li>{fr ? "Limite de 2 retraits maximum par jour par utilisateur." : "Maximum 2 withdrawals per day per user."}</li>
