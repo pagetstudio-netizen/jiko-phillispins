@@ -65,10 +65,10 @@ export async function registerRoutes(
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.REPLIT_DEV_DOMAIN ? true : process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        sameSite: process.env.REPLIT_DEV_DOMAIN ? "none" : (process.env.NODE_ENV === "production" ? "none" : "lax"),
+        sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
       },
     })
   );
@@ -1107,9 +1107,7 @@ export async function registerRoutes(
       const secretKey = settings.cloudpaySecretKey || "";
       const domain = settings.cloudpayDomain || "";
 
-      const host = process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : `${req.protocol}://${req.get("host")}`;
+      const host = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
       const callbackUrl = `${host}/api/webhooks/cloudpay`;
       const returnUrl = `${host}/deposit-orders`;
 

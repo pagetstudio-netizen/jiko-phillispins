@@ -139,9 +139,7 @@ export async function initiatePayment(
   }
 
   const currency = getCurrency(country);
-  const baseUrl = process.env.REPLIT_DEV_DOMAIN
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-    : "https://noviqra.replit.app";
+  const baseUrl = process.env.APP_URL || `https://polaroidaut.top`;
 
   const requestBody: SoleaspayPaymentRequest = {
     wallet: formatWallet(wallet, country),
