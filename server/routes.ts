@@ -56,7 +56,7 @@ export async function registerRoutes(
   app.use(
     session({
       store: new PgSession({
-        conString: process.env.DATABASE_URL,
+        conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
         tableName: "session",
         createTableIfMissing: true,
         pruneSessionInterval: 60 * 60,
