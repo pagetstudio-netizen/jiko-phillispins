@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
+import { ELIGIBLE_COUNTRIES } from "@/lib/countries";
+import { CountrySelector } from "@/components/country-selector";
 
 export default function RegisterPage() {
   const [, navigate] = useLocation();
@@ -33,6 +35,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [countryModalOpen, setCountryModalOpen] = useState(false);
 
   const params = new URLSearchParams(searchString);
   const refCode = params.get("start") || params.get("money") || params.get("reg") || params.get("ic") || "";
@@ -47,6 +50,9 @@ export default function RegisterPage() {
       invitationCode: refCode,
     },
   });
+
+  const selectedCountry = form.watch("country");
+  const countryData = ELIGIBLE_COUNTRIES.find(c => c.code === selectedCountry);
 
   async function onSubmit(data: RegisterForm) {
     setIsLoading(true);
@@ -88,19 +94,10 @@ export default function RegisterPage() {
   }, []);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      maxWidth: 480,
-      margin: "0 auto",
-      position: "relative",
-      overflow: "hidden",
-      background: "#c9a87c",
-    }}>
-
-      {/* Content layer */}
+    <div style={{ minHeight: "100vh", maxWidth: 480, margin: "0 auto", position: "relative", overflow: "hidden", background: "#c9a87c" }}>
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 20px 40px" }}>
 
-        {/* Logo + title */}
+        {/* Logo */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
@@ -117,12 +114,18 @@ export default function RegisterPage() {
         {/* Form */}
         <form onSubmit={form.handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
 
-          {/* Phone — country fixed to PH (+63), no selector */}
+          {/* Phone + country selector */}
           <div>
             <div style={inputStyle}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#374151", paddingLeft: 16, paddingRight: 10, height: "100%", display: "flex", alignItems: "center", gap: 2, borderRight: "1.5px solid #e5e7eb", whiteSpace: "nowrap" }}>
-                +63
-              </span>
+              <button
+                type="button"
+                onClick={() => setCountryModalOpen(true)}
+                data-testid="button-select-country"
+                style={{ fontSize: 15, fontWeight: 700, color: "#374151", paddingLeft: 16, paddingRight: 10, height: "100%", display: "flex", alignItems: "center", gap: 3, background: "transparent", border: "none", borderRight: "1.5px solid #e5e7eb", cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                {countryData ? `+${countryData.phonePrefix}` : "+"}
+                <ChevronDown size={14} style={{ color: "#9ca3af" }} />
+              </button>
               <input
                 {...form.register("phone")}
                 type="tel"
@@ -204,12 +207,8 @@ export default function RegisterPage() {
           {/* Go to login */}
           <p style={{ textAlign: "center", fontSize: 14, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>
             {lang === "fr" ? "Vous avez déjà un compte ?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              data-testid="button-goto-login"
-              style={{ background: "transparent", border: "none", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", textDecoration: "underline", padding: 0 }}
-            >
+            <button type="button" onClick={() => navigate("/login")} data-testid="button-goto-login"
+              style={{ background: "transparent", border: "none", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
               {lang === "fr" ? "Se connecter" : tr.loginBtn}
             </button>
           </p>
@@ -218,12 +217,8 @@ export default function RegisterPage() {
 
         {/* Language Switcher */}
         <div style={{ marginTop: 28, display: "flex", justifyContent: "center", position: "relative" }}>
-          <button
-            type="button"
-            onClick={() => setShowLangMenu(!showLangMenu)}
-            data-testid="button-lang-switcher"
-            style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(6px)", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: 999, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "white" }}
-          >
+          <button type="button" onClick={() => setShowLangMenu(!showLangMenu)} data-testid="button-lang-switcher"
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(6px)", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: 999, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "white" }}>
             <Globe size={15} />
             {lang === "en" ? "🇬🇧 English" : "🇫🇷 Français"}
             <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.7)" }} />
@@ -244,6 +239,11 @@ export default function RegisterPage() {
 
       </div>
 
+      <CountrySelector
+        open={countryModalOpen}
+        onClose={() => setCountryModalOpen(false)}
+        onSelect={(code) => form.setValue("country", code, { shouldValidate: true })}
+      />
     </div>
   );
 }
