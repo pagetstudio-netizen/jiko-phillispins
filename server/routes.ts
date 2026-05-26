@@ -1389,8 +1389,8 @@ export async function registerRoutes(
         }
       }
 
-      // Add 50 FCFA to balance
-      const newBalance = parseFloat(user.balance) + 50;
+      // Add 5 FCFA (= ₱0.5) to balance
+      const newBalance = parseFloat(user.balance) + 5;
       await storage.updateUser(user.id, { 
         balance: newBalance.toString(),
         lastDailyBonusClaim: now
@@ -1400,11 +1400,11 @@ export async function registerRoutes(
       await storage.createTransaction({
         userId: user.id,
         type: "bonus",
-        amount: "50",
+        amount: "5",
         description: "Bonus quotidien"
       });
 
-      res.json({ success: true, message: "Bonus de 50 FCFA ajoute!" });
+      res.json({ success: true, message: "Bonus de connexion ajoute!" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
