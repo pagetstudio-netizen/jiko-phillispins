@@ -1,0 +1,63 @@
+Corrige complètement le problème d’authentification Supabase entre Replit et mon hébergement Plesk.
+
+Le projet fonctionne sur Replit mais après déploiement sur Plesk :
+- impossible de créer un compte
+- impossible de se connecter
+- les tables existent déjà dans la nouvelle base Supabase
+- les variables d’environnement sont déjà configurées sur Plesk :
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+DATABASE_URL
+
+Je veux que tu :
+
+1. Vérifies toute la configuration Supabase frontend et backend.
+
+2. Vérifies si le frontend utilise bien :
+import.meta.env.VITE_SUPABASE_URL
+import.meta.env.VITE_SUPABASE_ANON_KEY
+
+3. Si nécessaire, migre automatiquement le projet pour utiliser :
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+
+4. Vérifies que les variables d’environnement sont correctement chargées en mode production sur Plesk.
+
+5. Corriges tous les problèmes liés au build Vite/React en production.
+
+6. Vérifies que l’application ne garde pas les anciennes clés Supabase après build.
+
+7. Vérifies toute la logique login/register.
+
+8. Vérifies les appels API Supabase côté client et serveur.
+
+9. Vérifies les policies Supabase et la compatibilité avec la nouvelle base de données.
+
+10. Vérifies que les sessions/auth cookies fonctionnent correctement sur domaine personnalisé.
+
+11. Vérifies qu’aucune ancienne URL Supabase n’est encore utilisée dans le code.
+
+12. Ajoutes des logs détaillés pour détecter précisément pourquoi login/signup échoue sur Plesk.
+
+13. Corriges automatiquement toutes les erreurs liées à :
+- CORS
+- JWT
+- invalid API key
+- session persistence
+- auth callback
+- environment variables
+- build production
+
+14. Vérifies le fichier vite.config, app.js/server.js et package.json pour la compatibilité Plesk.
+
+15. Assures-toi que le projet fonctionne après :
+- npm install
+- npm run build
+- Restart App sur Plesk
+
+16. Optimises le projet pour un déploiement stable sur Plesk Node.js.
+
+17. Affiches clairement toutes les modifications effectuées et les fichiers modifiés.
+
+Ne casse pas le design ni les fonctionnalités existantes.
