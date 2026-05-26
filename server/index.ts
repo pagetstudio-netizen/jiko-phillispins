@@ -5,8 +5,12 @@ import { createServer } from "http";
 import { seed } from "./seed";
 import { storage } from "./storage";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { db } from "./db";
+import pg from "pg";
 import path from "path";
+
+const { Pool } = pg;
 
 const app = express();
 const httpServer = createServer(app);
@@ -67,12 +71,24 @@ app.use((req, res, next) => {
 
 (async () => {
   // Run database migrations automatically (creates tables if they don't exist)
+  // Uses DIRECT_URL (port 5432) if set, because Supabase pgBouncer (port 6543)
+  // doesn't support advisory locks required by Drizzle's migration runner.
   try {
     const migrationsFolder = path.resolve(process.cwd(), "migrations");
-    await migrate(db, { migrationsFolder });
+    const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+    if (!directUrl) throw new Error("No database URL configured");
+    
+    const migrationPool = new Pool({
+      connectionString: directUrl,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+    });
+    const migrationDb = drizzle(migrationPool);
+    await migrate(migrationDb, { migrationsFolder });
+    await migrationPool.end();
     log("Database migrations applied successfully", "db");
-  } catch (err) {
-    console.error("Migration error (non-fatal):", err);
+  } catch (err: any) {
+    console.error("Migration error (non-fatal):", err?.message || err);
   }
 
   // Seed database with initial data
