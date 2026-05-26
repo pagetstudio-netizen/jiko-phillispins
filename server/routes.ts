@@ -9,6 +9,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import ConnectPgSimple from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import { 
   initiatePayment, 
   verifyPayment, 
@@ -24,8 +25,6 @@ declare module "express-session" {
     userId: number;
   }
 }
-
-const PgSession = ConnectPgSimple(session);
 
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.session.userId) {
@@ -53,21 +52,34 @@ export async function registerRoutes(
   // Trust proxy for production HTTPS (Replit deployment)
   app.set("trust proxy", 1);
 
+  const dbUrl = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+  const MemStore = MemoryStore(session);
+
+  let sessionStore: session.Store;
+  try {
+    const PgSessionStore = ConnectPgSimple(session);
+    sessionStore = new PgSessionStore({
+      conString: dbUrl,
+      tableName: "session",
+      createTableIfMissing: true,
+      pruneSessionInterval: 60 * 60,
+      errorLog: (err: Error) => console.error("[session-store]", err.message),
+    });
+  } catch (err) {
+    console.warn("[session-store] PgSession init failed, using MemoryStore:", err);
+    sessionStore = new MemStore({ checkPeriod: 86400000 });
+  }
+
   app.use(
     session({
-      store: new PgSession({
-        conString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
-        tableName: "session",
-        createTableIfMissing: true,
-        pruneSessionInterval: 60 * 60,
-      }),
+      store: sessionStore,
       secret: process.env.SESSION_SECRET || "wendys-secret-key-2024",
       resave: false,
       saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        maxAge: 30 * 24 * 60 * 60 * 1000,
         sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
       },
     })
