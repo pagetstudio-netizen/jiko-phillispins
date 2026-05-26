@@ -4,6 +4,9 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { seed } from "./seed";
 import { storage } from "./storage";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { db } from "./db";
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -63,6 +66,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migrations automatically (creates tables if they don't exist)
+  try {
+    const migrationsFolder = path.resolve(process.cwd(), "migrations");
+    await migrate(db, { migrationsFolder });
+    log("Database migrations applied successfully", "db");
+  } catch (err) {
+    console.error("Migration error (non-fatal):", err);
+  }
+
   // Seed database with initial data
   await seed().catch(console.error);
   
