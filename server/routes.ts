@@ -49,38 +49,77 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Trust proxy for production HTTPS (Replit deployment)
-  app.set("trust proxy", 1);
+  // Trust all proxy hops (Plesk uses Nginx/Apache in front of Node)
+  // TRUST_PROXY env var can be set to a specific number if needed
+  const trustProxy = process.env.TRUST_PROXY || true;
+  app.set("trust proxy", trustProxy);
 
-  const dbUrl = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+  // CORS — allow the configured origin to send cookies
+  const allowedOrigin = process.env.CORS_ORIGIN || "";
+  app.use((req, res, next) => {
+    const origin = req.headers.origin as string | undefined;
+    if (allowedOrigin && origin && origin === allowedOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With");
+      if (req.method === "OPTIONS") return res.sendStatus(204);
+    } else if (!allowedOrigin && origin) {
+      // No restriction configured — allow same origin (serving frontend from same server)
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With");
+      if (req.method === "OPTIONS") return res.sendStatus(204);
+    }
+    next();
+  });
+
+  // Session store: prefer DIRECT_URL (Supabase port 5432) to avoid pgBouncer
+  // advisory-lock issues; fall back to DATABASE_URL, then MemoryStore
+  const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
   const MemStore = MemoryStore(session);
 
   let sessionStore: session.Store;
   try {
+    if (!directUrl) throw new Error("No DB URL for session store");
     const PgSessionStore = ConnectPgSimple(session);
     sessionStore = new PgSessionStore({
-      conString: dbUrl,
+      conString: directUrl,
       tableName: "session",
       createTableIfMissing: true,
       pruneSessionInterval: 60 * 60,
       errorLog: (err: Error) => console.error("[session-store]", err.message),
     });
+    console.log("[session-store] PostgreSQL session store initialised");
   } catch (err) {
     console.warn("[session-store] PgSession init failed, using MemoryStore:", err);
     sessionStore = new MemStore({ checkPeriod: 86400000 });
   }
 
+  // Determine if the app is behind HTTPS.
+  // On Plesk with Nginx HTTPS → Node, req.secure will be true thanks to trust proxy.
+  // FORCE_SECURE_COOKIE=true overrides to force secure cookies even in dev.
+  // FORCE_SECURE_COOKIE=false disables secure cookies even in production.
+  const isProduction = process.env.NODE_ENV === "production";
+  const forceSecure = process.env.FORCE_SECURE_COOKIE;
+  const secureCookie =
+    forceSecure === "true" ? true :
+    forceSecure === "false" ? false :
+    isProduction;
+
   app.use(
     session({
       store: sessionStore,
-      secret: process.env.SESSION_SECRET || "wendys-secret-key-2024",
+      secret: process.env.SESSION_SECRET || "noviqra-secret-key-2024",
       resave: false,
       saveUninitialized: false,
+      name: "noviqra.sid",
       cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: secureCookie,
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
+        sameSite: "lax",
       },
     })
   );
@@ -88,10 +127,12 @@ export async function registerRoutes(
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
+      console.log("[auth/register] attempt — body keys:", Object.keys(req.body || {}));
       const data = registerSchema.parse(req.body);
       
       const existing = await storage.getUserByPhone(data.phone, data.country);
       if (existing) {
+        console.log("[auth/register] phone already exists:", data.phone, data.country);
         return res.status(400).json({ message: "Ce numéro est déjà utilisé" });
       }
 
@@ -114,17 +155,24 @@ export async function registerRoutes(
       });
 
       req.session.userId = user.id;
+      req.session.save((err) => {
+        if (err) console.error("[auth/register] session save error:", err);
+      });
+      console.log("[auth/register] success — userId:", user.id);
       res.json({ user: { ...user, password: undefined } });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
+        console.warn("[auth/register] validation error:", error.errors[0].message);
         return res.status(400).json({ message: error.errors[0].message });
       }
+      console.error("[auth/register] server error:", error?.message || error);
       res.status(500).json({ message: error.message || "Server error" });
     }
   });
 
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("[auth/login] attempt — ip:", req.ip, "secure:", req.secure, "proto:", req.headers["x-forwarded-proto"]);
       const rawData = loginSchema.parse(req.body);
       // Normalize phone: strip spaces, dashes, and non-digit chars
       const data = { ...rawData, phone: rawData.phone.replace(/\D/g, ""), password: rawData.password.trim() };
@@ -140,11 +188,13 @@ export async function registerRoutes(
       }
 
       if (!user) {
+        console.warn("[auth/login] user not found:", data.phone, data.country);
         return res.status(400).json({ message: "Utilisateur non trouvé" });
       }
 
       const validPassword = await bcrypt.compare(data.password, user.password);
       if (!validPassword) {
+        console.warn("[auth/login] wrong password for userId:", user.id);
         return res.status(400).json({ message: "Mot de passe incorrect" });
       }
 
@@ -153,9 +203,18 @@ export async function registerRoutes(
       }
 
       req.session.userId = user.id;
-      res.json({ user: { ...user, password: undefined } });
+      req.session.save((err) => {
+        if (err) {
+          console.error("[auth/login] session save error:", err);
+          return res.status(500).json({ message: "Erreur de session — réessayez" });
+        }
+        console.log("[auth/login] success — userId:", user!.id, "sessionID:", req.sessionID);
+        res.json({ user: { ...user, password: undefined } });
+      });
+      return;
     } catch (error: any) {
       if (error instanceof z.ZodError) {
+        console.warn("[auth/login] validation error:", error.errors[0].message);
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: error.message || "Server error" });
