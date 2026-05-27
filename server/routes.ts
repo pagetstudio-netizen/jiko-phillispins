@@ -125,7 +125,21 @@ export async function registerRoutes(
   );
 
   // Health / diagnostic endpoint
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", async (req, res) => {
+    let dbStatus = "unknown";
+    let dbError = null;
+    let userCount = null;
+    try {
+      const { db: healthDb } = await import("./db");
+      const { sql } = await import("drizzle-orm");
+      const result = await healthDb.execute(sql`SELECT COUNT(*) as cnt FROM users`);
+      userCount = (result.rows?.[0] as any)?.cnt ?? null;
+      dbStatus = "connected";
+    } catch (e: any) {
+      dbStatus = "error";
+      dbError = e?.message || String(e);
+    }
+
     res.json({
       status: "ok",
       env: process.env.NODE_ENV,
@@ -138,6 +152,7 @@ export async function registerRoutes(
       dbUrl: process.env.DATABASE_URL ? "set" : "missing",
       directUrl: process.env.DIRECT_URL ? "set" : "missing",
       sessionSecret: process.env.SESSION_SECRET ? "set" : "missing",
+      db: { status: dbStatus, userCount, error: dbError },
     });
   });
 
