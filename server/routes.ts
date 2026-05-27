@@ -156,10 +156,14 @@ export async function registerRoutes(
 
       req.session.userId = user.id;
       req.session.save((err) => {
-        if (err) console.error("[auth/register] session save error:", err);
+        if (err) {
+          console.error("[auth/register] session save error:", err);
+          return res.status(500).json({ message: "Erreur de session — réessayez" });
+        }
+        console.log("[auth/register] success — userId:", user.id, "sessionID:", req.sessionID);
+        res.json({ user: { ...user, password: undefined } });
       });
-      console.log("[auth/register] success — userId:", user.id);
-      res.json({ user: { ...user, password: undefined } });
+      return;
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         console.warn("[auth/register] validation error:", error.errors[0].message);
