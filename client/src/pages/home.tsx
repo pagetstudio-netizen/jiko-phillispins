@@ -110,7 +110,7 @@ export default function HomePage() {
             {/* Content */}
             <div style={{ padding: "16px 18px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ① Register and receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(50)}</span>.
+                ① Register and receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(500)}</span>.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
                 ② Receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(5)}</span> every day by logging in.

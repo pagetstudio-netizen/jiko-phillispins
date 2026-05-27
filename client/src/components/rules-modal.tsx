@@ -67,7 +67,7 @@ export default function RulesModal({ open, onClose }: RulesModalProps) {
 
             <section>
               <h4 className="font-medium text-foreground mb-2">5. Sign-up Bonus</h4>
-              <p>Each new member receives a {fmt(50)} bonus upon registration.</p>
+              <p>Each new member receives a {fmt(500)} bonus upon registration.</p>
             </section>
           </div>
         </ScrollArea>
