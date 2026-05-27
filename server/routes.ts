@@ -114,7 +114,7 @@ export async function registerRoutes(
       secret: process.env.SESSION_SECRET || "noviqra-secret-key-2024",
       resave: false,
       saveUninitialized: false,
-      name: "noviqra.sid",
+      name: "noviqra_sid",
       cookie: {
         secure: secureCookie,
         httpOnly: true,
@@ -123,6 +123,23 @@ export async function registerRoutes(
       },
     })
   );
+
+  // Health / diagnostic endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      env: process.env.NODE_ENV,
+      secure: req.secure,
+      proto: req.headers["x-forwarded-proto"],
+      host: req.headers.host,
+      sessionID: req.sessionID || null,
+      hasSession: !!req.session?.userId,
+      cookieSecure: secureCookie,
+      dbUrl: process.env.DATABASE_URL ? "set" : "missing",
+      directUrl: process.env.DIRECT_URL ? "set" : "missing",
+      sessionSecret: process.env.SESSION_SECRET ? "set" : "missing",
+    });
+  });
 
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
