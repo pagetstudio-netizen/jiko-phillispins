@@ -75,56 +75,70 @@ export async function registerRoutes(
     next();
   });
 
-  // Session store: try each available PostgreSQL URL in order until one works.
-  // connect-pg-simple works with both direct (port 5432) and pgBouncer (port 6543)
-  // because it only uses simple SELECT/INSERT/UPDATE/DELETE — no advisory locks.
+  // Session store: start immediately with MemoryStore so the server never blocks.
+  // Then, in the background, try each PostgreSQL URL until one connects and swap
+  // the store transparently. connect-pg-simple works with both port 5432 (direct)
+  // and port 6543 (pgBouncer) because it only needs simple SQL — no advisory locks.
   const MemStore = MemoryStore(session);
 
   function isPostgresUrl(u: string | undefined): u is string {
     return !!u && (u.startsWith("postgresql://") || u.startsWith("postgres://"));
   }
 
-  // Build list of candidate URLs to try (filter out https:// REST API URLs)
-  const sessionUrlCandidates = [
-    process.env.DIRECT_URL,
-    process.env.SUPABASE_DATABASE_URL,
-    process.env.DATABASE_URL,
-  ].filter(isPostgresUrl);
-
-  async function tryBuildPgSessionStore(conString: string): Promise<session.Store | null> {
-    const pg2 = (await import("pg")).default;
-    const testPool = new pg2.Pool({ connectionString: conString, ssl: { rejectUnauthorized: false }, max: 1, connectionTimeoutMillis: 5000 });
-    try {
-      const client = await testPool.connect();
-      client.release();
-      await testPool.end();
-      const PgSessionStore = ConnectPgSimple(session);
-      return new PgSessionStore({
-        conString,
-        tableName: "session",
-        createTableIfMissing: true,
-        pruneSessionInterval: 60 * 60,
-        errorLog: (err: Error) => console.error("[session-store]", err.message),
-      });
-    } catch (e: any) {
-      await testPool.end().catch(() => {});
-      console.warn(`[session-store] Cannot connect with ${conString.replace(/:[^:@]+@/, ":***@")}: ${e.message}`);
-      return null;
+  // Proxy store: delegates to an inner store that can be swapped at any time.
+  // This lets us start instantly with MemoryStore, then upgrade to Postgres
+  // without re-registering the session middleware.
+  class ProxyStore extends session.Store {
+    inner: session.Store;
+    constructor(initial: session.Store) { super(); this.inner = initial; }
+    get(sid: string, cb: (err: any, s?: session.SessionData | null) => void) { this.inner.get(sid, cb); }
+    set(sid: string, s: session.SessionData, cb?: (err?: any) => void) { this.inner.set(sid, s, cb); }
+    destroy(sid: string, cb?: (err?: any) => void) { this.inner.destroy(sid, cb); }
+    touch(sid: string, s: session.SessionData, cb?: (err?: any) => void) {
+      if (typeof (this.inner as any).touch === "function") (this.inner as any).touch(sid, s, cb);
+      else cb?.();
     }
   }
 
-  let sessionStore: session.Store = new MemStore({ checkPeriod: 86400000 });
-  for (const url of sessionUrlCandidates) {
-    const store = await tryBuildPgSessionStore(url);
-    if (store) {
-      sessionStore = store;
-      console.log(`[session-store] PostgreSQL session store connected: ${url.replace(/:[^:@]+@/, ":***@")}`);
-      break;
+  const sessionStore = new ProxyStore(new MemStore({ checkPeriod: 86400000 }));
+
+  // Background: try PostgreSQL URLs one by one (5s timeout each), swap when one works.
+  (async () => {
+    const candidates = [
+      process.env.DIRECT_URL,
+      process.env.SUPABASE_DATABASE_URL,
+      process.env.DATABASE_URL,
+    ].filter(isPostgresUrl);
+
+    for (const url of candidates) {
+      try {
+        const pg2 = (await import("pg")).default;
+        const testPool = new pg2.Pool({
+          connectionString: url,
+          ssl: { rejectUnauthorized: false },
+          max: 1,
+          connectionTimeoutMillis: 5000,
+        });
+        const client = await testPool.connect();
+        client.release();
+        await testPool.end();
+        const PgSessionStore = ConnectPgSimple(session);
+        const pgStore = new PgSessionStore({
+          conString: url,
+          tableName: "session",
+          createTableIfMissing: true,
+          pruneSessionInterval: 60 * 60,
+          errorLog: (err: Error) => console.error("[session-store]", err.message),
+        });
+        sessionStore.inner = pgStore;
+        console.log(`[session-store] Upgraded to PostgreSQL: ${url.replace(/:[^:@]+@/, ":***@")}`);
+        return;
+      } catch (e: any) {
+        console.warn(`[session-store] URL failed (${url.replace(/:[^:@]+@/, ":***@")}): ${e.message}`);
+      }
     }
-  }
-  if (sessionStore instanceof MemStore) {
-    console.warn("[session-store] All PostgreSQL URLs failed — using in-memory store (sessions will be lost on restart)");
-  }
+    console.warn("[session-store] All PostgreSQL URLs failed — keeping MemoryStore");
+  })();
 
   // Determine if the app is behind HTTPS.
   // On Plesk with Nginx HTTPS → Node, req.secure will be true thanks to trust proxy.
