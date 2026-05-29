@@ -180,11 +180,18 @@ export async function registerRoutes(
   app.post("/api/auth/register", async (req, res) => {
     try {
       console.log("[auth/register] attempt — body keys:", Object.keys(req.body || {}));
-      const data = registerSchema.parse(req.body);
+      const raw = registerSchema.parse(req.body);
+      // Normalize phone: remove spaces, dashes and all non-digit chars (same as login)
+      const data = { ...raw, phone: raw.phone.replace(/\D/g, "") };
+
+      if (data.phone.length < 6) {
+        return res.status(400).json({ message: "Numéro de téléphone invalide" });
+      }
       
-      const existing = await storage.getUserByPhone(data.phone, data.country);
-      if (existing) {
-        console.log("[auth/register] phone already exists:", data.phone, data.country);
+      // Check by phone only first to catch cross-country duplicate (global unique constraint)
+      const existingByPhone = await storage.getUserByPhoneOnly(data.phone);
+      if (existingByPhone) {
+        console.log("[auth/register] phone already exists globally:", data.phone);
         return res.status(400).json({ message: "Ce numéro est déjà utilisé" });
       }
 

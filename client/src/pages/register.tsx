@@ -56,10 +56,11 @@ export default function RegisterPage() {
 
   async function onSubmit(data: RegisterForm) {
     setIsLoading(true);
+    const cleanPhone = data.phone.replace(/\D/g, "");
     try {
       await register({
-        fullName: `User_${data.phone}`,
-        phone: data.phone,
+        fullName: `User_${cleanPhone}`,
+        phone: cleanPhone,
         country: data.country,
         password: data.password,
         invitationCode: data.invitationCode,
