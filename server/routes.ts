@@ -76,13 +76,33 @@ export async function registerRoutes(
   });
 
   // Session store: prefer DIRECT_URL (Supabase port 5432) to avoid pgBouncer
-  // advisory-lock issues; fall back to DATABASE_URL, then MemoryStore
-  const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+  // advisory-lock issues; fall back to DATABASE_URL, then MemoryStore.
+  // IMPORTANT: Supabase pgBouncer (port 6543) does NOT work with connect-pg-simple.
+  // You must set DIRECT_URL to the direct connection string (port 5432) on Plesk.
+  const rawDbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
   const MemStore = MemoryStore(session);
+
+  // Detect pgBouncer URLs (port 6543) — these break session storage
+  function isPgBouncerUrl(url: string): boolean {
+    try {
+      return new URL(url).port === "6543";
+    } catch {
+      return false;
+    }
+  }
+
+  const directUrl = rawDbUrl && !isPgBouncerUrl(rawDbUrl) ? rawDbUrl : undefined;
+  if (rawDbUrl && isPgBouncerUrl(rawDbUrl) && !process.env.DIRECT_URL) {
+    console.warn(
+      "[session-store] WARNING: DATABASE_URL is a pgBouncer URL (port 6543). " +
+      "Sessions will use MemoryStore (in-memory only). " +
+      "Set DIRECT_URL to your Supabase direct connection (port 5432) to persist sessions across restarts."
+    );
+  }
 
   let sessionStore: session.Store;
   try {
-    if (!directUrl) throw new Error("No DB URL for session store");
+    if (!directUrl) throw new Error("No direct DB URL for session store");
     const PgSessionStore = ConnectPgSimple(session);
     sessionStore = new PgSessionStore({
       conString: directUrl,

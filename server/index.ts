@@ -70,47 +70,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Run database migrations automatically (creates tables if they don't exist)
-  // Uses DIRECT_URL (port 5432) if set, because Supabase pgBouncer (port 6543)
-  // doesn't support advisory locks required by Drizzle's migration runner.
-  try {
-    const migrationsFolder = path.resolve(process.cwd(), "migrations");
-    const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
-    if (!directUrl) throw new Error("No database URL configured");
-    
-    const migrationPool = new Pool({
-      connectionString: directUrl,
-      ssl: { rejectUnauthorized: false },
-      max: 1,
-    });
-    const migrationDb = drizzle(migrationPool);
-    await migrate(migrationDb, { migrationsFolder });
-    await migrationPool.end();
-    log("Database migrations applied successfully", "db");
-  } catch (err: any) {
-    console.error("Migration error (non-fatal):", err?.message || err);
-  }
-
-  // Seed database with initial data
-  await seed().catch(console.error);
-  
   await registerRoutes(httpServer, app);
-
-  // Process daily earnings every hour
-  const processEarningsInterval = async () => {
-    try {
-      await storage.processEarnings();
-      log("Daily earnings processed successfully", "earnings");
-    } catch (error) {
-      console.error("Error processing daily earnings:", error);
-    }
-  };
-  
-  // Run immediately on startup
-  setTimeout(processEarningsInterval, 5000);
-  
-  // Then run every 5 minutes to ensure timely earnings processing
-  setInterval(processEarningsInterval, 5 * 60 * 1000);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -148,6 +108,51 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+
+      // Run migrations and seed in the background AFTER the server is already
+      // accepting connections, so users never see a blank loading screen.
+      runStartupTasks().catch((err) =>
+        console.error("Startup tasks error:", err)
+      );
     },
   );
 })();
+
+async function runStartupTasks() {
+  // Run database migrations
+  // Uses DIRECT_URL (port 5432) if set, because Supabase pgBouncer (port 6543)
+  // doesn't support advisory locks required by Drizzle's migration runner.
+  try {
+    const migrationsFolder = path.resolve(process.cwd(), "migrations");
+    const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+    if (!directUrl) throw new Error("No database URL configured");
+
+    const migrationPool = new Pool({
+      connectionString: directUrl,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+    });
+    const migrationDb = drizzle(migrationPool);
+    await migrate(migrationDb, { migrationsFolder });
+    await migrationPool.end();
+    log("Database migrations applied successfully", "db");
+  } catch (err: any) {
+    console.error("Migration error (non-fatal):", err?.message || err);
+  }
+
+  // Seed database with initial data
+  await seed().catch(console.error);
+
+  // Process daily earnings — run once after startup, then every 5 minutes
+  const processEarningsInterval = async () => {
+    try {
+      await storage.processEarnings();
+      log("Daily earnings processed successfully", "earnings");
+    } catch (error) {
+      console.error("Error processing daily earnings:", error);
+    }
+  };
+
+  setTimeout(processEarningsInterval, 5000);
+  setInterval(processEarningsInterval, 5 * 60 * 1000);
+}
