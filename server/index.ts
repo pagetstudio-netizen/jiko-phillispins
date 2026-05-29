@@ -124,8 +124,15 @@ async function runStartupTasks() {
   // doesn't support advisory locks required by Drizzle's migration runner.
   try {
     const migrationsFolder = path.resolve(process.cwd(), "migrations");
-    const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
-    if (!directUrl) throw new Error("No database URL configured");
+    // Only accept real postgresql:// URLs — DATABASE_URL may be an https:// Supabase REST URL
+    function isPgUrl(u: string | undefined): u is string {
+      return !!u && (u.startsWith("postgresql://") || u.startsWith("postgres://"));
+    }
+    const directUrl =
+      (isPgUrl(process.env.DIRECT_URL) ? process.env.DIRECT_URL : undefined) ||
+      (isPgUrl(process.env.SUPABASE_DATABASE_URL) ? process.env.SUPABASE_DATABASE_URL : undefined) ||
+      (isPgUrl(process.env.DATABASE_URL) ? process.env.DATABASE_URL : undefined);
+    if (!directUrl) throw new Error("No valid PostgreSQL URL configured for migrations");
 
     const migrationPool = new Pool({
       connectionString: directUrl,
