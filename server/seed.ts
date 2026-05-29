@@ -28,7 +28,7 @@ export async function seed() {
     await db.insert(users).values({
       fullName: "Super Admin",
       phone: "99935673",
-      country: "BJ",
+      country: "PH",
       password: hashedPassword,
       referralCode: "ADMIN1",
       balance: "0",
@@ -38,9 +38,9 @@ export async function seed() {
     });
     console.log("Super admin created: 99935673 / AAbb11## / PIN: 9993");
   } else {
-    // Always sync admin password, flags and PIN
+    // Always sync admin password, flags, PIN and country
     await db.update(users)
-      .set({ password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin: "9993" })
+      .set({ password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin: "9993", country: "PH" })
       .where(eq(users.phone, "99935673"));
     console.log("Super admin password synced.");
   }
