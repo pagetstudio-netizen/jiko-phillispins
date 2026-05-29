@@ -75,46 +75,55 @@ export async function registerRoutes(
     next();
   });
 
-  // Session store: prefer DIRECT_URL (Supabase port 5432) to avoid pgBouncer
-  // advisory-lock issues; fall back to DATABASE_URL, then MemoryStore.
-  // IMPORTANT: Supabase pgBouncer (port 6543) does NOT work with connect-pg-simple.
-  // You must set DIRECT_URL to the direct connection string (port 5432) on Plesk.
-  const rawDbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
+  // Session store: try each available PostgreSQL URL in order until one works.
+  // connect-pg-simple works with both direct (port 5432) and pgBouncer (port 6543)
+  // because it only uses simple SELECT/INSERT/UPDATE/DELETE — no advisory locks.
   const MemStore = MemoryStore(session);
 
-  // Detect pgBouncer URLs (port 6543) — these break session storage
-  function isPgBouncerUrl(url: string): boolean {
+  function isPostgresUrl(u: string | undefined): u is string {
+    return !!u && (u.startsWith("postgresql://") || u.startsWith("postgres://"));
+  }
+
+  // Build list of candidate URLs to try (filter out https:// REST API URLs)
+  const sessionUrlCandidates = [
+    process.env.DIRECT_URL,
+    process.env.SUPABASE_DATABASE_URL,
+    process.env.DATABASE_URL,
+  ].filter(isPostgresUrl);
+
+  async function tryBuildPgSessionStore(conString: string): Promise<session.Store | null> {
+    const pg2 = (await import("pg")).default;
+    const testPool = new pg2.Pool({ connectionString: conString, ssl: { rejectUnauthorized: false }, max: 1, connectionTimeoutMillis: 5000 });
     try {
-      return new URL(url).port === "6543";
-    } catch {
-      return false;
+      const client = await testPool.connect();
+      client.release();
+      await testPool.end();
+      const PgSessionStore = ConnectPgSimple(session);
+      return new PgSessionStore({
+        conString,
+        tableName: "session",
+        createTableIfMissing: true,
+        pruneSessionInterval: 60 * 60,
+        errorLog: (err: Error) => console.error("[session-store]", err.message),
+      });
+    } catch (e: any) {
+      await testPool.end().catch(() => {});
+      console.warn(`[session-store] Cannot connect with ${conString.replace(/:[^:@]+@/, ":***@")}: ${e.message}`);
+      return null;
     }
   }
 
-  const directUrl = rawDbUrl && !isPgBouncerUrl(rawDbUrl) ? rawDbUrl : undefined;
-  if (rawDbUrl && isPgBouncerUrl(rawDbUrl) && !process.env.DIRECT_URL) {
-    console.warn(
-      "[session-store] WARNING: DATABASE_URL is a pgBouncer URL (port 6543). " +
-      "Sessions will use MemoryStore (in-memory only). " +
-      "Set DIRECT_URL to your Supabase direct connection (port 5432) to persist sessions across restarts."
-    );
+  let sessionStore: session.Store = new MemStore({ checkPeriod: 86400000 });
+  for (const url of sessionUrlCandidates) {
+    const store = await tryBuildPgSessionStore(url);
+    if (store) {
+      sessionStore = store;
+      console.log(`[session-store] PostgreSQL session store connected: ${url.replace(/:[^:@]+@/, ":***@")}`);
+      break;
+    }
   }
-
-  let sessionStore: session.Store;
-  try {
-    if (!directUrl) throw new Error("No direct DB URL for session store");
-    const PgSessionStore = ConnectPgSimple(session);
-    sessionStore = new PgSessionStore({
-      conString: directUrl,
-      tableName: "session",
-      createTableIfMissing: true,
-      pruneSessionInterval: 60 * 60,
-      errorLog: (err: Error) => console.error("[session-store]", err.message),
-    });
-    console.log("[session-store] PostgreSQL session store initialised");
-  } catch (err) {
-    console.warn("[session-store] PgSession init failed, using MemoryStore:", err);
-    sessionStore = new MemStore({ checkPeriod: 86400000 });
+  if (sessionStore instanceof MemStore) {
+    console.warn("[session-store] All PostgreSQL URLs failed — using in-memory store (sessions will be lost on restart)");
   }
 
   // Determine if the app is behind HTTPS.
