@@ -1,18 +1,11 @@
 const BASE_URL = "https://ashtechpay.top";
 
 export const ASHTECH_CURRENCIES: Record<string, string> = {
-  BJ: "XOF", CI: "XOF", BF: "XOF", TG: "XOF", SN: "XOF", ML: "XOF",
-  GW: "XOF", GN: "GNF", CM: "XAF", CF: "XAF", CG: "XAF", GA: "XAF",
-  GQ: "XAF", TD: "XAF", NE: "XOF", CD: "CDF",
+  PH: "PHP",
 };
 
 export const ASHTECH_OPERATORS: Record<string, string[]> = {
-  BJ: ["Moov Money", "MTN Mobile Money"],
-  CM: ["MTN Mobile Money", "Orange Money"],
-  BF: ["Moov Money", "Orange Money"],
-  CI: ["Moov Money", "MTN Mobile Money", "Orange Money", "Wave"],
-  TG: ["Flooz (Moov)", "T-Money"],
-  CG: ["MTN Mobile Money"],
+  PH: ["GCash", "Maya"],
 };
 
 export type AshtechFlowType = "ussd_push" | "otp_sms" | "otp_ussd" | "wave";

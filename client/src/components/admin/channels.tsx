@@ -18,10 +18,7 @@ import { Plus, Edit, Trash2, Loader2, Link } from "lucide-react";
 import type { PaymentChannel } from "@shared/schema";
 
 const COUNTRY_OPTIONS = [
-  { code: "BJ", label: "🇧🇯 Benin" },
-  { code: "CM", label: "🇨🇲 Cameroon" },
-  { code: "BF", label: "🇧🇫 Burkina Faso" },
-  { code: "CI", label: "🇨🇮 Ivory Coast" },
+  { code: "PH", label: "🇵🇭 Philippines" },
 ];
 
 const channelSchema = z.object({

@@ -1,47 +1,14 @@
 const SOLEASPAY_API_URL = "https://soleaspay.com";
 
 export const SOLEASPAY_SERVICE_MAP: Record<string, Record<string, number>> = {
-  CM: {
-    "MTN": 1,
-    "Orange Money": 2,
-  },
-  BF: {
-    "Moov Money": 33,
-    "Orange Money": 34,
-  },
-  TG: {
-    "Moov Money": 38,
-    "T-Money": 37,
-    "Mixx by Yas": 37,
-  },
-  BJ: {
-    "MTN": 35,
-    "Moov Money": 36,
-  },
-  CI: {
-    "Orange Money": 29,
-    "MTN": 30,
-    "Moov Money": 31,
-    "Wave": 32,
-  },
-  CG: {
-    "MTN": 56,
-  },
-  CD: {
-    "Vodacom": 52,
-    "Airtel Money": 53,
-    "Orange Money": 54,
+  PH: {
+    "GCash": 60,
+    "Maya": 61,
   },
 };
 
 export const CURRENCY_MAP: Record<string, string> = {
-  CM: "XAF",
-  BF: "XOF",
-  TG: "XOF",
-  BJ: "XOF",
-  CI: "XOF",
-  CG: "XAF",
-  CD: "CDF",
+  PH: "PHP",
 };
 
 interface SoleaspayPaymentRequest {
@@ -97,7 +64,7 @@ export function getServiceId(country: string, paymentMethod: string): number | n
 }
 
 export function getCurrency(country: string): string {
-  return CURRENCY_MAP[country] || "XAF";
+  return CURRENCY_MAP[country] || "PHP";
 }
 
 export function isSoleaspaySupported(country: string, paymentMethod: string): boolean {
@@ -105,13 +72,7 @@ export function isSoleaspaySupported(country: string, paymentMethod: string): bo
 }
 
 const PHONE_PREFIX_MAP: Record<string, string> = {
-  CM: "237",
-  BF: "226",
-  TG: "228",
-  BJ: "229",
-  CI: "225",
-  CG: "242",
-  CD: "243",
+  PH: "63",
 };
 
 export function formatWallet(phone: string, country: string): string {

@@ -858,7 +858,7 @@ export async function registerRoutes(
       const webhookUrl = `${req.protocol}://${req.get("host")}/api/webhooks/ashtechpay`;
 
       // Ensure phone has country code prefix
-      const DIAL_CODES: Record<string, string> = { BJ: "229", CI: "225", CM: "237", BF: "226", TG: "228", SN: "221" };
+      const DIAL_CODES: Record<string, string> = { PH: "63" };
       const dialCode = DIAL_CODES[country_code] || "";
       let formattedPhone = phone.replace(/\D/g, "");
       if (dialCode && !formattedPhone.startsWith(dialCode)) {

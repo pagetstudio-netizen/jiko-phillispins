@@ -1,11 +1,4 @@
 export const ELIGIBLE_COUNTRIES = [
-  { code: "CM", name: "Cameroun", flag: "CM", currency: "XAF", phonePrefix: "237", paymentMethods: ["Orange Money", "MTN"] },
-  { code: "BF", name: "Burkina Faso", flag: "BF", currency: "XOF", phonePrefix: "226", paymentMethods: ["Orange Money", "Moov Money"] },
-  { code: "TG", name: "Togo", flag: "TG", currency: "XOF", phonePrefix: "228", paymentMethods: ["Moov Money", "Mixx by Yas"] },
-  { code: "BJ", name: "Bénin", flag: "BJ", currency: "XOF", phonePrefix: "229", paymentMethods: ["Celtis", "Moov Money", "MTN", "Momo"] },
-  { code: "CI", name: "Côte d'Ivoire", flag: "CI", currency: "XOF", phonePrefix: "225", paymentMethods: ["Wave", "MTN", "Orange Money", "Moov Money"] },
-  { code: "CG", name: "Congo Brazzaville", flag: "CG", currency: "XAF", phonePrefix: "242", paymentMethods: ["MTN"] },
-  { code: "CD", name: "RDC", flag: "CD", currency: "CDF", phonePrefix: "243", paymentMethods: ["Airtel Money"] },
   { code: "PH", name: "Philippines", flag: "PH", currency: "PHP", phonePrefix: "63", paymentMethods: ["GCash", "Maya"] },
 ] as const;
 
@@ -22,10 +15,8 @@ export function getPaymentMethodsForCountry(code: string): string[] {
   return country ? [...country.paymentMethods] : [];
 }
 
-export function formatCurrency(amount: number, countryCode?: string): string {
-  const country = countryCode ? getCountryByCode(countryCode) : null;
-  if (country?.currency === "PHP") return `₱${amount.toLocaleString()}`;
-  return `${amount.toLocaleString()} FCFA`;
+export function formatCurrency(amount: number, _countryCode?: string): string {
+  return `₱${amount.toLocaleString()}`;
 }
 
 export function formatAmount(amount: number): string {

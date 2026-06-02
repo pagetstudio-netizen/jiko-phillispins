@@ -92,9 +92,8 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
   const netAmount = amount - feeAmount;
 
   const canWithdraw = user.hasDeposited && user.hasActiveProduct && !user.isWithdrawalBlocked && defaultWallet;
-  const isCameroonOrBenin = user.country === "CM" || user.country === "BJ";
-  const actualStartHour = isCameroonOrBenin ? 9 : startHour;
-  const actualEndHour = isCameroonOrBenin ? 18 : endHour;
+  const actualStartHour = startHour;
+  const actualEndHour = endHour;
 
   const currentHour = new Date().getHours();
   const isWithinHours = currentHour >= actualStartHour && currentHour < actualEndHour;
