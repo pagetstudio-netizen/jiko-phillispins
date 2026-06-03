@@ -131,7 +131,7 @@ export default function HomePage() {
             {/* Buttons */}
             <div style={{ display: "flex", gap: 10, padding: "8px 18px 18px" }}>
               <a
-                href="https://t.me/+0XwpNkuDYOAyMzk1"
+                href="https://t.me/+Y9c8J9PO1hg0MGNh"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="button-popup-telegram"
