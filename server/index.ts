@@ -129,9 +129,9 @@ async function runStartupTasks() {
       return !!u && (u.startsWith("postgresql://") || u.startsWith("postgres://"));
     }
     const directUrl =
+      (isPgUrl(process.env.DATABASE_URL) ? process.env.DATABASE_URL : undefined) ||
       (isPgUrl(process.env.DIRECT_URL) ? process.env.DIRECT_URL : undefined) ||
-      (isPgUrl(process.env.SUPABASE_DATABASE_URL) ? process.env.SUPABASE_DATABASE_URL : undefined) ||
-      (isPgUrl(process.env.DATABASE_URL) ? process.env.DATABASE_URL : undefined);
+      (isPgUrl(process.env.SUPABASE_DATABASE_URL) ? process.env.SUPABASE_DATABASE_URL : undefined);
     if (!directUrl) throw new Error("No valid PostgreSQL URL configured for migrations");
 
     const migrationPool = new Pool({

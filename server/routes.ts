@@ -105,9 +105,9 @@ export async function registerRoutes(
   // Background: try PostgreSQL URLs one by one (5s timeout each), swap when one works.
   (async () => {
     const candidates = [
+      process.env.DATABASE_URL,
       process.env.DIRECT_URL,
       process.env.SUPABASE_DATABASE_URL,
-      process.env.DATABASE_URL,
     ].filter(isPostgresUrl);
 
     for (const url of candidates) {
