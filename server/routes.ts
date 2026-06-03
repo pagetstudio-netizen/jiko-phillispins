@@ -1534,7 +1534,7 @@ export async function registerRoutes(
         }
       }
 
-      // Add 5 FCFA (= ₱0.5) to balance
+      // Add ₱5 (= 50 FCFA) to balance
       const newBalance = parseFloat(user.balance) + 5;
       await storage.updateUser(user.id, { 
         balance: newBalance.toString(),
