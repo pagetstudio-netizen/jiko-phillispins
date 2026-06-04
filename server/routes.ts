@@ -1042,7 +1042,7 @@ export async function registerRoutes(
 
       const methodMap: Record<string, { payment_type: string; bank_code: string }> = {
         "Maya": { payment_type: "3", bank_code: "PMP" },
-        "GCash": { payment_type: "7", bank_code: "mya" },
+        "GCash": { payment_type: "7", bank_code: "gcash" },
       };
       const method = methodMap[paymentMethod] || methodMap["GCash"];
 
@@ -1125,28 +1125,46 @@ export async function registerRoutes(
   });
 
   // CloudPay deposit webhook callback
-  app.post("/api/webhooks/cloudpay", async (req, res) => {
+  // CloudPay sends multipart/form-data — use multer to parse it
+  const cloudpayWebhookParser = multer().none();
+  app.post("/api/webhooks/cloudpay", cloudpayWebhookParser, async (req, res) => {
     try {
       const settings = await storage.getSettings();
       const secretKey = settings.cloudpaySecretKey || "";
       const merchantId = settings.cloudpayMerchantId || "";
 
-      const { order_id, amount, status, sign, merchant } = req.body;
+      const { order_id, amount, status, sign, merchant, message, remark } = req.body;
+
+      console.log("[cloudpay] deposit webhook raw body:", JSON.stringify(req.body));
 
       if (!order_id || !sign) {
         return res.status(400).send("FAIL");
       }
 
+      // Build params for signature — include all non-empty fields except sign itself
       const params: Record<string, string | number> = {
         merchant: merchant || merchantId,
         order_id,
         amount,
         status,
       };
+      if (message !== undefined && message !== "") params.message = message;
+      if (remark !== undefined && remark !== "") params.remark = remark;
+
       const isValid = cloudpay.verifySign(params, secretKey);
       if (!isValid) {
-        console.error("[cloudpay] webhook invalid signature for order:", order_id);
-        return res.status(400).send("FAIL");
+        // Try without optional fields in case they aren't signed
+        const paramsMinimal: Record<string, string | number> = {
+          merchant: merchant || merchantId,
+          order_id,
+          amount,
+          status,
+        };
+        const isValidMinimal = cloudpay.verifySign(paramsMinimal, secretKey);
+        if (!isValidMinimal) {
+          console.error("[cloudpay] webhook invalid signature for order:", order_id);
+          return res.status(400).send("FAIL");
+        }
       }
 
       const deposits = await storage.getDeposits();
@@ -1187,8 +1205,8 @@ export async function registerRoutes(
     }
   });
 
-  // CloudPay auto-withdrawal
-  app.post("/api/cloudpay/withdraw", requireAuth, async (req, res) => {
+  // CloudPay auto-withdrawal — admin triggers this for any user's withdrawal
+  app.post("/api/cloudpay/withdraw", requireAdmin, async (req, res) => {
     try {
       const settings = await storage.getSettings();
       const merchantId = settings.cloudpayMerchantId || "";
@@ -1210,29 +1228,44 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Retrait introuvable" });
       }
 
-      if (withdrawal.userId !== req.session.userId) {
-        return res.status(403).json({ message: "Accès refusé" });
-      }
-
       const orderId = `CPW-${withdrawal.id}-${Date.now()}`;
-      const host = `${req.protocol}://${req.get("host")}`;
+      const host = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
       const callbackUrl = `${host}/api/webhooks/cloudpay-withdrawal`;
 
       const bankCode = cloudpay.getBankCode(withdrawal.paymentMethod || "GCash");
 
+      // bank_card_remark: for GCash use account number, for Maya use phone number, otherwise "no"
+      const payMethod = (withdrawal.paymentMethod || "").toLowerCase();
+      let bankCardRemark: string;
+      if (payMethod.includes("gcash")) {
+        bankCardRemark = withdrawal.accountNumber;
+      } else if (payMethod.includes("maya")) {
+        bankCardRemark = withdrawal.accountNumber;
+      } else {
+        bankCardRemark = "no";
+      }
+
+      // Convert amount: netAmount is stored in FCFA, CloudPay expects PHP
+      const phpToFcfaRate = parseFloat(settings.phpToFcfaRate || "10");
+      const phpAmount = Math.round(withdrawal.netAmount / phpToFcfaRate);
+
+      console.log("[cloudpay] initiating withdrawal:", { withdrawalId, bankCode, phpAmount, bankCardRemark });
+
       const result = await cloudpay.initiateWithdrawal(domain, merchantId, secretKey, {
         merchant: merchantId,
-        total_amount: withdrawal.netAmount,
+        total_amount: phpAmount,
         callback_url: callbackUrl,
         order_id: orderId,
         bank: bankCode,
         bank_card_name: withdrawal.accountName,
         bank_card_account: withdrawal.accountNumber,
-        bank_card_remark: `Retrait JinKO #${withdrawal.id}`,
+        bank_card_remark: bankCardRemark,
       });
 
+      console.log("[cloudpay] withdrawal result:", JSON.stringify(result));
+
       if (result.status !== "1" && result.status !== "success") {
-        return res.status(400).json({ message: result.message || "Retrait refusé" });
+        return res.status(400).json({ message: result.message || "Retrait refusé par CloudPay" });
       }
 
       await storage.updateWithdrawal(withdrawal.id, {
@@ -1270,7 +1303,7 @@ export async function registerRoutes(
 
       const methodMap: Record<string, { payment_type: string; bank_code: string }> = {
         "Maya": { payment_type: "3", bank_code: "PMP" },
-        "GCash": { payment_type: "7", bank_code: "mya" },
+        "GCash": { payment_type: "7", bank_code: "gcash" },
       };
       const method = methodMap[deposit.paymentMethod] || methodMap["GCash"];
 
@@ -1316,14 +1349,17 @@ export async function registerRoutes(
     }
   });
 
-  // CloudPay withdrawal webhook
-  app.post("/api/webhooks/cloudpay-withdrawal", async (req, res) => {
+  // CloudPay withdrawal webhook — update withdrawal status in DB
+  app.post("/api/webhooks/cloudpay-withdrawal", cloudpayWebhookParser, async (req, res) => {
     try {
       const settings = await storage.getSettings();
       const secretKey = settings.cloudpaySecretKey || "";
       const merchantId = settings.cloudpayMerchantId || "";
 
-      const { order_id, amount, status, sign, merchant } = req.body;
+      const { order_id, amount, status, sign, merchant, message, remark } = req.body;
+
+      console.log("[cloudpay] withdrawal webhook raw body:", JSON.stringify(req.body));
+
       if (!order_id || !sign) return res.status(400).send("FAIL");
 
       const params: Record<string, string | number> = {
@@ -1332,13 +1368,65 @@ export async function registerRoutes(
         amount,
         status,
       };
+      if (message !== undefined && message !== "") params.message = message;
+      if (remark !== undefined && remark !== "") params.remark = remark;
+
       const isValid = cloudpay.verifySign(params, secretKey);
       if (!isValid) {
-        console.error("[cloudpay] withdrawal webhook invalid signature:", order_id);
-        return res.status(400).send("FAIL");
+        // Try without optional fields
+        const paramsMinimal: Record<string, string | number> = {
+          merchant: merchant || merchantId,
+          order_id,
+          amount,
+          status,
+        };
+        const isValidMinimal = cloudpay.verifySign(paramsMinimal, secretKey);
+        if (!isValidMinimal) {
+          console.error("[cloudpay] withdrawal webhook invalid signature:", order_id);
+          return res.status(400).send("FAIL");
+        }
       }
 
-      console.log("[cloudpay] withdrawal webhook received:", JSON.stringify(req.body));
+      // Find the withdrawal by cloudpayOrderId
+      const withdrawals = await storage.getWithdrawals();
+      const withdrawal = withdrawals.find((w: any) => w.cloudpayOrderId === order_id);
+      if (!withdrawal) {
+        console.warn("[cloudpay] withdrawal webhook: withdrawal not found for order:", order_id);
+        return res.send("SUCCESS");
+      }
+
+      if (withdrawal.status === "approved" || withdrawal.status === "rejected") {
+        return res.send("SUCCESS");
+      }
+
+      const mappedStatus = cloudpay.mapCloudpayStatus(Number(status));
+      console.log("[cloudpay] withdrawal webhook status:", status, "→", mappedStatus, "for order:", order_id);
+
+      if (mappedStatus === "approved") {
+        await storage.updateWithdrawal(withdrawal.id, {
+          status: "approved",
+          processedAt: new Date(),
+        });
+      } else if (mappedStatus === "rejected") {
+        // Refund the user's balance on rejection
+        const user = await storage.getUser(withdrawal.userId);
+        if (user) {
+          const refundAmount = withdrawal.netAmount;
+          const newBalance = parseFloat(user.balance) + refundAmount;
+          await storage.updateUser(user.id, { balance: newBalance.toFixed(2) });
+          await storage.createTransaction({
+            userId: user.id,
+            type: "withdrawal_refund",
+            amount: refundAmount.toString(),
+            description: `Remboursement retrait CloudPay #${withdrawal.id} (refusé)`,
+          });
+        }
+        await storage.updateWithdrawal(withdrawal.id, {
+          status: "rejected",
+          processedAt: new Date(),
+        });
+      }
+
       res.send("SUCCESS");
     } catch (e: any) {
       console.error("[cloudpay] withdrawal webhook error:", e);
