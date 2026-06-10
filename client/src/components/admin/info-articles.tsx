@@ -63,7 +63,7 @@ export default function AdminInfoArticles() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!title.trim() || !coverImage) throw new Error("Title and cover image required");
+      if (!title.trim() || !coverImage) throw new Error("Titre et image de couverture requis");
       const body = { title: title.trim(), content: content.trim(), coverImage, extraImages };
       if (editArticle) {
         return apiRequest("PUT", `/api/admin/info-articles/${editArticle.id}`, body);
@@ -73,32 +73,32 @@ export default function AdminInfoArticles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/info-articles"] });
       setShowForm(false); resetForm();
-      toast({ title: editArticle ? "Article updated" : "Article published" });
+      toast({ title: editArticle ? "Article mis à jour" : "Article publié" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiRequest("DELETE", `/api/admin/info-articles/${id}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/info-articles"] });
-      toast({ title: "Article deleted" });
+      toast({ title: "Article supprimé" });
     },
   });
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="font-bold text-lg">News Articles</h2>
+        <h2 className="font-bold text-lg">Articles Actualités</h2>
         <Button onClick={openCreate} size="sm" data-testid="button-create-article">
-          <Plus className="w-4 h-4 mr-1" /> Publish
+          <Plus className="w-4 h-4 mr-1" /> Publier
         </Button>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
       ) : !articles?.length ? (
-        <p className="text-center text-gray-400 py-8 text-sm">No articles published.</p>
+        <p className="text-center text-gray-400 py-8 text-sm">Aucun article publié.</p>
       ) : (
         <div className="space-y-3">
           {articles.map((a) => (
@@ -109,7 +109,7 @@ export default function AdminInfoArticles() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate">{a.title}</p>
-                  <p className="text-gray-400 text-xs mt-0.5 line-clamp-2">{a.content || "No content"}</p>
+                  <p className="text-gray-400 text-xs mt-0.5 line-clamp-2">{a.content || "Pas de contenu"}</p>
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <Button size="icon" variant="ghost" onClick={() => openEdit(a)} data-testid={`button-edit-${a.id}`}>
@@ -129,20 +129,20 @@ export default function AdminInfoArticles() {
       <Dialog open={showForm} onOpenChange={(o) => { if (!o) { setShowForm(false); resetForm(); } }}>
         <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editArticle ? "Edit Article" : "Publish Article"}</DialogTitle>
+            <DialogTitle>{editArticle ? "Modifier l'article" : "Publier un article"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Title *</label>
-              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Article title" className="mt-1" data-testid="input-title" />
+              <label className="text-sm font-medium">Titre *</label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Titre de l'article" className="mt-1" data-testid="input-title" />
             </div>
 
             <div>
-              <label className="text-sm font-medium">Cover Image *</label>
+              <label className="text-sm font-medium">Image de couverture *</label>
               <div className="mt-1">
                 {coverImage ? (
                   <div className="relative rounded-xl overflow-hidden" style={{ height: 140 }}>
-                    <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                    <img src={coverImage} alt="Couverture" className="w-full h-full object-cover" />
                     <button onClick={() => setCoverImage("")}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center">✕</button>
                   </div>
@@ -151,7 +151,7 @@ export default function AdminInfoArticles() {
                     className="w-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-2 py-8 text-gray-400"
                     data-testid="button-upload-cover">
                     <ImagePlus className="w-8 h-8" />
-                    <span className="text-sm">Choose an image</span>
+                    <span className="text-sm">Choisir une image</span>
                   </button>
                 )}
                 <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
@@ -159,22 +159,22 @@ export default function AdminInfoArticles() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Content</label>
+              <label className="text-sm font-medium">Contenu</label>
               <textarea
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                placeholder={"Write section 1...\n---\nWrite section 2...\n---\nWrite section 3..."}
+                placeholder={"Écrire section 1...\n---\nÉcrire section 2...\n---\nÉcrire section 3..."}
                 rows={7}
                 className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
                 data-testid="textarea-content"
               />
               <p className="text-xs text-gray-400 mt-1">
-                Use <span className="font-mono bg-gray-100 px-1 rounded">---</span> on its own line to separate sections. Each extra image is inserted after the corresponding section.
+                Utilisez <span className="font-mono bg-gray-100 px-1 rounded">---</span> seul sur une ligne pour séparer les sections. Chaque image supplémentaire est insérée après la section correspondante.
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium">Extra Images (between sections)</label>
+              <label className="text-sm font-medium">Images supplémentaires (entre sections)</label>
               <div className="mt-1 space-y-2">
                 {extraImages.map((img, i) => (
                   <div key={i} className="relative rounded-xl overflow-hidden" style={{ height: 100 }}>
@@ -186,7 +186,7 @@ export default function AdminInfoArticles() {
                 <button onClick={() => extraRef.current?.click()}
                   className="w-full rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center gap-2 py-3 text-gray-400 text-sm"
                   data-testid="button-add-image">
-                  <ImagePlus className="w-5 h-5" /> Add images
+                  <ImagePlus className="w-5 h-5" /> Ajouter des images
                 </button>
                 <input ref={extraRef} type="file" accept="image/*" multiple className="hidden" onChange={handleExtraChange} />
               </div>
@@ -194,7 +194,7 @@ export default function AdminInfoArticles() {
 
             <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full" data-testid="button-save-article">
               {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              {editArticle ? "Save" : "Publish"}
+              {editArticle ? "Enregistrer" : "Publier"}
             </Button>
           </div>
         </DialogContent>

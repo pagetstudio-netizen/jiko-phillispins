@@ -21,6 +21,14 @@ interface WithdrawalWithUser extends Withdrawal {
   };
 }
 
+function statusLabel(s: string) {
+  if (s === "pending") return "En attente";
+  if (s === "approved") return "Validé";
+  if (s === "rejected") return "Rejeté";
+  if (s === "processing") return "En cours";
+  return s;
+}
+
 export default function AdminWithdrawals() {
   const { toast } = useToast();
   const { formatAmount } = useAdminCurrency();
@@ -32,7 +40,7 @@ export default function AdminWithdrawals() {
     queryKey: ["/api/admin/withdrawals"],
     queryFn: async () => {
       const res = await fetch(`/api/admin/withdrawals?status=all`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch withdrawals");
+      if (!res.ok) throw new Error("Erreur de chargement des retraits");
       return res.json();
     },
   });
@@ -46,17 +54,17 @@ export default function AdminWithdrawals() {
       const response = await apiRequest("POST", `/api/admin/withdrawals/${id}/${action}`, {});
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Error");
+        throw new Error(data.message || "Erreur");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-      toast({ title: "Withdrawal processed!" });
+      toast({ title: "Retrait traité !" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -66,12 +74,12 @@ export default function AdminWithdrawals() {
       const response = await apiRequest("POST", "/api/cloudpay/withdraw", { withdrawalId });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Error");
+        throw new Error(data.message || "Erreur");
       }
       queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
-      toast({ title: "Sent via CloudPay!", description: "Withdrawal is being processed automatically." });
+      toast({ title: "Envoyé via CloudPay !", description: "Le retrait est traité automatiquement." });
     } catch (err: any) {
-      toast({ title: "CloudPay error", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur CloudPay", description: err.message, variant: "destructive" });
     } finally {
       setSendingCloudpayId(null);
     }
@@ -89,7 +97,7 @@ export default function AdminWithdrawals() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by number or name..."
+            placeholder="Rechercher par numéro ou nom..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-10"
@@ -105,7 +113,7 @@ export default function AdminWithdrawals() {
             variant={statusFilter === status ? "default" : "outline"}
             onClick={() => setStatusFilter(status)}
           >
-            {status === "all" ? "All" : status === "pending" ? "Pending" : status === "processing" ? "Processing" : status === "approved" ? "Approved" : "Rejected"}
+            {status === "all" ? "Tous" : status === "pending" ? "En attente" : status === "processing" ? "En cours" : status === "approved" ? "Validés" : "Rejetés"}
           </Button>
         ))}
       </div>
@@ -121,43 +129,43 @@ export default function AdminWithdrawals() {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-foreground">{withdrawal.user.fullName}</p>
-                      {withdrawal.user.isPromoter && <Badge className="text-xs">Promoter</Badge>}
+                      {withdrawal.user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{withdrawal.user.phone}</p>
-                    <p className="text-sm text-muted-foreground">Country: {withdrawal.user.country}</p>
+                    <p className="text-sm text-muted-foreground">Pays : {withdrawal.user.country}</p>
                   </div>
                   <Badge variant={
                     withdrawal.status === "pending" ? "secondary" :
                     withdrawal.status === "processing" ? "secondary" :
                     withdrawal.status === "approved" ? "default" : "destructive"
                   }>
-                    {withdrawal.status === "processing" ? "Processing" : withdrawal.status}
+                    {statusLabel(withdrawal.status)}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Requested Amount</p>
+                    <p className="text-muted-foreground">Montant demandé</p>
                     <p className="font-medium text-foreground">{formatAmount(withdrawal.amount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Net Amount</p>
+                    <p className="text-muted-foreground">Montant net</p>
                     <p className="font-medium text-primary">{formatAmount(withdrawal.netAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Fees</p>
+                    <p className="text-muted-foreground">Frais</p>
                     <p className="font-medium text-destructive">{formatAmount(withdrawal.fees)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Method</p>
+                    <p className="text-muted-foreground">Méthode</p>
                     <p className="font-medium text-foreground">{withdrawal.paymentMethod}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Receiving Number</p>
+                    <p className="text-muted-foreground">Numéro de réception</p>
                     <p className="font-medium text-foreground">{withdrawal.accountNumber}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Account Name</p>
+                    <p className="text-muted-foreground">Nom du bénéficiaire</p>
                     <p className="font-medium text-foreground">{withdrawal.accountName}</p>
                   </div>
                   {(withdrawal as any).cloudpayOrderId && (
@@ -173,13 +181,13 @@ export default function AdminWithdrawals() {
                     </div>
                   )}
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Date & Time</p>
+                    <p className="text-muted-foreground">Date & Heure</p>
                     <p className="font-medium text-foreground">
-                      {new Date(withdrawal.createdAt).toLocaleDateString("en-GB", {
+                      {new Date(withdrawal.createdAt).toLocaleDateString("fr-FR", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric"
-                      })} at {new Date(withdrawal.createdAt).toLocaleTimeString("en-GB", {
+                      })} à {new Date(withdrawal.createdAt).toLocaleTimeString("fr-FR", {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
@@ -198,7 +206,7 @@ export default function AdminWithdrawals() {
                         disabled={processMutation.isPending}
                         data-testid={`button-manual-approve-${withdrawal.id}`}
                       >
-                        {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
+                        {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Valider</>}
                       </Button>
                       <Button
                         size="sm"
@@ -207,7 +215,7 @@ export default function AdminWithdrawals() {
                         disabled={processMutation.isPending}
                         data-testid={`button-reject-${withdrawal.id}`}
                       >
-                        <X className="w-4 h-4 mr-1" /> Reject
+                        <X className="w-4 h-4 mr-1" /> Rejeter
                       </Button>
                     </div>
                     <Button
@@ -222,7 +230,7 @@ export default function AdminWithdrawals() {
                       ) : (
                         <Send className="w-4 h-4 mr-1" />
                       )}
-                      Send via CloudPay
+                      Envoyer via CloudPay
                     </Button>
                   </div>
                 )}
@@ -231,7 +239,7 @@ export default function AdminWithdrawals() {
           ))
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            No withdrawals found
+            Aucun retrait trouvé
           </div>
         )}
       </div>

@@ -21,6 +21,13 @@ interface DepositWithUser extends Deposit {
   };
 }
 
+function statusLabel(s: string) {
+  if (s === "pending") return "En attente";
+  if (s === "approved") return "Validé";
+  if (s === "rejected") return "Rejeté";
+  return s;
+}
+
 export default function AdminDeposits() {
   const { toast } = useToast();
   const { formatAmount } = useAdminCurrency();
@@ -37,14 +44,14 @@ export default function AdminDeposits() {
         const data = await res.json();
         throw new Error(data.message || "Erreur");
       }
-      const { domain, payload } = await res.json();
+      const { payload } = await res.json();
       const text = JSON.stringify(payload, null, 2);
       await navigator.clipboard.writeText(text);
       setCopiedId(depositId);
-      toast({ title: "Request copied!", description: `CloudPay payload copied for ${payload.order_id}` });
+      toast({ title: "Requête copiée !", description: `Payload CloudPay copié pour ${payload.order_id}` });
       setTimeout(() => setCopiedId(null), 3000);
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
     } finally {
       setCopyingId(null);
     }
@@ -54,7 +61,7 @@ export default function AdminDeposits() {
     queryKey: ["/api/admin/deposits"],
     queryFn: async () => {
       const res = await fetch(`/api/admin/deposits?status=all`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch deposits");
+      if (!res.ok) throw new Error("Erreur de chargement des recharges");
       return res.json();
     },
   });
@@ -68,17 +75,17 @@ export default function AdminDeposits() {
       const response = await apiRequest("POST", `/api/admin/deposits/${id}/${action}`, { ban });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Error");
+        throw new Error(data.message || "Erreur");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/deposits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-      toast({ title: "Deposit processed!" });
+      toast({ title: "Recharge traitée !" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -94,7 +101,7 @@ export default function AdminDeposits() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by number or name..."
+            placeholder="Rechercher par numéro ou nom..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-10"
@@ -110,7 +117,7 @@ export default function AdminDeposits() {
             variant={statusFilter === status ? "default" : "outline"}
             onClick={() => setStatusFilter(status)}
           >
-            {status === "all" ? "All" : status === "pending" ? "Pending" : status === "approved" ? "Approved" : "Rejected"}
+            {status === "all" ? "Tous" : status === "pending" ? "En attente" : status === "approved" ? "Validés" : "Rejetés"}
           </Button>
         ))}
       </div>
@@ -126,30 +133,30 @@ export default function AdminDeposits() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-foreground">{deposit.user.fullName}</p>
-                      {deposit.user.isPromoter && <Badge className="text-xs">Promoter</Badge>}
+                      {deposit.user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{deposit.user.phone}</p>
                   </div>
                   <Badge variant={deposit.status === "pending" ? "secondary" : deposit.status === "approved" ? "default" : "destructive"}>
-                    {deposit.status}
+                    {statusLabel(deposit.status)}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Amount</p>
+                    <p className="text-muted-foreground">Montant</p>
                     <p className="font-medium text-foreground">{formatAmount(deposit.amount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Method</p>
+                    <p className="text-muted-foreground">Méthode</p>
                     <p className="font-medium text-foreground">{deposit.paymentMethod}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Sent to</p>
+                    <p className="text-muted-foreground">Envoyé à</p>
                     <p className="font-medium text-foreground">{deposit.accountNumber}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Sender Number</p>
+                    <p className="text-muted-foreground">N° expéditeur</p>
                     <p className="font-medium text-foreground">{(deposit as any).senderNumber || "—"}</p>
                   </div>
                   {(deposit as any).soleaspayOrderId && (
@@ -177,13 +184,13 @@ export default function AdminDeposits() {
                     </div>
                   )}
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Date & Time</p>
+                    <p className="text-muted-foreground">Date & Heure</p>
                     <p className="font-medium text-foreground">
-                      {new Date(deposit.createdAt).toLocaleDateString("en-GB", {
+                      {new Date(deposit.createdAt).toLocaleDateString("fr-FR", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric"
-                      })} at {new Date(deposit.createdAt).toLocaleTimeString("en-GB", {
+                      })} à {new Date(deposit.createdAt).toLocaleTimeString("fr-FR", {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
@@ -207,21 +214,21 @@ export default function AdminDeposits() {
                     ) : (
                       <Copy className="w-4 h-4 mr-2" />
                     )}
-                    {copiedId === deposit.id ? "Request copied!" : "Copy CloudPay Request"}
+                    {copiedId === deposit.id ? "Requête copiée !" : "Copier requête CloudPay"}
                   </Button>
                 )}
 
                 {(deposit as any).screenshotData && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payment Screenshot</p>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Capture d'écran de paiement</p>
                     <a href={(deposit as any).screenshotData} target="_blank" rel="noopener noreferrer">
                       <img
                         src={(deposit as any).screenshotData}
-                        alt="Payment proof"
+                        alt="Preuve de paiement"
                         className="w-full max-h-64 object-contain rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity"
                       />
                     </a>
-                    <p className="text-xs text-muted-foreground mt-1">Tap image to open full size</p>
+                    <p className="text-xs text-muted-foreground mt-1">Appuyez pour agrandir</p>
                   </div>
                 )}
 
@@ -233,7 +240,7 @@ export default function AdminDeposits() {
                       onClick={() => processMutation.mutate({ id: deposit.id, action: "approve" })}
                       disabled={processMutation.isPending}
                     >
-                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Approve</>}
+                      {processMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4 mr-1" /> Valider</>}
                     </Button>
                     <Button
                       size="sm"
@@ -241,13 +248,14 @@ export default function AdminDeposits() {
                       onClick={() => processMutation.mutate({ id: deposit.id, action: "reject" })}
                       disabled={processMutation.isPending}
                     >
-                      <X className="w-4 h-4 mr-1" /> Reject
+                      <X className="w-4 h-4 mr-1" /> Rejeter
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={() => processMutation.mutate({ id: deposit.id, action: "reject", ban: true })}
                       disabled={processMutation.isPending}
+                      title="Rejeter et bannir"
                     >
                       <Ban className="w-4 h-4" />
                     </Button>
@@ -258,7 +266,7 @@ export default function AdminDeposits() {
           ))
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            No deposits found
+            Aucune recharge trouvée
           </div>
         )}
       </div>

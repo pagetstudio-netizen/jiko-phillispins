@@ -15,20 +15,20 @@ import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download, Up
 
 
 const settingsSchema = z.object({
-  supportLink: z.string().min(5, "Link required"),
-  support2Link: z.string().min(5, "Link required"),
-  channelLink: z.string().min(5, "Link required"),
-  groupLink: z.string().min(5, "Link required"),
+  supportLink: z.string().min(5, "Lien requis"),
+  support2Link: z.string().min(5, "Lien requis"),
+  channelLink: z.string().min(5, "Lien requis"),
+  groupLink: z.string().min(5, "Lien requis"),
   appDownloadLink: z.string(),
-  minDeposit: z.string().min(1, "Amount required"),
-  withdrawalFees: z.string().min(1, "Fees required"),
-  withdrawalStartHour: z.string().min(1, "Hour required"),
-  withdrawalEndHour: z.string().min(1, "Hour required"),
-  level1Commission: z.string().min(1, "Commission required"),
-  level2Commission: z.string().min(1, "Commission required"),
-  level3Commission: z.string().min(1, "Commission required"),
-  adminCurrency: z.string().min(1, "Currency required"),
-  phpToFcfaRate: z.string().min(1, "Rate required"),
+  minDeposit: z.string().min(1, "Montant requis"),
+  withdrawalFees: z.string().min(1, "Frais requis"),
+  withdrawalStartHour: z.string().min(1, "Heure requise"),
+  withdrawalEndHour: z.string().min(1, "Heure requise"),
+  level1Commission: z.string().min(1, "Commission requise"),
+  level2Commission: z.string().min(1, "Commission requise"),
+  level3Commission: z.string().min(1, "Commission requise"),
+  adminCurrency: z.string().min(1, "Devise requise"),
+  phpToFcfaRate: z.string().min(1, "Taux requis"),
   cloudpayEnabled: z.string(),
   cloudpayMerchantId: z.string(),
   cloudpaySecretKey: z.string(),
@@ -108,17 +108,17 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       const response = await apiRequest("POST", "/api/admin/settings", data);
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Error");
+        throw new Error(result.message || "Erreur");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      toast({ title: "Settings saved!" });
+      toast({ title: "Paramètres sauvegardés !" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -126,7 +126,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith(".apk")) {
-      toast({ title: "Only .apk files allowed", variant: "destructive" });
+      toast({ title: "Seuls les fichiers .apk sont acceptés", variant: "destructive" });
       return;
     }
     setApkUploading(true);
@@ -135,13 +135,13 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       formData.append("apk", file);
       const res = await fetch("/api/admin/upload-apk", { method: "POST", body: formData, credentials: "include" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Upload failed");
+      if (!res.ok) throw new Error(data.message || "Échec du téléversement");
       setApkUploaded({ filename: data.filename, url: data.url });
       form.setValue("appDownloadLink", data.url);
       queryClient.invalidateQueries({ queryKey: ["/api/settings/links"] });
-      toast({ title: "APK uploaded!", description: `${data.filename} (${(data.size / 1024 / 1024).toFixed(1)} MB)` });
+      toast({ title: "APK téléversé !", description: `${data.filename} (${(data.size / 1024 / 1024).toFixed(1)} Mo)` });
     } catch (err: any) {
-      toast({ title: "Upload error", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur de téléversement", description: err.message, variant: "destructive" });
     } finally {
       setApkUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -156,12 +156,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit((data) => updateMutation.mutate(data))} className="space-y-4">
 
-        {/* Currency Settings */}
+        {/* Paramètres devise */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-primary" />
-              Currency Settings
+              Paramètres devise
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -170,7 +170,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="adminCurrency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Admin Display Currency</FormLabel>
+                  <FormLabel>Devise d'affichage admin</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="FCFA" />
                   </FormControl>
@@ -198,12 +198,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* Social Links */}
+        {/* Liens sociaux */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Link className="w-5 h-5 text-primary" />
-              Social Links
+              Liens sociaux
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -212,7 +212,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="supportLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Service 1</FormLabel>
+                  <FormLabel>Service client 1</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -226,7 +226,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="support2Link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Service 2</FormLabel>
+                  <FormLabel>Service client 2</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -240,7 +240,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="channelLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Official Channel</FormLabel>
+                  <FormLabel>Canal officiel</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -254,7 +254,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="groupLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Discussion Group</FormLabel>
+                  <FormLabel>Groupe de discussion</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://t.me/..." />
                   </FormControl>
@@ -266,42 +266,39 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* App Download */}
+        {/* Téléchargement de l'app */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Download className="w-5 h-5 text-primary" />
-              App Download
+              Téléchargement de l'app
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
 
-            {/* Option 1: URL */}
             <FormField
               control={form.control}
               name="appDownloadLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Download Link (URL)</FormLabel>
+                  <FormLabel>Lien de téléchargement (URL)</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="https://example.com/eiffage.apk" data-testid="input-app-download-link" />
                   </FormControl>
                   <FormDescription>
-                    Paste a direct APK URL or app store link. This is filled automatically when you upload an APK below.
+                    Collez une URL APK directe ou un lien vers une boutique d'applications. Rempli automatiquement si vous téléversez un APK ci-dessous.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Divider */}
             <div className="flex items-center gap-3">
               <div className="flex-1 border-t border-border" />
-              <span className="text-xs text-muted-foreground font-medium">OR UPLOAD APK DIRECTLY</span>
+              <span className="text-xs text-muted-foreground font-medium">OU TÉLÉVERSER UN APK DIRECTEMENT</span>
               <div className="flex-1 border-t border-border" />
             </div>
 
-            {/* Option 2: Upload APK */}
             <div className="space-y-3">
               <input
                 ref={fileInputRef}
@@ -323,17 +320,16 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 {apkUploading ? (
                   <>
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    <span className="text-sm">Uploading…</span>
+                    <span className="text-sm">Téléversement…</span>
                   </>
                 ) : (
                   <>
                     <UploadCloud className="w-6 h-6 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Click to select an APK file (max 200 MB)</span>
+                    <span className="text-sm text-muted-foreground">Cliquer pour sélectionner un APK (max 200 Mo)</span>
                   </>
                 )}
               </Button>
 
-              {/* Success state */}
               {apkUploaded && (
                 <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2">
                   <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
@@ -344,11 +340,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 </div>
               )}
 
-              {/* Existing APK info if link looks like our server */}
               {!apkUploaded && form.watch("appDownloadLink")?.includes("/uploads/apk/") && (
                 <div className="flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2">
                   <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
-                  <p className="text-sm text-blue-300">APK already hosted on server</p>
+                  <p className="text-sm text-blue-300">APK déjà hébergé sur le serveur</p>
                 </div>
               )}
             </div>
@@ -356,12 +351,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* Withdrawals */}
+        {/* Retraits */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Withdrawals
+              Retraits
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -370,11 +365,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="minDeposit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Minimum Deposit (FCFA)</FormLabel>
+                  <FormLabel>Dépôt minimum (FCFA)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="0" />
                   </FormControl>
-                  <FormDescription>Minimum amount a user can deposit.</FormDescription>
+                  <FormDescription>Montant minimum qu'un utilisateur peut déposer.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -385,7 +380,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="withdrawalFees"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Withdrawal Fees (%)</FormLabel>
+                  <FormLabel>Frais de retrait (%)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" />
                   </FormControl>
@@ -400,7 +395,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="withdrawalStartHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Hour</FormLabel>
+                    <FormLabel>Heure début</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>
@@ -414,7 +409,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="withdrawalEndHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Hour</FormLabel>
+                    <FormLabel>Heure fin</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>
@@ -426,12 +421,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* Referral Commissions */}
+        {/* Commissions de parrainage */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
-              Referral Commissions
+              Commissions de parrainage
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -441,7 +436,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level1Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level 1 (%)</FormLabel>
+                    <FormLabel>Niveau 1 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -455,7 +450,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level2Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level 2 (%)</FormLabel>
+                    <FormLabel>Niveau 2 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -469,7 +464,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="level3Commission"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level 3 (%)</FormLabel>
+                    <FormLabel>Niveau 3 (%)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -496,8 +491,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-3">
                   <div>
-                    <FormLabel className="text-base">Enable CloudPay</FormLabel>
-                    <FormDescription>Show CloudPay as a deposit channel</FormDescription>
+                    <FormLabel className="text-base">Activer CloudPay</FormLabel>
+                    <FormDescription>Afficher CloudPay comme canal de dépôt</FormDescription>
                   </div>
                   <FormControl>
                     <Switch
@@ -515,11 +510,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="cloudpayChannelName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Channel Display Name</FormLabel>
+                  <FormLabel>Nom d'affichage du canal</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="CloudPay" data-testid="input-cloudpay-channel-name" />
                   </FormControl>
-                  <FormDescription>Name shown to users in the payment channel list</FormDescription>
+                  <FormDescription>Nom affiché aux utilisateurs dans la liste des canaux de paiement</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -530,11 +525,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="cloudpayDomain"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>API Domain</FormLabel>
+                  <FormLabel>Domaine API</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="pay.example.com" data-testid="input-cloudpay-domain" />
                   </FormControl>
-                  <FormDescription>Domain provided by Galaxy System (without https://)</FormDescription>
+                  <FormDescription>Domaine fourni par Galaxy System (sans https://)</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -547,7 +542,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 <FormItem>
                   <FormLabel>Merchant ID</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Your merchant ID" data-testid="input-cloudpay-merchant-id" />
+                    <Input {...field} placeholder="Votre Merchant ID" data-testid="input-cloudpay-merchant-id" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -559,11 +554,11 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="cloudpaySecretKey"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Secret Key</FormLabel>
+                  <FormLabel>Clé secrète</FormLabel>
                   <FormControl>
-                    <Input {...field} type="password" placeholder="Your secret key" data-testid="input-cloudpay-secret-key" />
+                    <Input {...field} type="password" placeholder="Votre clé secrète" data-testid="input-cloudpay-secret-key" />
                   </FormControl>
-                  <FormDescription>MD5 signature key provided by Galaxy System</FormDescription>
+                  <FormDescription>Clé de signature MD5 fournie par Galaxy System</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -577,7 +572,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Settings
+              Enregistrer les paramètres
             </>
           )}
         </Button>

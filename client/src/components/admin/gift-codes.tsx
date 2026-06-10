@@ -46,7 +46,7 @@ export default function AdminGiftCodes() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error");
+        throw new Error(errorData.message || "Erreur");
       }
       return response.json();
     },
@@ -54,39 +54,39 @@ export default function AdminGiftCodes() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/gift-codes"] });
       setIsCreateOpen(false);
       setFormData({ code: "", amount: "", maxUses: "", expiresAt: "" });
-      toast({ title: "Success", description: "Gift code created successfully" });
+      toast({ title: "Succès", description: "Code cadeau créé avec succès" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/gift-codes/${id}`);
-      if (!response.ok) throw new Error("Error deleting gift code");
+      if (!response.ok) throw new Error("Erreur suppression code cadeau");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/gift-codes"] });
-      toast({ title: "Success", description: "Gift code deleted" });
+      toast({ title: "Succès", description: "Code cadeau supprimé" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.code || !formData.amount || !formData.maxUses || !formData.expiresAt) {
-      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
+      toast({ title: "Erreur", description: "Tous les champs sont requis", variant: "destructive" });
       return;
     }
     createMutation.mutate(formData);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-GB", {
+    return new Date(dateString).toLocaleString("fr-FR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -108,17 +108,17 @@ export default function AdminGiftCodes() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold" data-testid="text-section-title">Gift Codes</h2>
+        <h2 className="text-lg font-semibold" data-testid="text-section-title">Codes Cadeaux</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button data-testid="button-create-gift-code">
               <Plus className="w-4 h-4 mr-2" />
-              Create code
+              Créer un code
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>New Gift Code</DialogTitle>
+              <DialogTitle>Nouveau code cadeau</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -127,34 +127,34 @@ export default function AdminGiftCodes() {
                   id="code"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="E.g. BONUS2026"
+                  placeholder="Ex. BONUS2026"
                   data-testid="input-code"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount (FCFA)</Label>
+                <Label htmlFor="amount">Montant (FCFA)</Label>
                 <Input
                   id="amount"
                   type="number"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  placeholder="E.g. 500"
+                  placeholder="Ex. 500"
                   data-testid="input-amount"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="maxUses">Max users</Label>
+                <Label htmlFor="maxUses">Utilisateurs max</Label>
                 <Input
                   id="maxUses"
                   type="number"
                   value={formData.maxUses}
                   onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
-                  placeholder="E.g. 100"
+                  placeholder="Ex. 100"
                   data-testid="input-max-uses"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expiresAt">Expiry date & time</Label>
+                <Label htmlFor="expiresAt">Date et heure d'expiration</Label>
                 <Input
                   id="expiresAt"
                   type="datetime-local"
@@ -164,7 +164,7 @@ export default function AdminGiftCodes() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={createMutation.isPending} data-testid="button-submit">
-                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer"}
               </Button>
             </form>
           </DialogContent>
@@ -175,7 +175,7 @@ export default function AdminGiftCodes() {
         <Card data-testid="card-empty-state">
           <CardContent className="py-12 text-center text-muted-foreground">
             <Gift className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p data-testid="text-empty-message">No gift codes</p>
+            <p data-testid="text-empty-message">Aucun code cadeau</p>
           </CardContent>
         </Card>
       ) : (
@@ -199,23 +199,23 @@ export default function AdminGiftCodes() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Amount</span>
+                  <span className="text-muted-foreground">Montant</span>
                   <span className="font-semibold" data-testid={`text-amount-${giftCode.id}`}>{formatAmount(parseFloat(giftCode.amount))}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Uses</span>
+                  <span className="text-muted-foreground">Utilisations</span>
                   <span className="font-semibold" data-testid={`text-uses-${giftCode.id}`}>{giftCode.currentUses} / {giftCode.maxUses}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Expires</span>
+                  <span className="text-muted-foreground">Expire le</span>
                   <span className={`font-semibold ${isExpired(giftCode.expiresAt) ? "text-green-500" : ""}`} data-testid={`text-expires-${giftCode.id}`}>
                     {formatDate(giftCode.expiresAt)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-muted-foreground">Statut</span>
                   <span className={`font-semibold ${isExpired(giftCode.expiresAt) || !giftCode.isActive ? "text-green-500" : "text-green-500"}`} data-testid={`text-status-${giftCode.id}`}>
-                    {isExpired(giftCode.expiresAt) ? "Expired" : giftCode.isActive ? "Active" : "Inactive"}
+                    {isExpired(giftCode.expiresAt) ? "Expiré" : giftCode.isActive ? "Actif" : "Inactif"}
                   </span>
                 </div>
               </CardContent>

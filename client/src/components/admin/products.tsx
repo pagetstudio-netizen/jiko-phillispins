@@ -18,10 +18,10 @@ import { Edit, Loader2, TrendingUp } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 const productSchema = z.object({
-  name: z.string().min(2, "Name required"),
-  price: z.string().min(1, "Price required"),
-  dailyEarnings: z.string().min(1, "Daily earnings required"),
-  cycleDays: z.string().min(1, "Duration required"),
+  name: z.string().min(2, "Nom requis"),
+  price: z.string().min(1, "Prix requis"),
+  dailyEarnings: z.string().min(1, "Gains journaliers requis"),
+  cycleDays: z.string().min(1, "Durée requise"),
   imageUrl: z.string().optional(),
 });
 
@@ -52,17 +52,17 @@ export default function AdminProducts() {
       const response = await apiRequest("PATCH", `/api/admin/products/${id}`, data);
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Error");
+        throw new Error(result.message || "Erreur");
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products/all"] });
-      toast({ title: "Product updated!" });
+      toast({ title: "Produit mis à jour !" });
       setSelectedProduct(null);
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -71,7 +71,7 @@ export default function AdminProducts() {
       const response = await apiRequest("PATCH", `/api/admin/products/${id}`, { isActive });
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Error");
+        throw new Error(result.message || "Erreur");
       }
       return response.json();
     },
@@ -79,7 +79,7 @@ export default function AdminProducts() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products/all"] });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -130,10 +130,10 @@ export default function AdminProducts() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-foreground">{product.name}</p>
-                      {product.isFree && <Badge variant="secondary" className="text-xs">Free</Badge>}
+                      {product.isFree && <Badge variant="secondary" className="text-xs">Gratuit</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatAmount(product.price)} - {formatAmount(product.dailyEarnings)}/day
+                      {formatAmount(product.price)} - {formatAmount(product.dailyEarnings)}/jour
                     </p>
                   </div>
                 </div>
@@ -150,15 +150,15 @@ export default function AdminProducts() {
 
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Price</p>
+                  <p className="text-muted-foreground">Prix</p>
                   <p className="font-medium text-foreground">{formatAmount(product.price)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Daily earnings</p>
+                  <p className="text-muted-foreground">Gains journaliers</p>
                   <p className="font-medium text-foreground">{formatAmount(product.dailyEarnings)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Total return</p>
+                  <p className="text-muted-foreground">Retour total</p>
                   <p className="font-medium text-primary">{formatAmount(product.totalReturn)}</p>
                 </div>
               </div>
@@ -167,14 +167,14 @@ export default function AdminProducts() {
         ))
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          No products
+          Aucun produit
         </div>
       )}
 
       <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
+            <DialogTitle>Modifier le produit</DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
@@ -184,7 +184,7 @@ export default function AdminProducts() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Nom</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -199,7 +199,7 @@ export default function AdminProducts() {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price (FCFA)</FormLabel>
+                      <FormLabel>Prix (FCFA)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" />
                       </FormControl>
@@ -213,7 +213,7 @@ export default function AdminProducts() {
                   name="dailyEarnings"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Daily earnings (FCFA)</FormLabel>
+                      <FormLabel>Gains journaliers (FCFA)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" />
                       </FormControl>
@@ -228,7 +228,7 @@ export default function AdminProducts() {
                 name="cycleDays"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration (days)</FormLabel>
+                    <FormLabel>Durée (jours)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
                     </FormControl>
@@ -242,7 +242,7 @@ export default function AdminProducts() {
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URL (optional)</FormLabel>
+                    <FormLabel>URL image (optionnel)</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="https://..." />
                     </FormControl>
@@ -252,7 +252,7 @@ export default function AdminProducts() {
               />
 
               <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
               </Button>
             </form>
           </Form>
