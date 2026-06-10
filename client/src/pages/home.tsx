@@ -7,14 +7,15 @@ import { X, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-import popupRobotImg from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779519826292.png";
+import popupRobotImg from "@assets/IMG_20260610_064536_957_1781133373542.jpg";
+import eiffageLogoImg from "@assets/IMG_20260610_064537_331_1781133373827.jpg";
 
-import heroImg from "@assets/20260408_191813_1775675938233.jpg";
-import rdBgImg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779479835636.png";
-import buildingImg from "@assets/file_00000000dc987243b80751c21ba23b22_1779479769826.png";
+import heroImg from "@assets/IMG_20260610_064537_676_1781133373703.jpg";
+import rdBgImg from "@assets/IMG_20260610_064536_725_1781133373757.jpg";
+import buildingImg from "@assets/IMG_20260610_064537_635_1781133373730.jpg";
 
-import robotBonus   from "@assets/file_00000000aac471f49ed3613abb850ef5_1779479769787.png";
-import robotMission from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779479769721.png";
+import robotBonus   from "@assets/IMG_20260610_064537_278_1781133373783.jpg";
+import robotMission from "@assets/IMG_20260610_064537_345_1781133373807.jpg";
 
 import iconDeposit  from "@assets/recharge-icon-BZHWSjQZ_(1)_1779463427355.png";
 import iconWithdraw from "@assets/withdraw-icon-DFsum39V_(1)_1779463427337.png";
@@ -25,12 +26,13 @@ import iconBell     from "@assets/téléchargement_(65)_1779463427321.png";
 const TICKER_TEXT =
   "★★★★★73 recharged 35,000 ★★★★★★3765 recharged 15,000 ★★★★★8829 recharged 30,000 ★★★★★★1234 recharged 10,000 ★★★★★5678 recharged 50,000 ★★★★★9012 recharged 8,000 ★★★★★★3456 recharged 25,000 ★★★★7890 recharged 12,000 ★★★★★★";
 
-function NioArcLogo() {
+function EiffageLogo() {
   return (
-    <svg width="90" height="68" viewBox="0 0 90 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 64 C6 38 20 7 45 7 C70 7 84 38 84 64" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path d="M20 64 C20 46 30 23 45 23 C60 23 70 46 70 64" stroke="white" strokeWidth="5.5" strokeLinecap="round" fill="none" />
-    </svg>
+    <img
+      src={eiffageLogoImg}
+      alt="EIFFAGE"
+      style={{ height: 56, width: "auto", objectFit: "contain", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}
+    />
   );
 }
 
@@ -110,13 +112,13 @@ export default function HomePage() {
             {/* Content */}
             <div style={{ padding: "16px 18px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ① Inscrivez-vous et recevez <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(20)}</span>.
+                ① Inscrivez-vous et recevez <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(parseInt(platformSettings?.signupBonus || "500"))}</span>.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
                 ② Recevez <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(5)}</span> chaque jour en vous connectant.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ③ Invitez des amis à investir et recevez immédiatement une commission de <span style={{ color: "#f59e0b", fontWeight: 700 }}>{platformSettings?.level1Commission || "20"}%</span>.
+                ③ Invitez des amis à investir et recevez immédiatement une commission de <span style={{ color: "#f59e0b", fontWeight: 700 }}>{platformSettings?.level1Commission || "18"}%</span>.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
                 ④ Les rendements des produits sont versés automatiquement 24h/7j pour recevoir vos fonds plus rapidement.
@@ -160,9 +162,9 @@ export default function HomePage() {
           paddingBottom: 0,
         }}
       >
-        {/* Arc logo */}
+        {/* EIFFAGE logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-          <NioArcLogo />
+          <EiffageLogo />
         </div>
 
         {/* Dark account card */}

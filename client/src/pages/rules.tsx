@@ -112,14 +112,14 @@ export default function RulesPage() {
 
         <p style={{ color: "#cccccc", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
           {fr
-            ? "Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez immédiatement une commission de 20 % sur son investissement.\nLorsque les membres de votre équipe de deuxième niveau investissent, vous recevez une commission de 3 %.\nLorsque les membres de votre équipe de troisième niveau investissent, vous recevez également une commission de 2 %.\nDès que les membres de votre équipe investissent, la commission est immédiatement créditée sur votre compte et vous pouvez la retirer instantanément."
-            : "When a friend you invite signs up and invests, you immediately receive a 20% commission on their investment.\nWhen second-level team members invest, you receive a 3% commission.\nWhen third-level team members invest, you also receive a 2% commission.\nAs soon as your team members invest, the commission is immediately credited to your account and you can withdraw it instantly."}
+            ? "Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez immédiatement une commission de 18 % sur son investissement.\nLorsque les membres de votre équipe de deuxième niveau investissent, vous recevez une commission de 2 %.\nLorsque les membres de votre équipe de troisième niveau investissent, vous recevez également une commission de 1 %.\nDès que les membres de votre équipe investissent, la commission est immédiatement créditée sur votre compte et vous pouvez la retirer instantanément."
+            : "When a friend you invite signs up and invests, you immediately receive an 18% commission on their investment.\nWhen second-level team members invest, you receive a 2% commission.\nWhen third-level team members invest, you also receive a 1% commission.\nAs soon as your team members invest, the commission is immediately credited to your account and you can withdraw it instantly."}
         </p>
 
         <div style={{ color: "#cccccc", fontSize: 13, lineHeight: 1.9 }}>
-          <p>① {fr ? `Inscrivez-vous et recevez ${fmt(50)}.` : `Sign up and receive ${fmt(50)}.`}</p>
+          <p>① {fr ? `Inscrivez-vous et recevez ${fmt(500)}.` : `Sign up and receive ${fmt(500)}.`}</p>
           <p>② {fr ? `Recevez ${fmt(5)} chaque jour avec le produit gratuit.` : `Receive ${fmt(5)} every day with the free product.`}</p>
-          <p>③ {fr ? "Invitez des amis à investir et recevez instantanément une commission avantageuse de 20 %." : "Invite friends to invest and instantly receive an advantageous 20% commission."}</p>
+          <p>③ {fr ? "Invitez des amis à investir et recevez instantanément une commission avantageuse de 18 %." : "Invite friends to invest and instantly receive an advantageous 18% commission."}</p>
         </div>
 
         {/* Rules sections */}
@@ -141,11 +141,11 @@ export default function RulesPage() {
               2. {fr ? "Dépôts et Retraits" : "Deposits & Withdrawals"}
             </h2>
             <ul style={{ paddingLeft: 18, color: "#ccc", fontSize: 13, lineHeight: 1.8, margin: 0 }}>
-              <li>{fr ? `Le montant minimum de dépôt est de ${fmt(500)}.` : `The minimum deposit amount is ${fmt(500)}.`}</li>
-              <li>{fr ? `Le montant minimum de retrait est de ${fmt(100)}.` : `The minimum withdrawal amount is ${fmt(100)}.`}</li>
-              <li>{fr ? "Les frais de retrait sont de 0 %." : "Withdrawal fees are 0%."}</li>
-              <li>{fr ? "Les retraits sont traités entre 9h et 18h les jours ouvrables." : "Withdrawals are processed between 9am and 6pm on business days."}</li>
-              <li>{fr ? "Limite de 2 retraits maximum par jour par utilisateur." : "Maximum 2 withdrawals per day per user."}</li>
+              <li>{fr ? `Le montant minimum de dépôt est de ${fmt(3000)}.` : `The minimum deposit amount is ${fmt(3000)}.`}</li>
+              <li>{fr ? `Le montant minimum de retrait est de ${fmt(1500)}.` : `The minimum withdrawal amount is ${fmt(1500)}.`}</li>
+              <li>{fr ? "Les frais de retrait sont de 18 %." : "Withdrawal fees are 18%."}</li>
+              <li>{fr ? "Les retraits sont traités entre 9h et 17h (UTC) les jours ouvrables." : "Withdrawals are processed between 9am and 5pm (UTC) on business days."}</li>
+              <li>{fr ? "Limite d'1 retrait maximum par jour par utilisateur." : "Maximum 1 withdrawal per day per user."}</li>
             </ul>
           </section>
 
@@ -154,9 +154,9 @@ export default function RulesPage() {
               3. {fr ? "Système de Parrainage" : "Referral System"}
             </h2>
             <ul style={{ paddingLeft: 18, color: "#ccc", fontSize: 13, lineHeight: 1.8, margin: 0 }}>
-              <li>{fr ? "Commission de niveau 1 : 20 % sur l'investissement du filleul." : "Level 1 commission: 20% on the referral's investment."}</li>
-              <li>{fr ? "Commission de niveau 2 : 3 % sur l'investissement." : "Level 2 commission: 3% on the investment."}</li>
-              <li>{fr ? "Commission de niveau 3 : 2 % sur l'investissement." : "Level 3 commission: 2% on the investment."}</li>
+              <li>{fr ? "Commission de niveau 1 : 18 % sur l'investissement du filleul." : "Level 1 commission: 18% on the referral's investment."}</li>
+              <li>{fr ? "Commission de niveau 2 : 2 % sur l'investissement." : "Level 2 commission: 2% on the investment."}</li>
+              <li>{fr ? "Commission de niveau 3 : 1 % sur l'investissement." : "Level 3 commission: 1% on the investment."}</li>
               <li>{fr ? "Les activités frauduleuses ou la création de comptes multiples entraîneront la suspension du compte." : "Fraudulent activities or creating multiple accounts will result in account suspension."}</li>
             </ul>
           </section>

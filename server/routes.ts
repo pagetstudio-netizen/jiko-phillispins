@@ -1457,8 +1457,10 @@ export async function registerRoutes(
         return res.status(401).json({ message: "Not authenticated" });
       }
 
-      if (amount < 120) {
-        return res.status(400).json({ message: "Retrait minimum : 120 FCFA" });
+      const minWithdrawalSettings = await storage.getSettings();
+      const minWithdrawal = parseInt(minWithdrawalSettings.minWithdrawal || "1500");
+      if (amount < minWithdrawal) {
+        return res.status(400).json({ message: `Retrait minimum : ${minWithdrawal.toLocaleString()} FCFA` });
       }
 
       if (!user.hasActiveProduct) {
@@ -1486,13 +1488,14 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Enregistrez un portefeuille de retrait" });
       }
 
+      const settings = await storage.getSettings();
       const todayCount = await storage.getUserWithdrawalCountToday(user.id);
-      if (todayCount >= 3) {
-        return res.status(400).json({ message: "Maximum 3 retraits par jour" });
+      const maxPerDay = parseInt(settings.maxWithdrawalsPerDay || "1");
+      if (todayCount >= maxPerDay) {
+        return res.status(400).json({ message: `Maximum ${maxPerDay} retrait${maxPerDay > 1 ? "s" : ""} par jour` });
       }
 
-      const settings = await storage.getSettings();
-      const fees = parseFloat(settings.withdrawalFees || "15");
+      const fees = parseFloat(settings.withdrawalFees || "18");
       const feeAmount = Math.round(amount * fees / 100);
       const netAmount = amount - feeAmount;
 
@@ -1729,10 +1732,10 @@ export async function registerRoutes(
     try {
       const settings = await storage.getSettings();
       res.json({
-        withdrawalFees: parseFloat(settings.withdrawalFees || "15"),
-        withdrawalStartHour: parseInt(settings.withdrawalStartHour || "8"),
+        withdrawalFees: parseFloat(settings.withdrawalFees || "18"),
+        withdrawalStartHour: parseInt(settings.withdrawalStartHour || "9"),
         withdrawalEndHour: parseInt(settings.withdrawalEndHour || "17"),
-        maxWithdrawalsPerDay: 3,
+        maxWithdrawalsPerDay: parseInt(settings.maxWithdrawalsPerDay || "1"),
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });

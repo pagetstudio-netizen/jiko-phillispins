@@ -55,8 +55,8 @@ export default function AboutPage() {
 
         <p style={{ color: "#cccccc", fontSize: 14, marginBottom: 20 }}>
           {fr
-            ? "Disponible dans plus de 10 pays d'Afrique francophone, EIFFAGE travaille avec les principaux opérateurs de mobile money (Orange Money, MTN Mobile Money, Wave, Moov Money, etc.) afin d'offrir des solutions de dépôt et de retrait fluides et adaptées aux marchés locaux."
-            : "Available in more than 10 French-speaking African countries, EIFFAGE works with the leading mobile money operators (Orange Money, MTN Mobile Money, Wave, Moov Money, etc.) to offer smooth deposit and withdrawal solutions adapted to local markets."}
+            ? "Disponible dans 7 pays d'Afrique francophone (Cameroun, Burkina Faso, Niger, Mali, Gabon, RDC, Congo Brazzaville), EIFFAGE travaille avec les principaux opérateurs de mobile money (Orange Money, MTN Mobile Money, Airtel Money, Moov Money, etc.) afin d'offrir des solutions de dépôt et de retrait fluides et adaptées aux marchés locaux."
+            : "Available in 7 French-speaking African countries (Cameroon, Burkina Faso, Niger, Mali, Gabon, DRC, Congo Brazzaville), EIFFAGE works with the leading mobile money operators (Orange Money, MTN Mobile Money, Airtel Money, Moov Money, etc.) to offer smooth deposit and withdrawal solutions adapted to local markets."}
         </p>
 
         <p style={{ color: "#cccccc", fontSize: 14 }}>

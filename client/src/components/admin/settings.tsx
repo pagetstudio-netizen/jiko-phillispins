@@ -20,10 +20,13 @@ const settingsSchema = z.object({
   channelLink: z.string().min(5, "Lien requis"),
   groupLink: z.string().min(5, "Lien requis"),
   appDownloadLink: z.string(),
+  signupBonus: z.string().min(1, "Montant requis"),
   minDeposit: z.string().min(1, "Montant requis"),
+  minWithdrawal: z.string().min(1, "Montant requis"),
   withdrawalFees: z.string().min(1, "Frais requis"),
   withdrawalStartHour: z.string().min(1, "Heure requise"),
   withdrawalEndHour: z.string().min(1, "Heure requise"),
+  maxWithdrawalsPerDay: z.string().min(1, "Limite requise"),
   level1Commission: z.string().min(1, "Commission requise"),
   level2Commission: z.string().min(1, "Commission requise"),
   level3Commission: z.string().min(1, "Commission requise"),
@@ -60,11 +63,14 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       channelLink: "https://t.me/EiffageSupport",
       groupLink: "https://t.me/+R9SFSGneBkg3NTFh",
       appDownloadLink: "",
-      minDeposit: "3500",
-      withdrawalFees: "15",
-      withdrawalStartHour: "8",
+      signupBonus: "500",
+      minDeposit: "3000",
+      minWithdrawal: "1500",
+      withdrawalFees: "18",
+      withdrawalStartHour: "9",
       withdrawalEndHour: "17",
-      level1Commission: "27",
+      maxWithdrawalsPerDay: "1",
+      level1Commission: "18",
       level2Commission: "2",
       level3Commission: "1",
       adminCurrency: "FCFA",
@@ -85,11 +91,14 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         channelLink: settings.channelLink || "https://t.me/EiffageSupport",
         groupLink: settings.groupLink || "https://t.me/+R9SFSGneBkg3NTFh",
         appDownloadLink: settings.appDownloadLink || "",
-        minDeposit: settings.minDeposit || "3500",
-        withdrawalFees: settings.withdrawalFees || "15",
-        withdrawalStartHour: settings.withdrawalStartHour || "8",
+        signupBonus: settings.signupBonus || "500",
+        minDeposit: settings.minDeposit || "3000",
+        minWithdrawal: settings.minWithdrawal || "1500",
+        withdrawalFees: settings.withdrawalFees || "18",
+        withdrawalStartHour: settings.withdrawalStartHour || "9",
         withdrawalEndHour: settings.withdrawalEndHour || "17",
-        level1Commission: settings.level1Commission || "27",
+        maxWithdrawalsPerDay: settings.maxWithdrawalsPerDay || "1",
+        level1Commission: settings.level1Commission || "18",
         level2Commission: settings.level2Commission || "2",
         level3Commission: settings.level3Commission || "1",
         adminCurrency: settings.adminCurrency || "FCFA",
@@ -351,39 +360,25 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* Retraits */}
+        {/* Dépôts et Retraits */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Retraits
+              Dépôts &amp; Retraits
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="minDeposit"
+              name="signupBonus"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dépôt minimum (FCFA)</FormLabel>
+                  <FormLabel>Bonus d'inscription (FCFA)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="0" />
                   </FormControl>
-                  <FormDescription>Montant minimum qu'un utilisateur peut déposer.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="withdrawalFees"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Frais de retrait (%)</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="number" />
-                  </FormControl>
+                  <FormDescription>Montant crédité automatiquement à l'inscription.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -392,10 +387,70 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
+                name="minDeposit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dépôt minimum (FCFA)</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="minWithdrawal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Retrait minimum (FCFA)</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="withdrawalFees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Frais de retrait (%)</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="0" max="100" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxWithdrawalsPerDay"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Retraits max/jour</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" min="1" max="10" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="withdrawalStartHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Heure début</FormLabel>
+                    <FormLabel>Heure début (UTC)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>
@@ -409,7 +464,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 name="withdrawalEndHour"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Heure fin</FormLabel>
+                    <FormLabel>Heure fin (UTC)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" min="0" max="23" />
                     </FormControl>

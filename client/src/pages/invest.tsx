@@ -9,15 +9,15 @@ import { useUserCurrency } from "@/lib/useUserCurrency";
 import { useLang } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
-import heroImg from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
-import r1 from "@assets/ROBOTIQUE-ET-IA_1779479959842.jpg";
-import r2 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479959906.png";
-import r3 from "@assets/robot-humanoide_1779479959935.jpg";
-import r4 from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779479959968.png";
-import r5 from "@assets/images_(30)_1779479959995.jpeg";
-import r6 from "@assets/photo-1737644467636-6b0053476bb2_1779479960022.jpeg";
-import r7 from "@assets/images_(29)_1779479856301.jpeg";
-import r8 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
+import heroImg from "@assets/IMG_20260610_064536_725_1781133373757.jpg";
+import r1 from "@assets/IMG_20260610_064537_676_1781133373703.jpg";
+import r2 from "@assets/IMG_20260610_064537_635_1781133373730.jpg";
+import r3 from "@assets/IMG_20260610_064537_278_1781133373783.jpg";
+import r4 from "@assets/IMG_20260610_064537_345_1781133373807.jpg";
+import r5 from "@assets/IMG_20260610_064536_957_1781133373542.jpg";
+import r6 from "@assets/IMG_20260610_064536_850_1781133373673.jpg";
+import r7 from "@assets/IMG_20260610_064537_331_1781133373827.jpg";
+import r8 from "@assets/IMG_20260610_231500_793_1781133437015.jpg";
 
 const CAR_IMAGES = [r1, r2, r3, r4, r5, r6, r7, r8];
 

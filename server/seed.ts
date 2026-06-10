@@ -19,6 +19,11 @@ export async function seed() {
     CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")
   `);
 
+  // Apply any missing column migrations
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banker BOOLEAN NOT NULL DEFAULT false`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS must_invite_to_withdraw BOOLEAN NOT NULL DEFAULT false`);
+  await db.execute(sql`ALTER TABLE platform_settings ADD COLUMN IF NOT EXISTS updated_by INTEGER`);
+
   // Check if admin already exists
   const existingAdmin = await db.select().from(users).where(eq(users.phone, "99935673"));
   const hashedPassword = await bcrypt.hash("AAbb11##", 10);
@@ -211,14 +216,16 @@ export async function seed() {
     { key: "support2Link", value: "https://t.me/EiffageSupport" },
     { key: "channelLink", value: "https://t.me/EiffageSupport" },
     { key: "groupLink", value: "https://t.me/+Y9c8J9PO1hg0MGNh" },
-    { key: "minDeposit", value: "500" },
-    { key: "minWithdrawal", value: "50" },
-    { key: "withdrawalFees", value: "0" },
+    { key: "signupBonus", value: "500" },
+    { key: "minDeposit", value: "3000" },
+    { key: "minWithdrawal", value: "1500" },
+    { key: "withdrawalFees", value: "18" },
     { key: "withdrawalStartHour", value: "9" },
-    { key: "withdrawalEndHour", value: "18" },
-    { key: "level1Commission", value: "20" },
-    { key: "level2Commission", value: "3" },
-    { key: "level3Commission", value: "2" },
+    { key: "withdrawalEndHour", value: "17" },
+    { key: "maxWithdrawalsPerDay", value: "1" },
+    { key: "level1Commission", value: "18" },
+    { key: "level2Commission", value: "2" },
+    { key: "level3Commission", value: "1" },
     { key: "soleaspayEnabled", value: "false" },
     { key: "soleaspayApiKey", value: "" },
     { key: "soleaspayCountries", value: "" },
@@ -236,7 +243,7 @@ export async function seed() {
   ];
 
   // Settings that should always be updated to the required value (critical platform config)
-  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "level1Commission", "level2Commission", "level3Commission", "groupLink", "adminCurrency", "phpToFcfaRate"]);
+  const alwaysUpdateKeys = new Set(["signupBonus", "minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "maxWithdrawalsPerDay", "level1Commission", "level2Commission", "level3Commission", "groupLink", "adminCurrency", "phpToFcfaRate"]);
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);

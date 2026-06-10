@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Loader2, DollarSign, ChevronRight, Info } from "lucide-react";
-import heroBg from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779519826292.png";
+import heroBg from "@assets/IMG_20260610_064537_635_1781133373730.jpg";
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import bankCardIcon from "@assets/mine-mod-bankcard-CLOhqwHj_1779464171572.png";
 import { Link, useLocation } from "wouter";
