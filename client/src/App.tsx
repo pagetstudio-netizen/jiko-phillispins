@@ -36,6 +36,7 @@ import ProductDetailPage from "@/pages/product-detail";
 import InfoPage from "@/pages/info";
 import InfoDetailPage from "@/pages/info-detail";
 import PayPage from "@/pages/pay";
+import BankerPage from "@/pages/banker";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
@@ -81,6 +82,24 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user || !user.isAdmin) {
+    return <Redirect to="/" />;
+  }
+
+  return <>{children}</>;
+}
+
+function BankerRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || (!user.isAdmin && !user.isBanker)) {
     return <Redirect to="/" />;
   }
 
@@ -272,6 +291,11 @@ function Router() {
             <RewardsPage />
           </AppLayout>
         </ProtectedRoute>
+      </Route>
+      <Route path="/banker">
+        <BankerRoute>
+          <BankerPage />
+        </BankerRoute>
       </Route>
       <Route path="/admin">
         <AdminRoute>

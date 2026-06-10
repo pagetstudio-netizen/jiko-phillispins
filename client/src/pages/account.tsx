@@ -117,6 +117,17 @@ export default function AccountPage() {
               <Shield className="w-4 h-4" style={{ color: "#f59e0b" }} />
             </button>
           )}
+          {/* Banker button */}
+          {!user.isAdmin && (user as any).isBanker && (
+            <button
+              onClick={() => navigate("/banker")}
+              className="absolute top-4 left-4 p-1.5 rounded-full"
+              style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)" }}
+              data-testid="button-banker"
+            >
+              <Shield className="w-4 h-4" style={{ color: "#3b82f6" }} />
+            </button>
+          )}
 
           {/* Avatar */}
           <div className="absolute top-8 right-4">

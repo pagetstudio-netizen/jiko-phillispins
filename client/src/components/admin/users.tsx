@@ -587,6 +587,16 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
 
                   {isSuperAdmin && !selectedUser.isSuperAdmin && (
                     <div className="col-span-2 space-y-2">
+                      <Button
+                        variant={(selectedUser as any).isBanker ? "default" : "outline"}
+                        onClick={() => updateMutation.mutate({ userId: selectedUser.id, action: "toggle-banker" })}
+                        disabled={updateMutation.isPending || selectedUser.isAdmin}
+                        className="w-full"
+                        data-testid={`button-toggle-banker-${selectedUser.id}`}
+                      >
+                        <Shield className="w-4 h-4 mr-2" style={{ color: "#3b82f6" }} />
+                        {(selectedUser as any).isBanker ? "Retirer rôle Bankier" : "Nommer Bankier"}
+                      </Button>
                       {!selectedUser.isAdmin && (
                         <div>
                           <label className="text-sm font-medium">PIN code for admin</label>

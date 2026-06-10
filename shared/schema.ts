@@ -22,6 +22,7 @@ export const users = pgTable("users", {
   totalEarnings: decimal("total_earnings", { precision: 15, scale: 2 }).notNull().default("0"),
   isAdmin: boolean("is_admin").notNull().default(false),
   isSuperAdmin: boolean("is_super_admin").notNull().default(false),
+  isBanker: boolean("is_banker").notNull().default(false),
   isBanned: boolean("is_banned").notNull().default(false),
   isWithdrawalBlocked: boolean("is_withdrawal_blocked").notNull().default(false),
   isPromoter: boolean("is_promoter").notNull().default(false),

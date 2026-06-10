@@ -44,6 +44,17 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+async function requireBanker(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  const user = await storage.getUser(req.session.userId);
+  if (!user?.isAdmin && !user?.isBanker) {
+    return res.status(403).json({ message: "Accès refusé" });
+  }
+  next();
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -1740,7 +1751,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/admin/deposits", requireAdmin, async (req, res) => {
+  app.get("/api/admin/deposits", requireBanker, async (req, res) => {
     try {
       const status = req.query.status as string || "pending";
       const deposits = await storage.getDeposits(status === "pending" ? "pending" : undefined);
@@ -1783,7 +1794,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/deposits/:id/approve", requireAdmin, async (req, res) => {
+  app.post("/api/admin/deposits/:id/approve", requireBanker, async (req, res) => {
     try {
       const deposit = await storage.updateDeposit(parseInt(req.params.id), {
         status: "approved",
@@ -1814,7 +1825,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/deposits/:id/reject", requireAdmin, async (req, res) => {
+  app.post("/api/admin/deposits/:id/reject", requireBanker, async (req, res) => {
     try {
       const { ban } = req.body;
       const deposit = await storage.updateDeposit(parseInt(req.params.id), {
@@ -1863,7 +1874,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/admin/withdrawals", requireAdmin, async (req, res) => {
+  app.get("/api/admin/withdrawals", requireBanker, async (req, res) => {
     try {
       const status = req.query.status as string || "pending";
       const withdrawals = await storage.getWithdrawals(status === "pending" ? "pending" : undefined);
@@ -1874,7 +1885,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/withdrawals/:id/approve", requireAdmin, async (req, res) => {
+  app.post("/api/admin/withdrawals/:id/approve", requireBanker, async (req, res) => {
     try {
       const withdrawalId = parseInt(req.params.id);
       const existingWithdrawal = await storage.getWithdrawals();
@@ -1897,7 +1908,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/withdrawals/:id/reject", requireAdmin, async (req, res) => {
+  app.post("/api/admin/withdrawals/:id/reject", requireBanker, async (req, res) => {
     try {
       const withdrawal = await storage.updateWithdrawal(parseInt(req.params.id), {
         status: "rejected",
@@ -1916,6 +1927,20 @@ export async function registerRoutes(
       res.json(withdrawal);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/banker/history", requireBanker, async (req, res) => {
+    try {
+      const allDeposits = await storage.getDeposits();
+      const allWithdrawals = await storage.getWithdrawals();
+      const combined = [
+        ...allDeposits.map((d: any) => ({ ...d, _type: "deposit" })),
+        ...allWithdrawals.map((w: any) => ({ ...w, _type: "withdrawal" })),
+      ].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      res.json(combined);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 
@@ -1982,6 +2007,14 @@ export async function registerRoutes(
           const user4 = await storage.getUser(userId);
           await storage.updateUser(userId, { mustInviteToWithdraw: !user4?.mustInviteToWithdraw });
           await storage.logAdminAction(req.session.userId!, "toggle_must_invite", userId, `Doit inviter: ${!user4?.mustInviteToWithdraw}`);
+          break;
+        case "toggle-banker":
+          if (!adminUser?.isSuperAdmin) {
+            return res.status(403).json({ message: "Action réservée au super admin" });
+          }
+          const userBanker = await storage.getUser(userId);
+          await storage.updateUser(userId, { isBanker: !userBanker?.isBanker });
+          await storage.logAdminAction(req.session.userId!, "toggle_banker", userId, `Bankier: ${!userBanker?.isBanker}`);
           break;
         case "toggle-admin":
           if (!adminUser?.isSuperAdmin) {
