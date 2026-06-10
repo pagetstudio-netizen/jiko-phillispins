@@ -1,10 +1,10 @@
 import { 
   users, products, userProducts, deposits, withdrawals, withdrawalWallets,
   paymentChannels, referralCommissions, tasks, userTasks, transactions, platformSettings, adminAuditLog,
-  giftCodes, giftCodeClaims,
+  giftCodes, giftCodeClaims, manualPaymentAccounts,
   type User, type Product, type UserProduct, type Deposit, type Withdrawal, type WithdrawalWallet,
   type PaymentChannel, type ReferralCommission, type Task, type UserTask, type Transaction, type PlatformSetting,
-  type GiftCode, type GiftCodeClaim
+  type GiftCode, type GiftCodeClaim, type ManualPaymentAccount
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, gte, lte, or } from "drizzle-orm";
@@ -97,6 +97,12 @@ export interface IStorage {
   deleteGiftCode(id: number): Promise<void>;
   hasUserClaimedGiftCode(userId: number, giftCodeId: number): Promise<boolean>;
   claimGiftCode(userId: number, giftCodeId: number, amount: number): Promise<void>;
+
+  // Manual Payment Accounts (semi-auto deposit)
+  getManualPaymentAccounts(country?: string): Promise<ManualPaymentAccount[]>;
+  createManualPaymentAccount(data: Partial<ManualPaymentAccount>): Promise<ManualPaymentAccount>;
+  updateManualPaymentAccount(id: number, data: Partial<ManualPaymentAccount>): Promise<ManualPaymentAccount>;
+  deleteManualPaymentAccount(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1119,6 +1125,37 @@ export class DatabaseStorage implements IStorage {
   async deleteInfoArticle(id: number) {
     const { infoArticles } = await import("@shared/schema");
     await db.delete(infoArticles).where(eq(infoArticles.id, id));
+  }
+
+  // Manual Payment Accounts
+  async getManualPaymentAccounts(country?: string): Promise<ManualPaymentAccount[]> {
+    if (country) {
+      return db.select().from(manualPaymentAccounts)
+        .where(and(eq(manualPaymentAccounts.country, country), eq(manualPaymentAccounts.isActive, true)))
+        .orderBy(manualPaymentAccounts.createdAt);
+    }
+    return db.select().from(manualPaymentAccounts).orderBy(manualPaymentAccounts.createdAt);
+  }
+
+  async createManualPaymentAccount(data: Partial<ManualPaymentAccount>): Promise<ManualPaymentAccount> {
+    const [account] = await db.insert(manualPaymentAccounts).values({
+      operatorName: data.operatorName!,
+      ownerName: data.ownerName!,
+      phoneNumber: data.phoneNumber!,
+      country: data.country!,
+      logoUrl: data.logoUrl || null,
+      isActive: data.isActive ?? true,
+    }).returning();
+    return account;
+  }
+
+  async updateManualPaymentAccount(id: number, data: Partial<ManualPaymentAccount>): Promise<ManualPaymentAccount> {
+    const [account] = await db.update(manualPaymentAccounts).set(data).where(eq(manualPaymentAccounts.id, id)).returning();
+    return account;
+  }
+
+  async deleteManualPaymentAccount(id: number): Promise<void> {
+    await db.delete(manualPaymentAccounts).where(eq(manualPaymentAccounts.id, id));
   }
 }
 

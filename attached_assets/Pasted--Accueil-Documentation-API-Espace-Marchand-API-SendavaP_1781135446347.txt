@@ -1,0 +1,307 @@
+"
+Accueil
+Documentation API
+Espace Marchand
+API SendavaPay
+Intégrez facilement les paiements Mobile Money dans vos applications
+
+API RESTful
+Sécurisé SSL
+Webhooks
+Démarrage rapide
+Créez un compte marchand - Inscrivez-vous sur l'espace marchand
+Récupérez votre clé API - Dans votre tableau de bord, copiez votre clé API
+Configurez vos webhooks - Ajoutez l'URL de votre serveur pour recevoir les notifications
+Intégrez l'API - Utilisez les exemples ci-dessous pour commencer
+Authentification
+Toutes les requêtes API doivent être authentifiées avec votre clé API
+Incluez votre clé API dans l'en-tête Authorization de chaque requête:
+
+
+Authorization: Bearer pk_live_votre_cle_api
+Important: Ne partagez jamais votre clé API. Gardez-la côté serveur uniquement.
+
+Endpoints API
+Base URL: https://sendavapay.com/api
+POST
+/api/v1/create-payment
+Créer un nouveau lien de paiement
+
+Paramètres
+Nom	Type	Requis	Description
+amount	number	Oui	Montant du paiement
+currency	string	Non	Devise (défaut: XOF)
+description	string	Non	Description du paiement
+externalReference	string	Non	Référence externe
+customerEmail	string	Non	Email du client
+customerPhone	string	Non	Téléphone du client
+customerName	string	Non	Nom du client
+redirectUrl	string	Non	URL de redirection après paiement
+metadata	object	Non	Données personnalisées
+Réponse
+
+{
+  "success": true,
+  "data": {
+    "reference": "pay_abc123_xyz789",
+    "amount": 5000,
+    "currency": "XOF",
+    "status": "pending",
+    "paymentUrl": "https://sendavapay.com/pay/api/pay_abc123_xyz789",
+    "createdAt": "2024-01-15T10:30:00Z"
+  }
+}
+POST
+/api/v1/verify-payment
+Vérifier le statut d'un paiement
+
+Paramètres
+Nom	Type	Requis	Description
+reference	string	Oui	Référence du paiement
+Réponse
+
+{
+  "success": true,
+  "data": {
+    "reference": "pay_abc123_xyz789",
+    "externalReference": "ORDER-123",
+    "amount": "5000",
+    "fee": "350",
+    "currency": "XOF",
+    "status": "completed",
+    "customerEmail": "client@email.com",
+    "customerPhone": "+22890123456",
+    "customerName": "Jean Dupont",
+    "paymentMethod": "mtn_tg",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "completedAt": "2024-01-15T10:35:00Z"
+  }
+}
+POST
+/api/v1/credit-account
+Créditer un compte utilisateur SendavaPay
+
+Paramètres
+Nom	Type	Requis	Description
+phone	string	Oui	Numéro de téléphone du compte
+amount	number	Oui	Montant à créditer
+description	string	Non	Description du crédit
+externalReference	string	Non	Référence externe
+Réponse
+
+{
+  "success": true,
+  "data": {
+    "reference": "pay_def456_uvw123",
+    "amount": 10000,
+    "phone": "+22890123456",
+    "userName": "Jean Dupont",
+    "status": "completed",
+    "createdAt": "2024-01-15T11:00:00Z"
+  }
+}
+GET
+/api/v1/balance
+Consulter le solde d'un compte utilisateur
+
+Paramètres
+Nom	Type	Requis	Description
+phone	string	Oui	Numéro de téléphone (query param)
+Réponse
+
+{
+  "success": true,
+  "data": {
+    "phone": "+22890123456",
+    "balance": "150000",
+    "currency": "XOF",
+    "name": "Jean Dupont",
+    "isVerified": true
+  }
+}
+GET
+/api/v1/transactions
+Lister toutes vos transactions API
+
+Réponse
+
+{
+  "success": true,
+  "data": {
+    "transactions": [...],
+    "total": 50
+  }
+}
+Exemples de code
+Exemples d'intégration dans différents langages
+JavaScript
+PHP
+Python
+
+// Installation: npm install axios
+const axios = require('axios');
+
+const API_KEY = 'pk_live_votre_cle_api';
+const BASE_URL = 'https://sendavapay.com/api';
+
+// Créer un paiement
+async function createPayment(amount, description) {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/v1/create-payment`,
+      {
+        amount,
+        description,
+        currency: 'XOF',
+        customerEmail: 'client@email.com'
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    console.log('Paiement créé:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur:', error.response?.data);
+    throw error;
+  }
+}
+
+// Vérifier un paiement
+async function verifyPayment(reference) {
+  const response = await axios.post(
+    `${BASE_URL}/v1/verify-payment`,
+    { reference },
+    {
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  return response.data;
+}
+
+// Créditer un compte
+async function creditAccount(phone, amount, description) {
+  const response = await axios.post(
+    `${BASE_URL}/v1/credit-account`,
+    { phone, amount, description },
+    {
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  return response.data;
+}
+
+// Consulter le solde
+async function getBalance(phone) {
+  const response = await axios.get(
+    `${BASE_URL}/v1/balance?phone=${encodeURIComponent(phone)}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`
+      }
+    }
+  );
+  
+  return response.data;
+}
+Webhooks
+Recevez des notifications en temps réel pour les événements de paiement
+Événements disponibles
+payment.completed - Paiement réussi
+payment.failed - Paiement échoué
+credit.completed - Crédit effectué
+Structure du webhook
+
+{
+  "event": "payment.completed",
+  "data": {
+    "reference": "pay_abc123_xyz789",
+    "amount": 5000,
+    "currency": "XOF",
+    "customerPhone": "+22890123456"
+  },
+  "timestamp": "2024-01-15T10:35:00Z"
+}
+En-têtes de la requête
+X-SendavaPay-Signature - Signature HMAC-SHA256
+X-SendavaPay-Event - Type d'événement
+Exemple de réception
+
+// Exemple de réception de webhook (Node.js/Express)
+const crypto = require('crypto');
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+const WEBHOOK_SECRET = 'whsec_votre_secret_webhook';
+
+// Vérifier la signature du webhook
+function verifyWebhookSignature(payload, signature) {
+  const expectedSignature = crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+  
+  return signature === expectedSignature;
+}
+
+app.post('/webhook/sendavapay', (req, res) => {
+  const signature = req.headers['x-sendavapay-signature'];
+  const event = req.headers['x-sendavapay-event'];
+  
+  // Vérifier la signature
+  if (!verifyWebhookSignature(req.body, signature)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  
+  const { data, timestamp } = req.body;
+  
+  // Traiter l'événement
+  switch (event) {
+    case 'payment.completed':
+      console.log('Paiement reçu:', data);
+      // Mettre à jour votre base de données
+      // Envoyer un email de confirmation
+      break;
+      
+    case 'payment.failed':
+      console.log('Paiement échoué:', data);
+      // Gérer l'échec
+      break;
+      
+    case 'credit.completed':
+      console.log('Crédit effectué:', data);
+      break;
+      
+    default:
+      console.log('Event inconnu:', event);
+  }
+  
+  res.json({ received: true });
+});
+
+app.listen(3000);
+Codes d'erreur
+Code HTTP	Code	Description
+401	UNAUTHORIZED	Clé API manquante
+401	INVALID_API_KEY	Clé API invalide
+403	ACCOUNT_SUSPENDED	Compte marchand suspendu
+404	PAYMENT_NOT_FOUND	Paiement non trouvé
+404	USER_NOT_FOUND	Utilisateur non trouvé
+Besoin d'aide ? Contactez notre support technique
+
+Commencer l'intégration"
+ https://sendavapay.com/#:~:text=Accueil,Commencer%20l%27int%C3%A9gration

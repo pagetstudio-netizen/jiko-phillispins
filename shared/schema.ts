@@ -89,17 +89,33 @@ export const deposits = pgTable("deposits", {
   paymentMethod: text("payment_method").notNull(),
   paymentChannelId: integer("payment_channel_id"),
   status: text("status").notNull().default("pending"),
+  depositType: text("deposit_type").notNull().default("manual"),
   soleaspayReference: text("soleaspay_reference"),
   soleaspayOrderId: text("soleaspay_order_id"),
   inpayOrderNumber: text("inpay_order_number"),
   inpayOutTradeNo: text("inpay_out_trade_no"),
   ashtechpayTransactionId: text("ashtechpay_transaction_id"),
   ashtechpayReference: text("ashtechpay_reference"),
+  sendavapayReference: text("sendavapay_reference"),
   screenshotData: text("screenshot_data"),
   senderNumber: text("sender_number"),
+  paymentReceivedMessage: text("payment_received_message"),
+  destinationNumber: text("destination_number"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   processedAt: timestamp("processed_at"),
   processedBy: integer("processed_by"),
+});
+
+// Manual Payment Accounts (semi-auto deposit)
+export const manualPaymentAccounts = pgTable("manual_payment_accounts", {
+  id: serial("id").primaryKey(),
+  operatorName: text("operator_name").notNull(),
+  ownerName: text("owner_name").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  country: text("country").notNull(),
+  logoUrl: text("logo_url"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Withdrawals
@@ -348,3 +364,6 @@ export type PlatformSetting = typeof platformSettings.$inferSelect;
 export type AdminAuditLog = typeof adminAuditLog.$inferSelect;
 export type GiftCode = typeof giftCodes.$inferSelect;
 export type GiftCodeClaim = typeof giftCodeClaims.$inferSelect;
+export type ManualPaymentAccount = typeof manualPaymentAccounts.$inferSelect;
+export const insertManualPaymentAccountSchema = createInsertSchema(manualPaymentAccounts).omit({ id: true, createdAt: true });
+export type InsertManualPaymentAccount = z.infer<typeof insertManualPaymentAccountSchema>;

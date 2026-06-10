@@ -23,6 +23,22 @@ export async function seed() {
   await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banker BOOLEAN NOT NULL DEFAULT false`);
   await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS must_invite_to_withdraw BOOLEAN NOT NULL DEFAULT false`);
   await db.execute(sql`ALTER TABLE platform_settings ADD COLUMN IF NOT EXISTS updated_by INTEGER`);
+  await db.execute(sql`ALTER TABLE deposits ADD COLUMN IF NOT EXISTS deposit_type TEXT NOT NULL DEFAULT 'manual'`);
+  await db.execute(sql`ALTER TABLE deposits ADD COLUMN IF NOT EXISTS sendavapay_reference TEXT`);
+  await db.execute(sql`ALTER TABLE deposits ADD COLUMN IF NOT EXISTS payment_received_message TEXT`);
+  await db.execute(sql`ALTER TABLE deposits ADD COLUMN IF NOT EXISTS destination_number TEXT`);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS manual_payment_accounts (
+      id SERIAL PRIMARY KEY,
+      operator_name TEXT NOT NULL,
+      owner_name TEXT NOT NULL,
+      phone_number TEXT NOT NULL,
+      country TEXT NOT NULL,
+      logo_url TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
 
   // Check if admin already exists
   const existingAdmin = await db.select().from(users).where(eq(users.phone, "99935673"));
@@ -238,6 +254,9 @@ export async function seed() {
     { key: "cloudpaySecretKey", value: "" },
     { key: "cloudpayDomain", value: "" },
     { key: "cloudpayChannelName", value: "CloudPay" },
+    { key: "sendavapayEnabled", value: "false" },
+    { key: "sendavapayApiKey", value: "" },
+    { key: "sendavapayWebhookSecret", value: "" },
     { key: "adminCurrency", value: "FCFA" },
     { key: "phpToFcfaRate", value: "1" },
   ];

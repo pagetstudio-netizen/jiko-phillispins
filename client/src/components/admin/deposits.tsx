@@ -131,9 +131,15 @@ export default function AdminDeposits() {
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-foreground">{deposit.user.fullName}</p>
                       {deposit.user.isPromoter && <Badge className="text-xs">Promoteur</Badge>}
+                      {(deposit as any).depositType === "semi_auto" && (
+                        <Badge className="text-xs bg-red-600 text-white border-red-600 hover:bg-red-600">Paiement Manuel</Badge>
+                      )}
+                      {(deposit as any).depositType === "auto" && (
+                        <Badge className="text-xs bg-blue-600 text-white border-blue-600 hover:bg-blue-600">SendavaPay</Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{deposit.user.phone}</p>
                   </div>
@@ -159,6 +165,24 @@ export default function AdminDeposits() {
                     <p className="text-muted-foreground">N° expéditeur</p>
                     <p className="font-medium text-foreground">{(deposit as any).senderNumber || "—"}</p>
                   </div>
+                  {(deposit as any).destinationNumber && (
+                    <div>
+                      <p className="text-muted-foreground">Envoyé au numéro</p>
+                      <p className="font-medium text-foreground font-mono">{(deposit as any).destinationNumber}</p>
+                    </div>
+                  )}
+                  {(deposit as any).paymentReceivedMessage && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground mb-0.5">Message reçu</p>
+                      <p className="text-xs font-medium text-foreground bg-muted/40 rounded px-2 py-1.5 whitespace-pre-wrap">{(deposit as any).paymentReceivedMessage}</p>
+                    </div>
+                  )}
+                  {(deposit as any).sendavapayReference && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Référence SendavaPay</p>
+                      <p className="font-mono text-xs font-medium text-foreground break-all select-all bg-muted/40 rounded px-2 py-1 mt-0.5">{(deposit as any).sendavapayReference}</p>
+                    </div>
+                  )}
                   {(deposit as any).soleaspayOrderId && (
                     <div className="col-span-2">
                       <p className="text-muted-foreground">Order ID (CloudPay)</p>

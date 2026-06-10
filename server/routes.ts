@@ -19,6 +19,7 @@ import {
 } from "./soleaspay";
 import * as ashtech from "./ashtechpay";
 import * as cloudpay from "./cloudpay";
+import * as sendavapay from "./sendavapay";
 
 declare module "express-session" {
   interface SessionData {
@@ -2358,6 +2359,208 @@ export async function registerRoutes(
 
   app.delete("/api/admin/info-articles/:id", requireAuth, requireAdmin, async (req, res) => {
     await storage.deleteInfoArticle(Number(req.params.id));
+    res.json({ success: true });
+  });
+
+  // ── SendavaPay (Dépôt Auto) ─────────────────────────────
+  app.post("/api/sendavapay/deposit", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(401).json({ message: "Non authentifié" });
+
+      const settings = await storage.getSettings();
+      const enabled = settings.sendavapayEnabled === "true";
+      const apiKey = settings.sendavapayApiKey || "";
+      if (!enabled || !apiKey) return res.status(400).json({ message: "SendavaPay non activé" });
+
+      const { amount } = req.body;
+      const minDeposit = parseInt(settings.minDeposit || "3000");
+      if (!amount || amount < minDeposit) {
+        return res.status(400).json({ message: `Montant minimum: ${minDeposit} FCFA` });
+      }
+
+      const host = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : `${req.protocol}://${req.get("host")}`;
+
+      const externalRef = `EIF-${user.id}-${Date.now()}`;
+      const redirectUrl = `${host}/deposit-orders`;
+
+      const result = await sendavapay.createPayment(apiKey, {
+        amount,
+        currency: "XOF",
+        description: "Recharge EIFFAGE",
+        externalReference: externalRef,
+        customerPhone: user.phone,
+        customerName: user.fullName,
+        redirectUrl,
+      });
+
+      const deposit = await storage.createDeposit({
+        userId: user.id,
+        amount,
+        accountName: user.fullName,
+        accountNumber: user.phone,
+        country: user.country,
+        paymentMethod: "SendavaPay",
+        status: "pending",
+        depositType: "auto",
+        sendavapayReference: result.reference,
+        soleaspayOrderId: externalRef,
+      });
+
+      res.json({ depositId: deposit.id, paymentUrl: result.paymentUrl, reference: result.reference });
+    } catch (e: any) {
+      console.error("[sendavapay] deposit error:", e);
+      res.status(500).json({ message: e.message || "Erreur SendavaPay" });
+    }
+  });
+
+  app.get("/api/sendavapay/deposit/:id/status", requireAuth, async (req, res) => {
+    try {
+      const deposit = await storage.getDeposit(Number(req.params.id));
+      if (!deposit || deposit.userId !== req.session.userId!) {
+        return res.status(404).json({ message: "Dépôt introuvable" });
+      }
+      if (!deposit.sendavapayReference) return res.json({ status: deposit.status });
+
+      const settings = await storage.getSettings();
+      const apiKey = settings.sendavapayApiKey || "";
+      const result = await sendavapay.verifyPayment(apiKey, deposit.sendavapayReference);
+      const mappedStatus = sendavapay.mapSendavapayStatus(result.status);
+
+      if (mappedStatus === "approved" && deposit.status === "pending") {
+        await storage.updateDeposit(deposit.id, { status: "approved", processedAt: new Date() });
+        const user = await storage.getUser(deposit.userId);
+        if (user) {
+          await storage.updateUser(user.id, {
+            balance: String(parseFloat(user.balance) + deposit.amount),
+            hasDeposited: true,
+          });
+          await storage.createTransaction({ userId: user.id, type: "deposit", amount: String(deposit.amount), description: `Recharge SendavaPay ${deposit.amount} FCFA` });
+          await storage.processDepositReferralCommissions(user.id, deposit.amount);
+        }
+      }
+      res.json({ status: mappedStatus, rawStatus: result.status });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/webhooks/sendavapay", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const webhookSecret = settings.sendavapayWebhookSecret || "";
+      const signature = req.headers["x-sendavapay-signature"] as string;
+      const event = req.headers["x-sendavapay-event"] as string;
+
+      if (webhookSecret && signature) {
+        const valid = sendavapay.verifyWebhookSignature(req.body, signature, webhookSecret);
+        if (!valid) {
+          console.error("[sendavapay] webhook invalid signature");
+          return res.status(401).json({ error: "Invalid signature" });
+        }
+      }
+
+      const { data } = req.body;
+      if (event === "payment.completed" && data?.externalReference) {
+        const externalRef = data.externalReference as string;
+        const deposits = await storage.getDeposits("pending");
+        const deposit = deposits.find(d => d.soleaspayOrderId === externalRef);
+        if (deposit && deposit.status === "pending") {
+          await storage.updateDeposit(deposit.id, { status: "approved", processedAt: new Date() });
+          const user = await storage.getUser(deposit.userId);
+          if (user) {
+            await storage.updateUser(user.id, {
+              balance: String(parseFloat(user.balance) + deposit.amount),
+              hasDeposited: true,
+            });
+            await storage.createTransaction({ userId: user.id, type: "deposit", amount: String(deposit.amount), description: `Recharge SendavaPay ${deposit.amount} FCFA` });
+            await storage.processDepositReferralCommissions(user.id, deposit.amount);
+          }
+        }
+      }
+      res.json({ received: true });
+    } catch (e: any) {
+      console.error("[sendavapay] webhook error:", e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // ── Semi-Auto Deposit (Dépôt Manuel Guidé) ─────────────
+  app.post("/api/deposits/semi-auto", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(401).json({ message: "Non authentifié" });
+
+      const { amount, senderNumber, destinationNumber, paymentMethod, screenshotData, paymentReceivedMessage } = req.body;
+      const settings = await storage.getSettings();
+      const minDeposit = parseInt(settings.minDeposit || "3000");
+      if (!amount || amount < minDeposit) {
+        return res.status(400).json({ message: `Montant minimum: ${minDeposit} FCFA` });
+      }
+      if (!senderNumber) return res.status(400).json({ message: "Numéro expéditeur requis" });
+      if (!destinationNumber) return res.status(400).json({ message: "Numéro destinataire requis" });
+      if (!screenshotData) return res.status(400).json({ message: "Capture d'écran requise" });
+
+      const deposit = await storage.createDeposit({
+        userId: user.id,
+        amount,
+        accountName: user.fullName,
+        accountNumber: destinationNumber,
+        country: user.country,
+        paymentMethod: paymentMethod || "Mobile Money",
+        status: "pending",
+        depositType: "semi_auto",
+        senderNumber,
+        destinationNumber,
+        screenshotData,
+        paymentReceivedMessage: paymentReceivedMessage || null,
+      });
+      res.json(deposit);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // ── Manual Payment Accounts (Comptes de paiement semi-auto) ──
+  app.get("/api/manual-payment-accounts", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    const country = req.query.country as string | undefined;
+    const accounts = await storage.getManualPaymentAccounts(country || user?.country);
+    res.json(accounts);
+  });
+
+  app.get("/api/admin/manual-payment-accounts", requireAuth, requireAdmin, async (req, res) => {
+    const accounts = await storage.getManualPaymentAccounts();
+    res.json(accounts);
+  });
+
+  app.post("/api/admin/manual-payment-accounts", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { operatorName, ownerName, phoneNumber, country, logoUrl, isActive } = req.body;
+      if (!operatorName || !ownerName || !phoneNumber || !country) {
+        return res.status(400).json({ message: "Champs requis manquants" });
+      }
+      const account = await storage.createManualPaymentAccount({ operatorName, ownerName, phoneNumber, country, logoUrl, isActive: isActive ?? true });
+      res.json(account);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/admin/manual-payment-accounts/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { operatorName, ownerName, phoneNumber, country, logoUrl, isActive } = req.body;
+      const account = await storage.updateManualPaymentAccount(Number(req.params.id), { operatorName, ownerName, phoneNumber, country, logoUrl, isActive });
+      res.json(account);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/admin/manual-payment-accounts/:id", requireAuth, requireAdmin, async (req, res) => {
+    await storage.deleteManualPaymentAccount(Number(req.params.id));
     res.json({ success: true });
   });
 

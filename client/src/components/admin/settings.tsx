@@ -37,6 +37,9 @@ const settingsSchema = z.object({
   cloudpaySecretKey: z.string(),
   cloudpayDomain: z.string(),
   cloudpayChannelName: z.string(),
+  sendavapayEnabled: z.string(),
+  sendavapayApiKey: z.string(),
+  sendavapayWebhookSecret: z.string(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -78,6 +81,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       cloudpayEnabled: "false",
       cloudpayMerchantId: "",
       cloudpaySecretKey: "",
+      sendavapayEnabled: "false",
+      sendavapayApiKey: "",
+      sendavapayWebhookSecret: "",
       cloudpayDomain: "",
       cloudpayChannelName: "CloudPay",
     },
@@ -108,6 +114,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         cloudpaySecretKey: settings.cloudpaySecretKey || "",
         cloudpayDomain: settings.cloudpayDomain || "",
         cloudpayChannelName: settings.cloudpayChannelName || "CloudPay",
+        sendavapayEnabled: settings.sendavapayEnabled || "false",
+        sendavapayApiKey: settings.sendavapayApiKey || "",
+        sendavapayWebhookSecret: settings.sendavapayWebhookSecret || "",
       });
     }
   }, [settings, form]);
@@ -614,6 +623,70 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                     <Input {...field} type="password" placeholder="Votre clé secrète" data-testid="input-cloudpay-secret-key" />
                   </FormControl>
                   <FormDescription>Clé de signature MD5 fournie par Galaxy System</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* SendavaPay */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              SendavaPay (Dépôt Auto)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="sendavapayEnabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <FormLabel className="text-base">Activer SendavaPay</FormLabel>
+                    <FormDescription>Afficher le dépôt automatique via SendavaPay</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value === "true"}
+                      onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
+                      data-testid="switch-sendavapay-enabled"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sendavapayApiKey"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Clé API SendavaPay</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" placeholder="pk_live_..." data-testid="input-sendavapay-api-key" />
+                  </FormControl>
+                  <FormDescription>Clé API fournie dans votre tableau de bord SendavaPay</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sendavapayWebhookSecret"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Secret Webhook</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" placeholder="whsec_..." data-testid="input-sendavapay-webhook-secret" />
+                  </FormControl>
+                  <FormDescription>
+                    Configurez ce webhook dans SendavaPay :{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/sendavapay
+                    </code>
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
