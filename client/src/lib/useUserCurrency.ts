@@ -1,23 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-
 export function useUserCurrency() {
-  const { data: settings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
-
-  const rate = parseFloat(settings?.phpToFcfaRate || "10");
-  const isPhp = true;
-
-  const fmt = (fcfaAmount: number): string => {
-    const phpAmount = fcfaAmount / rate;
-    return `₱${phpAmount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  const fmt = (amount: number): string => {
+    return `${amount.toLocaleString("fr-FR")} FCFA`;
   };
 
-  const symbol = "₱";
+  const symbol = "FCFA";
+  const isPhp = false;
+  const rate = 1;
 
-  const toFcfa = (userAmount: number): number => Math.round(userAmount * rate);
-
-  const fromFcfa = (fcfaAmount: number): number => fcfaAmount / rate;
+  const toFcfa = (userAmount: number): number => Math.round(userAmount);
+  const fromFcfa = (fcfaAmount: number): number => fcfaAmount;
 
   return { fmt, symbol, isPhp, rate, toFcfa, fromFcfa };
 }

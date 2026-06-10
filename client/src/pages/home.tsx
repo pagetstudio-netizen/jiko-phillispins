@@ -35,24 +35,24 @@ function NioArcLogo() {
 }
 
 const RD_STATS = [
-  { value: "7",       label: "Countries",      orange: false },
-  { value: "11,000+", label: "R&D Engineers",  orange: true  },
-  { value: "12",      label: "Tech Domains",   orange: false },
-  { value: "9300+",   label: "Patents",        orange: true  },
+  { value: "10",      label: "Pays",           orange: false },
+  { value: "11 000+", label: "Ingénieurs R&D", orange: true  },
+  { value: "12",      label: "Domaines Tech",  orange: false },
+  { value: "9300+",   label: "Brevets",        orange: true  },
 ];
 
 const ACTIONS = [
-  { icon: iconDeposit,  label: "Deposit",  path: "/deposit"    },
-  { icon: iconWithdraw, label: "Withdraw", path: "/withdrawal" },
-  { icon: iconGift,     label: "Gift",     path: "__gift__"    },
-  { icon: iconHelp,     label: "Help",     path: "/service"    },
+  { icon: iconDeposit,  label: "Recharger",  path: "/deposit"    },
+  { icon: iconWithdraw, label: "Retirer",    path: "/withdrawal" },
+  { icon: iconGift,     label: "Cadeau",     path: "__gift__"    },
+  { icon: iconHelp,     label: "Aide",       path: "/service"    },
 ];
 
 export default function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Home | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Accueil | EIFFAGE"; }, []);
 
   const [showPopup, setShowPopup]           = useState(true);
   const [showGiftModal, setShowGiftModal]   = useState(false);
@@ -100,7 +100,7 @@ export default function HomePage() {
           >
             {/* Robot image with NOTICE overlay */}
             <div style={{ position: "relative", height: 190 }}>
-              <img src={popupRobotImg} alt="Noviqra AI Robot" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} data-testid="img-popup" />
+              <img src={popupRobotImg} alt="EIFFAGE Robot" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} data-testid="img-popup" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)" }} />
               <div style={{ position: "absolute", bottom: 14, left: 18 }}>
                 <p style={{ color: "#fff", fontWeight: 900, fontSize: 30, letterSpacing: 4, margin: 0, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>NOTICE</p>
@@ -110,21 +110,21 @@ export default function HomePage() {
             {/* Content */}
             <div style={{ padding: "16px 18px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ① Register and receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(20)}</span>.
+                ① Inscrivez-vous et recevez <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(20)}</span>.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ② Receive <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(5)}</span> every day by logging in.
+                ② Recevez <span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(5)}</span> chaque jour en vous connectant.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ③ Invite friends to invest and instantly receive a <span style={{ color: "#f59e0b", fontWeight: 700 }}>{platformSettings?.level1Commission || "20"}%</span> commission.
+                ③ Invitez des amis à investir et recevez immédiatement une commission de <span style={{ color: "#f59e0b", fontWeight: 700 }}>{platformSettings?.level1Commission || "20"}%</span>.
               </p>
               <p style={{ color: "#e0e0e0", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
-                ④ Product returns are paid automatically 24/7 for faster and easier receipt of your funds.
+                ④ Les rendements des produits sont versés automatiquement 24h/7j pour recevoir vos fonds plus rapidement.
               </p>
               <div style={{ marginTop: 6, padding: "10px 14px", background: "#111", borderRadius: 10, borderLeft: "3px solid #f59e0b" }}>
-                <p style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, margin: "0 0 4px" }}>💼 Investment Return Plans</p>
-                <p style={{ color: "#bbb", fontSize: 12, margin: 0 }}>• Invest <strong style={{ color: "#fff" }}>{fmt(500)}</strong> | Daily return: <strong style={{ color: "#fff" }}>{fmt(50)}</strong></p>
-                <p style={{ color: "#bbb", fontSize: 12, margin: "2px 0 0" }}>• Invest <strong style={{ color: "#fff" }}>{fmt(2000)}</strong> | Daily return: <strong style={{ color: "#fff" }}>{fmt(200)}</strong></p>
+                <p style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, margin: "0 0 4px" }}>💼 Plans de Rendement</p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: 0 }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(500)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(50)}</strong></p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: "2px 0 0" }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(2000)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(200)}</strong></p>
               </div>
             </div>
 
@@ -145,7 +145,7 @@ export default function HomePage() {
                 data-testid="button-popup-close"
                 style={{ flex: 1, padding: "13px 0", borderRadius: 999, background: "#fff", border: "none", color: "#111", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
               >
-                Home
+                Accueil
               </button>
             </div>
           </div>
@@ -168,13 +168,13 @@ export default function HomePage() {
         {/* Dark account card */}
         <div style={{ margin: "0 10px", borderRadius: "18px 18px 0 0", background: "rgba(12,12,12,0.93)", padding: "18px 14px 14px" }}>
 
-          <p style={{ color: "white", fontWeight: 700, fontSize: 17, textAlign: "center", marginBottom: 14 }}>My Account</p>
+          <p style={{ color: "white", fontWeight: 700, fontSize: 17, textAlign: "center", marginBottom: 14 }}>Mon Compte</p>
 
           {/* Balance + Earnings */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             {[
-              { label: "Balance",  value: fmt(balance)       },
-              { label: "Earnings", value: fmt(totalEarnings) },
+              { label: "Solde",    value: fmt(balance)       },
+              { label: "Gains",    value: fmt(totalEarnings) },
             ].map((card) => (
               <div
                 key={card.label}
@@ -194,10 +194,10 @@ export default function HomePage() {
               data-testid="button-bonus-quotidien"
               style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
             >
-              <img src={robotBonus} alt="Daily Bonus" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={robotBonus} alt="Bonus Quotidien" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
               <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
-                Daily Bonus &gt;
+                Bonus Quotidien &gt;
               </p>
             </button>
 
@@ -206,10 +206,10 @@ export default function HomePage() {
               data-testid="button-centre-missions"
               style={{ position: "relative", borderRadius: 12, overflow: "hidden", height: 130, border: "none", cursor: "pointer", padding: 0 }}
             >
-              <img src={robotMission} alt="Mission Center" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={robotMission} alt="Centre de Missions" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.10) 55%)" }} />
               <p style={{ position: "absolute", bottom: 10, left: 10, right: 4, color: "white", fontWeight: 700, fontSize: 12, textAlign: "left", lineHeight: 1.3 }}>
-                Mission Center &gt;
+                Centre de Missions &gt;
               </p>
             </button>
           </div>
@@ -226,7 +226,7 @@ export default function HomePage() {
             style={{
               display: "inline-block",
               whiteSpace: "nowrap",
-              animation: "noviqra-ticker 32s linear infinite",
+              animation: "eiffage-ticker 32s linear infinite",
               color: "#d1d5db",
               fontSize: 12.5,
             }}
@@ -272,7 +272,7 @@ export default function HomePage() {
           }}
         >
           <p style={{ color: "white", fontWeight: 700, fontSize: 14, textAlign: "center", marginBottom: 18 }}>
-            R&amp;D Technology Achievements &amp; Patents
+            Réalisations R&amp;D &amp; Brevets Technologiques
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {RD_STATS.map((stat) => (
@@ -296,10 +296,10 @@ export default function HomePage() {
           }}
         >
           <p style={{ color: "white", fontWeight: 900, fontSize: 26, textAlign: "center", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.6)", margin: 0 }}>
-            Noviqra Ai
+            EIFFAGE
           </p>
           <p style={{ color: "rgba(255,255,255,0.75)", fontWeight: 500, fontSize: 13, textAlign: "center", textShadow: "0 1px 6px rgba(0,0,0,0.5)", margin: 0 }}>
-            Intelligent Automation. Limitless Solutions.
+            Automatisation Intelligente. Solutions Sans Limites.
           </p>
         </div>
       </div>

@@ -31,7 +31,7 @@ export default function AccountPage() {
   const [, navigate] = useLocation();
   const { lang } = useLang();
   const fr = lang === "fr";
-  useEffect(() => { document.title = "Account | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Mon Compte | EIFFAGE"; }, []);
 
   const [showPinModal, setShowPinModal]     = useState(false);
   const [adminPin, setAdminPin]             = useState("");
@@ -124,7 +124,7 @@ export default function AccountPage() {
               className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
               style={{ background: "#fff", border: "2px solid rgba(255,255,255,0.4)" }}
             >
-              <img src={nioAvatar} alt="Noviqra AI" className="w-full h-full object-cover" />
+              <img src={nioAvatar} alt="EIFFAGE" className="w-full h-full object-cover" />
             </div>
           </div>
 

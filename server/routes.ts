@@ -154,10 +154,10 @@ export async function registerRoutes(
   app.use(
     session({
       store: sessionStore,
-      secret: process.env.SESSION_SECRET || "noviqra-secret-key-2024",
+      secret: process.env.SESSION_SECRET || "eiffage-secret-key-2024",
       resave: false,
       saveUninitialized: false,
-      name: "noviqra_sid",
+      name: "eiffage_sid",
       cookie: {
         secure: secureCookie,
         httpOnly: true,
@@ -649,7 +649,7 @@ export async function registerRoutes(
       const settings = await storage.getSettings();
       const minDeposit = parseInt(settings.minDeposit || "300");
       if (amount < minDeposit) {
-        return res.status(400).json({ message: `Minimum deposit: ₱${minDeposit.toLocaleString()}` });
+        return res.status(400).json({ message: `Dépôt minimum : ${minDeposit.toLocaleString()} FCFA` });
       }
 
       if (!accountName || !accountNumber || !paymentMethod || !country) {
@@ -679,7 +679,7 @@ export async function registerRoutes(
             paymentMethod,
             orderId,
             accountName,
-            `user${user.id}@jinkosolar.com`
+            `user${user.id}@eiffage-invest.com`
           );
 
           if (paymentResult.success && paymentResult.data) {
@@ -851,7 +851,7 @@ export async function registerRoutes(
       if (!user) return res.status(401).json({ message: "Not authenticated" });
 
       const minDeposit = parseInt(settings.minDeposit || "300");
-      if (amount < minDeposit) return res.status(400).json({ message: `Minimum deposit: ₱${minDeposit}` });
+      if (amount < minDeposit) return res.status(400).json({ message: `Dépôt minimum : ${minDeposit} FCFA` });
 
       const currency = ashtech.ASHTECH_CURRENCIES[country_code] || "XOF";
       const reference = `JINKO-${user.id}-${Date.now()}`;
@@ -1447,7 +1447,7 @@ export async function registerRoutes(
       }
 
       if (amount < 120) {
-        return res.status(400).json({ message: "Minimum withdrawal: ₱120" });
+        return res.status(400).json({ message: "Retrait minimum : 120 FCFA" });
       }
 
       if (!user.hasActiveProduct) {
@@ -1622,7 +1622,7 @@ export async function registerRoutes(
         }
       }
 
-      // Add ₱5 (= 50 FCFA) to balance
+      // Add 5 FCFA to balance
       const newBalance = parseFloat(user.balance) + 5;
       await storage.updateUser(user.id, { 
         balance: newBalance.toString(),
@@ -1703,10 +1703,10 @@ export async function registerRoutes(
     try {
       const settings = await storage.getSettings();
       res.json({
-        supportLink: settings.supportLink || "https://t.me/Jinkosolarr",
-        support2Link: settings.support2Link || "https://t.me/Jinkosolarr",
-        channelLink: settings.channelLink || "https://t.me/Jinkosolarr",
-        groupLink: settings.groupLink || "https://t.me/Jinkosolarr",
+        supportLink: settings.supportLink || "https://t.me/EiffageSupport",
+        support2Link: settings.support2Link || "https://t.me/EiffageSupport",
+        channelLink: settings.channelLink || "https://t.me/EiffageSupport",
+        groupLink: settings.groupLink || "https://t.me/EiffageSupport",
         appDownloadLink: settings.appDownloadLink || "",
       });
     } catch (error: any) {
@@ -2141,7 +2141,7 @@ export async function registerRoutes(
 
   const apkStorage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, apkDir),
-    filename: (_req, _file, cb) => cb(null, `noviqra-app.apk`),
+    filename: (_req, _file, cb) => cb(null, `eiffage-app.apk`),
   });
   const apkUpload = multer({
     storage: apkStorage,
@@ -2161,7 +2161,7 @@ export async function registerRoutes(
     try {
       if (!req.file) return res.status(400).json({ message: "No file uploaded" });
       const baseUrl = `${req.protocol}://${req.get("host")}`;
-      const fileUrl = `${baseUrl}/uploads/apk/noviqra-app.apk`;
+      const fileUrl = `${baseUrl}/uploads/apk/eiffage-app.apk`;
       await storage.setSetting("appDownloadLink", fileUrl, req.session.userId);
       await storage.logAdminAction(req.session.userId!, "upload_apk", null, `APK uploadé: ${req.file.originalname}`);
       res.json({ success: true, url: fileUrl, filename: req.file.originalname, size: req.file.size });

@@ -33,7 +33,7 @@ export default function TeamPage() {
   const [, navigate] = useLocation();
   const { fmt } = useUserCurrency();
 
-  useEffect(() => { document.title = "Team | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Équipe | EIFFAGE"; }, []);
 
   const { data: stats } = useQuery<TeamStats>({
     queryKey: ["/api/team/stats"],

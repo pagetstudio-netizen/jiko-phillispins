@@ -44,7 +44,7 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       phone: "",
-      country: "PH",
+      country: "CM",
       password: "",
       confirmPassword: "",
       invitationCode: refCode,
@@ -105,7 +105,7 @@ export default function RegisterPage() {
               <circle cx="22" cy="22" r="21" stroke="white" strokeWidth="2.5" fill="none" />
               <path d="M8 28 Q15 14 22 20 Q29 26 36 12" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
             </svg>
-            <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>Noviqra AI</span>
+            <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>EIFFAGE</span>
           </div>
           <p style={{ color: "white", fontSize: 22, fontWeight: 700, margin: 0, textShadow: "0 1px 6px rgba(0,0,0,0.15)" }}>
             {lang === "fr" ? "Créer un compte" : "Create an account"}

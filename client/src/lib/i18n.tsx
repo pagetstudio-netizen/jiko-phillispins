@@ -5,7 +5,7 @@ export type Lang = "en" | "fr";
 export const translations = {
   en: {
     register: {
-      title: "Register | Noviqra Ai",
+      title: "Register | EIFFAGE",
       phonePlaceholder: "Phone number",
       passwordPlaceholder: "Password",
       invitePlaceholder: "Invitation code (optional)",
@@ -13,7 +13,7 @@ export const translations = {
       loginBtn: "I have an account",
       loading: "Loading...",
       successTitle: "Registration successful!",
-      successDesc: "Welcome to Noviqra Ai!",
+      successDesc: "Welcome to EIFFAGE!",
       errorTitle: "Registration error",
       errorDesc: "An error occurred",
       invalidPhone: "Invalid number",
@@ -21,7 +21,7 @@ export const translations = {
       minPassword: "At least 6 characters",
     },
     login: {
-      title: "Login | Noviqra Ai",
+      title: "Login | EIFFAGE",
       phonePlaceholder: "Phone number",
       passwordPlaceholder: "Password",
       rememberMe: "Remember me",
@@ -35,7 +35,7 @@ export const translations = {
       passwordRequired: "Password required",
     },
     changePassword: {
-      title: "Security | Noviqra Ai",
+      title: "Security | EIFFAGE",
       header: "Change password",
       back: "Back",
       currentPassword: "Current password",
@@ -71,15 +71,15 @@ export const translations = {
   },
   fr: {
     register: {
-      title: "Inscription | Noviqra Ai",
+      title: "Inscription | EIFFAGE",
       phonePlaceholder: "Numéro de téléphone",
       passwordPlaceholder: "Mot de passe",
       invitePlaceholder: "Code d'invitation (optionnel)",
-      registerBtn: "Autoriser",
+      registerBtn: "S'inscrire",
       loginBtn: "J'ai un compte",
       loading: "Chargement...",
       successTitle: "Inscription réussie !",
-      successDesc: "Bienvenue sur Noviqra Ai !",
+      successDesc: "Bienvenue sur EIFFAGE !",
       errorTitle: "Erreur d'inscription",
       errorDesc: "Une erreur est survenue",
       invalidPhone: "Numéro invalide",
@@ -87,12 +87,12 @@ export const translations = {
       minPassword: "Au moins 6 caractères",
     },
     login: {
-      title: "Connexion | Noviqra Ai",
+      title: "Connexion | EIFFAGE",
       phonePlaceholder: "Numéro de téléphone",
       passwordPlaceholder: "Mot de passe",
-      rememberMe: "Souviens-toi",
+      rememberMe: "Se souvenir de moi",
       loginBtn: "Se connecter",
-      registerBtn: "Autoriser",
+      registerBtn: "S'inscrire",
       loading: "Connexion...",
       errorTitle: "Erreur de connexion",
       errorDesc: "Vérifiez vos informations",
@@ -101,7 +101,7 @@ export const translations = {
       passwordRequired: "Mot de passe requis",
     },
     changePassword: {
-      title: "Sécurité | Noviqra Ai",
+      title: "Sécurité | EIFFAGE",
       header: "Changer le mot de passe",
       back: "Retour",
       currentPassword: "Ancien mot de passe",
@@ -144,20 +144,20 @@ interface LangContextType {
 }
 
 const LangContext = createContext<LangContextType>({
-  lang: "en",
+  lang: "fr",
   setLang: () => {},
-  t: translations["en"],
+  t: translations["fr"],
 });
 
 export function LangProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    const saved = localStorage.getItem("noviqra_lang");
-    return (saved === "fr" || saved === "en") ? saved : "en";
+    const saved = localStorage.getItem("eiffage_lang");
+    return (saved === "fr" || saved === "en") ? saved : "fr";
   });
 
   function setLang(l: Lang) {
     setLangState(l);
-    localStorage.setItem("noviqra_lang", l);
+    localStorage.setItem("eiffage_lang", l);
   }
 
   return (

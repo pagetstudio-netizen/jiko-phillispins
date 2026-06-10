@@ -57,7 +57,7 @@ export default function DepositOrdersPage() {
   const defaultTab = params.get("tab") === "withdrawal" ? "withdrawal" : "deposit";
   const [activeTab, setActiveTab] = useState<"deposit" | "withdrawal">(defaultTab as any);
 
-  useEffect(() => { document.title = "History | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Historique | EIFFAGE"; }, []);
 
   const { data: deposits = [], isLoading: loadingDeposits } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits/history"],

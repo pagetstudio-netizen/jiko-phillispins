@@ -92,7 +92,7 @@ export async function initiatePayment(
   paymentMethod: string,
   orderId: string,
   payerName: string,
-  payerEmail: string = "customer@noviqra.ai"
+  payerEmail: string = "customer@eiffage-invest.com"
 ): Promise<SoleaspayPaymentResponse> {
   const serviceId = getServiceId(country, paymentMethod);
   if (!serviceId) {
@@ -107,7 +107,7 @@ export async function initiatePayment(
     amount,
     currency,
     order_id: orderId,
-    description: `Depot Noviqra Ai #${orderId}`,
+    description: `Depot EIFFAGE #${orderId}`,
     payer: payerName,
     payerEmail,
     successUrl: `${baseUrl}/deposit-success`,

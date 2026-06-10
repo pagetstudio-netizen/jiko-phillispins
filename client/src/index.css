@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE - Jinko Solar Green Theme */
+/* LIGHT MODE - EIFFAGE Green Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -332,7 +332,7 @@ nav button:active,
 }
 
 /* Notification ticker scroll animation */
-@keyframes noviqra-ticker {
+@keyframes eiffage-ticker {
   from { transform: translateX(0%); }
   to   { transform: translateX(-50%); }
 }

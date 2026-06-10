@@ -9,7 +9,7 @@ import heroBg from "@assets/images_(29)_1779519826317.jpeg";
 export default function ServicePage() {
   const { lang, t } = useLang();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Customer Service | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Service Client | EIFFAGE"; }, []);
 
   const { data: settings } = useQuery<{
     supportLink: string;
@@ -27,17 +27,17 @@ export default function ServicePage() {
   const links = [
     {
       label: lang === "fr" ? "Service Telegram" : "Telegram Support",
-      url: settings?.supportLink || "https://t.me/noviqraai",
+      url: settings?.supportLink || "https://t.me/EiffageSupport",
       testId: "button-support-link",
     },
     {
       label: lang === "fr" ? "Groupes Telegram" : "Telegram Groups",
-      url: settings?.groupLink || "https://t.me/noviqraai",
+      url: settings?.groupLink || "https://t.me/EiffageSupport",
       testId: "button-group-link",
     },
     {
       label: lang === "fr" ? "Chaînes Telegram" : "Telegram Channels",
-      url: settings?.channelLink || "https://t.me/noviqraai",
+      url: settings?.channelLink || "https://t.me/EiffageSupport",
       testId: "button-channel-link",
     },
   ];

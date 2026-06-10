@@ -17,7 +17,7 @@ interface BonusStatus {
 
 const DAILY_BONUS = 5;
 
-function NoviqraArc() {
+function EiffageArc() {
   return (
     <svg width="56" height="44" viewBox="0 0 90 68" fill="none">
       <path d="M6 64 C6 38 20 7 45 7 C70 7 84 38 84 64" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none" />
@@ -34,7 +34,7 @@ export default function CheckinPage() {
   const fr = lang === "fr";
   const [, navigate] = useLocation();
 
-  useEffect(() => { document.title = "Daily Bonus | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Bonus Quotidien | EIFFAGE"; }, []);
 
   const { data: bonusStatus } = useQuery<BonusStatus>({
     queryKey: ["/api/daily-bonus-status"],
@@ -95,7 +95,7 @@ export default function CheckinPage() {
           justifyContent: "center",
           gap: 6,
         }}>
-          <NoviqraArc />
+          <EiffageArc />
           <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
             {fmt(totalBonusClaimed)}
           </div>

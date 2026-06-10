@@ -12,10 +12,10 @@ import gcashLogo from "@assets/Screenshot_20260415-140919_1777781311304.png";
 
 const PRESET_AMOUNTS_FCFA = [5000, 15000, 35000, 70000];
 
-function NoviqraLogo() {
+function EiffageLogo() {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-      <span style={{ color: "white", fontWeight: 900, fontSize: 28, letterSpacing: 1, fontFamily: "sans-serif" }}>Noviqra Ai</span>
+      <span style={{ color: "white", fontWeight: 900, fontSize: 28, letterSpacing: 1, fontFamily: "sans-serif" }}>EIFFAGE</span>
     </div>
   );
 }
@@ -23,12 +23,12 @@ function NoviqraLogo() {
 export default function DepositPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  useEffect(() => { document.title = "Deposit | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Recharge | EIFFAGE"; }, []);
   const { fmt, fromFcfa, toFcfa } = useUserCurrency();
 
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customAmount, setCustomAmount]     = useState<string>("");
-  const [selectedMethod, setSelectedMethod] = useState<"GCash" | "Maya">("GCash");
+  const [selectedMethod, setSelectedMethod] = useState<string>("mobile_money");
 
   const { data: platformSettings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
 
@@ -42,7 +42,7 @@ export default function DepositPage() {
   };
 
   const cloudpayMutation = useMutation({
-    mutationFn: async ({ amtFcfa, method }: { amtFcfa: number; method: "GCash" | "Maya" }) => {
+    mutationFn: async ({ amtFcfa, method }: { amtFcfa: number; method: string }) => {
       const response = await apiRequest("POST", "/api/cloudpay/deposit", { amount: amtFcfa, paymentMethod: method });
       if (!response.ok) { const err = await response.json(); throw new Error(err.message || "CloudPay error"); }
       return response.json();
@@ -68,14 +68,14 @@ export default function DepositPage() {
 
   const METHODS = [
     {
-      key: "GCash" as const,
-      label: "GCash",
-      logo: <img src={gcashLogo} alt="GCash" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
+      key: "mobile_money",
+      label: "Mobile Money",
+      logo: <img src={gcashLogo} alt="Mobile Money" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
     },
     {
-      key: "Maya" as const,
-      label: "Maya",
-      logo: <img src={mayaLogo} alt="Maya" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
+      key: "wave",
+      label: "Wave",
+      logo: <img src={mayaLogo} alt="Wave" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover" }} />,
     },
   ];
 
@@ -102,12 +102,12 @@ export default function DepositPage() {
           </Link>
         </div>
 
-        {/* Noviqra Logo */}
+        {/* EIFFAGE Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
-          <NoviqraLogo />
+          <EiffageLogo />
         </div>
         <p style={{ color: "white", fontWeight: 800, fontSize: 16, textAlign: "center", letterSpacing: 4, margin: 0 }}>
-          DEPOSIT
+          RECHARGE
         </p>
       </div>
 

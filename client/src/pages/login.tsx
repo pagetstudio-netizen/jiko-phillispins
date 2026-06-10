@@ -23,7 +23,7 @@ function NioLogo() {
           fill="none"
         />
       </svg>
-      <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>Noviqra AI</span>
+      <span style={{ color: "white", fontWeight: 800, fontSize: 26, letterSpacing: 2, fontFamily: "sans-serif" }}>EIFFAGE</span>
     </div>
   );
 }
@@ -48,7 +48,7 @@ export default function LoginPage() {
   const [countryModalOpen, setCountryModalOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
-  const saved = typeof window !== "undefined" ? localStorage.getItem("noviqra_credentials") : null;
+  const saved = typeof window !== "undefined" ? localStorage.getItem("eiffage_credentials") : null;
   const parsed = saved ? JSON.parse(saved) : null;
   const [rememberMe, setRememberMe] = useState(!!parsed);
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       phone: parsed?.phone || "",
-      country: parsed?.country || "PH",
+      country: parsed?.country || "CM",
       password: parsed?.password || "",
     },
   });
@@ -70,9 +70,9 @@ export default function LoginPage() {
     try {
       await login(cleanPhone, data.country, data.password.trim());
       if (rememberMe) {
-        localStorage.setItem("noviqra_credentials", JSON.stringify({ phone: cleanPhone, country: data.country, password: data.password.trim() }));
+        localStorage.setItem("eiffage_credentials", JSON.stringify({ phone: cleanPhone, country: data.country, password: data.password.trim() }));
       } else {
-        localStorage.removeItem("noviqra_credentials");
+        localStorage.removeItem("eiffage_credentials");
       }
       navigate("/");
     } catch (e: any) {
@@ -119,7 +119,7 @@ export default function LoginPage() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 16 }}>
           <NioLogo />
           <p style={{ color: "white", fontSize: 22, fontWeight: 700, marginTop: 12, textShadow: "0 1px 6px rgba(0,0,0,0.25)" }}>
-            {lang === "fr" ? "Bienvenue sur Noviqra AI" : "Welcome to Noviqra AI"}
+            {lang === "fr" ? "Bienvenue sur EIFFAGE" : "Welcome to EIFFAGE"}
           </p>
         </div>
 

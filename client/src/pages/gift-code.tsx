@@ -13,7 +13,7 @@ export default function GiftCodePage() {
   const { refreshUser } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
-  useEffect(() => { document.title = "Gift Code | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Code Cadeau | EIFFAGE"; }, []);
 
   const [code, setCode] = useState("");
 
@@ -87,7 +87,7 @@ export default function GiftCodePage() {
 
         {/* Telegram group row */}
         <button
-          onClick={() => window.open(settings?.groupLink || "https://t.me/noviqraai", "_blank")}
+          onClick={() => window.open(settings?.groupLink || "https://t.me/EiffageSupport", "_blank")}
           data-testid="button-group-link"
           style={{
             width: "100%",

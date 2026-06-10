@@ -30,7 +30,7 @@ export default function WalletPage() {
   const { toast } = useToast();
   const { lang } = useLang();
   const fr = lang === "fr";
-  useEffect(() => { document.title = "Wallet | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Portefeuille | EIFFAGE"; }, []);
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);

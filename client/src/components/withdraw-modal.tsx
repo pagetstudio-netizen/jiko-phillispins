@@ -163,7 +163,7 @@ export default function WithdrawModal({ open, onClose }: WithdrawModalProps) {
                       <Input
                         {...field}
                         type="number"
-                        placeholder="Minimum ₱120"
+                        placeholder="Montant minimum en FCFA"
                         data-testid="input-withdraw-amount"
                       />
                     </FormControl>

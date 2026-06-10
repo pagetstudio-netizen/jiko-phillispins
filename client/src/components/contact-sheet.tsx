@@ -30,19 +30,19 @@ export default function ContactSheet({ open, onClose }: ContactSheetProps) {
     {
       label: tr.channel,
       sublabel: tr.channelSub,
-      url: settings?.channelLink || "https://t.me/noviqraai",
+      url: settings?.channelLink || "https://t.me/EiffageSupport",
       testId: "button-contact-channel",
     },
     {
       label: tr.group,
       sublabel: tr.groupSub,
-      url: settings?.groupLink || "https://t.me/noviqraai",
+      url: settings?.groupLink || "https://t.me/EiffageSupport",
       testId: "button-contact-group",
     },
     {
       label: tr.support,
       sublabel: tr.supportSub,
-      url: settings?.supportLink || "https://t.me/noviqraai",
+      url: settings?.supportLink || "https://t.me/EiffageSupport",
       testId: "button-contact-support",
     },
   ];

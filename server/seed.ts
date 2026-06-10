@@ -28,7 +28,7 @@ export async function seed() {
     await db.insert(users).values({
       fullName: "Super Admin",
       phone: "99935673",
-      country: "PH",
+      country: "CM",
       password: hashedPassword,
       referralCode: "ADMIN1",
       balance: "0",
@@ -40,7 +40,7 @@ export async function seed() {
   } else {
     // Always sync admin password, flags, PIN and country
     await db.update(users)
-      .set({ password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin: "9993", country: "PH" })
+      .set({ password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin: "9993", country: "CM" })
       .where(eq(users.phone, "99935673"));
     console.log("Super admin password synced.");
   }
@@ -207,9 +207,9 @@ export async function seed() {
   // Check if settings exist
   const existingSettings = await db.select().from(platformSettings);
   const requiredSettings = [
-    { key: "supportLink", value: "https://t.me/noviqraai" },
-    { key: "support2Link", value: "https://t.me/noviqraai" },
-    { key: "channelLink", value: "https://t.me/noviqraai" },
+    { key: "supportLink", value: "https://t.me/EiffageSupport" },
+    { key: "support2Link", value: "https://t.me/EiffageSupport" },
+    { key: "channelLink", value: "https://t.me/EiffageSupport" },
     { key: "groupLink", value: "https://t.me/+Y9c8J9PO1hg0MGNh" },
     { key: "minDeposit", value: "500" },
     { key: "minWithdrawal", value: "50" },
@@ -231,12 +231,12 @@ export async function seed() {
     { key: "cloudpaySecretKey", value: "" },
     { key: "cloudpayDomain", value: "" },
     { key: "cloudpayChannelName", value: "CloudPay" },
-    { key: "adminCurrency", value: "PHP" },
-    { key: "phpToFcfaRate", value: "10" },
+    { key: "adminCurrency", value: "FCFA" },
+    { key: "phpToFcfaRate", value: "1" },
   ];
 
   // Settings that should always be updated to the required value (critical platform config)
-  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "level1Commission", "level2Commission", "level3Commission", "groupLink"]);
+  const alwaysUpdateKeys = new Set(["minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "level1Commission", "level2Commission", "level3Commission", "groupLink", "adminCurrency", "phpToFcfaRate"]);
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);

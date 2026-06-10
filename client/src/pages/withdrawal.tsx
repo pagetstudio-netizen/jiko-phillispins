@@ -28,7 +28,7 @@ interface UserProduct {
 export default function WithdrawalPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Withdrawal | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Retrait | EIFFAGE"; }, []);
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState<string>("");
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);

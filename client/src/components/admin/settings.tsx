@@ -55,9 +55,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      supportLink: "https://t.me/noviqraai",
-      support2Link: "https://t.me/noviqraai",
-      channelLink: "https://t.me/noviqraai",
+      supportLink: "https://t.me/EiffageSupport",
+      support2Link: "https://t.me/EiffageSupport",
+      channelLink: "https://t.me/EiffageSupport",
       groupLink: "https://t.me/+R9SFSGneBkg3NTFh",
       appDownloadLink: "",
       minDeposit: "3500",
@@ -67,8 +67,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level1Commission: "27",
       level2Commission: "2",
       level3Commission: "1",
-      adminCurrency: "PHP",
-      phpToFcfaRate: "10",
+      adminCurrency: "FCFA",
+      phpToFcfaRate: "1",
       cloudpayEnabled: "false",
       cloudpayMerchantId: "",
       cloudpaySecretKey: "",
@@ -80,9 +80,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   useEffect(() => {
     if (settings) {
       form.reset({
-        supportLink: settings.supportLink || "https://t.me/noviqraai",
-        support2Link: settings.support2Link || "https://t.me/noviqraai",
-        channelLink: settings.channelLink || "https://t.me/noviqraai",
+        supportLink: settings.supportLink || "https://t.me/EiffageSupport",
+        support2Link: settings.support2Link || "https://t.me/EiffageSupport",
+        channelLink: settings.channelLink || "https://t.me/EiffageSupport",
         groupLink: settings.groupLink || "https://t.me/+R9SFSGneBkg3NTFh",
         appDownloadLink: settings.appDownloadLink || "",
         minDeposit: settings.minDeposit || "3500",
@@ -92,8 +92,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         level1Commission: settings.level1Commission || "27",
         level2Commission: settings.level2Commission || "2",
         level3Commission: settings.level3Commission || "1",
-        adminCurrency: settings.adminCurrency || "PHP",
-        phpToFcfaRate: settings.phpToFcfaRate || "10",
+        adminCurrency: settings.adminCurrency || "FCFA",
+        phpToFcfaRate: settings.phpToFcfaRate || "1",
         cloudpayEnabled: settings.cloudpayEnabled || "false",
         cloudpayMerchantId: settings.cloudpayMerchantId || "",
         cloudpaySecretKey: settings.cloudpaySecretKey || "",
@@ -172,9 +172,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 <FormItem>
                   <FormLabel>Admin Display Currency</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="PHP" />
+                    <Input {...field} placeholder="FCFA" />
                   </FormControl>
-                  <FormDescription>Currency symbol shown in admin panel (e.g. PHP, USD, EUR)</FormDescription>
+                  <FormDescription>Devise affichée dans le panel admin (ex : FCFA, XOF, XAF)</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -184,14 +184,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               name="phpToFcfaRate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Exchange Rate (1 {form.watch("adminCurrency") || "PHP"} = ? FCFA)</FormLabel>
+                  <FormLabel>Taux de conversion (1 {form.watch("adminCurrency") || "FCFA"} = ? FCFA)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="0.01" step="0.01" placeholder="10" />
+                    <Input {...field} type="number" min="0.01" step="0.01" placeholder="1" />
                   </FormControl>
                   <FormDescription>
-                    1 {form.watch("adminCurrency") || "PHP"} = {form.watch("phpToFcfaRate") || "10"} FCFA
-                    &nbsp;|&nbsp;
-                    1 FCFA = {(1 / parseFloat(form.watch("phpToFcfaRate") || "10")).toFixed(4)} {form.watch("adminCurrency") || "PHP"}
+                    1 {form.watch("adminCurrency") || "FCFA"} = {form.watch("phpToFcfaRate") || "1"} FCFA
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -286,7 +284,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 <FormItem>
                   <FormLabel>Download Link (URL)</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="https://example.com/noviqra.apk" data-testid="input-app-download-link" />
+                    <Input {...field} placeholder="https://example.com/eiffage.apk" data-testid="input-app-download-link" />
                   </FormControl>
                   <FormDescription>
                     Paste a direct APK URL or app store link. This is filled automatically when you upload an APK below.

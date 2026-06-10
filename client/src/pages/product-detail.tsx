@@ -27,14 +27,14 @@ interface ProductWithOwnership extends Product {
 }
 
 const descriptions: Record<string, string> = {
-  "Nano AI Robot": "The Nano AI Robot by Noviqra Ai is the perfect entry-level investment to start your AI-powered automation journey. Generates stable daily earnings with our intelligent robotic technology.",
-  "Smart AI Robot": "The Smart AI Robot offers enhanced processing power and higher returns. Ideal for investors who want to grow their daily earnings through cutting-edge automation.",
-  "Pro AI Robot": "The Pro AI Robot is a high-performance unit that maximizes AI-driven productivity. With an excellent return rate, it represents a strategic choice for your investment portfolio.",
-  "Elite AI Robot": "The Elite AI Robot is designed for ambitious investors. Its advanced AI guarantees optimal performance and attractive daily income throughout the full cycle.",
-  "Premium AI Robot": "The Premium AI Robot combines performance and profitability. Enjoy high daily income and an exceptional total return on your automation investment.",
-  "Expert AI Robot": "The Expert AI Robot is reserved for experienced investors seeking maximum returns. Noviqra Ai's cutting-edge technology ensures constant daily earnings and substantial gains.",
-  "Master AI Robot": "The Master AI Robot represents excellence in AI automation investment. Enjoy very high daily income and an optimized investment cycle to maximize your profits.",
-  "Ultra AI Robot": "The Ultra AI Robot is our flagship product for large investors. State-of-the-art AI technology delivers exceptional returns for a unique and highly profitable investment experience.",
+  "Nano AI Robot": "Le Nano AI Robot d'EIFFAGE est l'investissement idéal pour débuter votre parcours d'automatisation IA. Il génère des gains quotidiens stables grâce à notre technologie robotique intelligente.",
+  "Smart AI Robot": "Le Smart AI Robot offre une puissance de traitement améliorée et des rendements plus élevés. Idéal pour les investisseurs souhaitant accroître leurs gains quotidiens grâce à l'automatisation de pointe.",
+  "Pro AI Robot": "Le Pro AI Robot est une unité haute performance qui maximise la productivité pilotée par l'IA. Avec un excellent taux de rendement, il représente un choix stratégique pour votre portefeuille.",
+  "Elite AI Robot": "L'Elite AI Robot est conçu pour les investisseurs ambitieux. Son IA avancée garantit des performances optimales et des revenus quotidiens attractifs tout au long du cycle complet.",
+  "Premium AI Robot": "Le Premium AI Robot allie performance et rentabilité. Profitez de revenus quotidiens élevés et d'un retour total exceptionnel sur votre investissement en automatisation.",
+  "Expert AI Robot": "L'Expert AI Robot est réservé aux investisseurs expérimentés recherchant des rendements maximaux. La technologie de pointe d'EIFFAGE garantit des gains quotidiens constants et des bénéfices substantiels.",
+  "Master AI Robot": "Le Master AI Robot représente l'excellence en matière d'investissement dans l'automatisation IA. Profitez de revenus quotidiens très élevés et d'un cycle d'investissement optimisé.",
+  "Ultra AI Robot": "L'Ultra AI Robot est notre produit phare pour les grands investisseurs. La technologie IA de dernière génération offre des rendements exceptionnels pour une expérience d'investissement unique.",
 };
 
 export default function ProductDetailPage() {
@@ -81,7 +81,7 @@ export default function ProductDetailPage() {
   const dailyEarnings = Number(product.dailyEarnings);
   const returnRate = price > 0 ? Math.round((totalReturn / price) * 100) : 0;
   const imgSrc = product.sortOrder > 0 ? (ROBOT_IMAGES[(product.sortOrder - 1) % ROBOT_IMAGES.length] || defaultImg) : defaultImg;
-  const desc = descriptions[product.name] || `${product.name} is a Noviqra Ai investment product offering attractive daily returns and an excellent return on investment.`;
+  const desc = descriptions[product.name] || `${product.name} est un produit d'investissement EIFFAGE offrant des rendements quotidiens attractifs et un excellent retour sur investissement.`;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0f0f1a" }}>
@@ -91,7 +91,7 @@ export default function ProductDetailPage() {
         <button onClick={() => navigate("/")} className="w-9 h-9 flex items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.1)" }} data-testid="button-back">
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="flex-1 text-center text-white font-bold text-base pr-9">Product Details</h1>
+        <h1 className="flex-1 text-center text-white font-bold text-base pr-9">Détails du Produit</h1>
       </div>
 
       {/* Product image */}

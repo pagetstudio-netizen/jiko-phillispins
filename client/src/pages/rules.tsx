@@ -20,7 +20,7 @@ export default function RulesPage() {
   const { lang } = useLang();
   const fr = lang === "fr";
   const { fmt } = useUserCurrency();
-  useEffect(() => { document.title = "Rules | Noviqra Ai"; }, []);
+  useEffect(() => { document.title = "Règlement | EIFFAGE"; }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
@@ -48,7 +48,7 @@ export default function RulesPage() {
             <div style={{ width: 32, height: 32, borderRadius: 6, background: "#e07020", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12, color: "#fff" }}>N</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 13, color: "#fff", letterSpacing: 0.5 }}>
-                {fr ? "GAGNEZ PLUS AVEC NOVIQRA AI" : "EARN MORE WITH NOVIQRA AI"}
+                {fr ? "GAGNEZ PLUS AVEC EIFFAGE" : "EARN MORE WITH EIFFAGE"}
               </div>
               <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>
                 {fr ? "Investissez intelligemment, gagnez quotidiennement !" : "Invest smart, earn daily!"}
@@ -106,8 +106,8 @@ export default function RulesPage() {
         {/* Description */}
         <p style={{ color: "#cccccc", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
           {fr
-            ? "Noviqra Ai est une plateforme d'investissement technologique mondiale spécialisée dans l'automatisation intelligente. Nous promouvons l'innovation numérique et le développement durable, afin d'offrir une meilleure expérience d'investissement à nos utilisateurs."
-            : "Noviqra Ai is a global technology investment platform specializing in intelligent automation. We promote digital innovation and sustainable development to offer a better investment experience to our users."}
+            ? "EIFFAGE est une plateforme d'investissement technologique mondiale spécialisée dans l'automatisation intelligente. Nous promouvons l'innovation numérique et le développement durable, afin d'offrir une meilleure expérience d'investissement à nos utilisateurs."
+            : "EIFFAGE is a global technology investment platform specializing in intelligent automation. We promote digital innovation and sustainable development to offer a better investment experience to our users."}
         </p>
 
         <p style={{ color: "#cccccc", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
