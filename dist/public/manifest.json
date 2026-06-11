@@ -1,11 +1,11 @@
 {
-  "name": "Jinko Solar",
-  "short_name": "Jinko Solar",
-  "description": "Leader mondial du panneau solaire. Investissez et générez des revenus quotidiens.",
+  "name": "EIFFAGE",
+  "short_name": "EIFFAGE",
+  "description": "Automatisation Intelligente. Solutions Sans Limites. Gagnez des revenus passifs quotidiens en FCFA.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#3db51d",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
