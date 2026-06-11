@@ -63,9 +63,13 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Trust all proxy hops (Plesk uses Nginx/Apache in front of Node)
-  // TRUST_PROXY env var can be set to a specific number if needed
-  const trustProxy = process.env.TRUST_PROXY || true;
+  // Trust proxy: 1 hop = Nginx/Apache devant Node (Plesk standard).
+  // Utiliser TRUST_PROXY=2 si double reverse proxy, ou "false" pour désactiver.
+  const rawTp = process.env.TRUST_PROXY;
+  const trustProxy: any =
+    rawTp === "false" ? false :
+    rawTp ? (isNaN(Number(rawTp)) ? rawTp : Number(rawTp)) :
+    1; // Plesk par défaut = 1 couche Nginx
   app.set("trust proxy", trustProxy);
 
   // ── SÉCURITÉ : Headers HTTP ──────────────────────────────────────────────
@@ -92,6 +96,7 @@ export async function registerRoutes(
     max: 120,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { trustProxy: false }, // trust proxy géré par Express, pas par rate-limit
     message: { message: "Trop de requêtes, veuillez réessayer dans une minute." },
     skip: (req) => req.path.startsWith("/api/webhooks"),
   });
@@ -103,6 +108,7 @@ export async function registerRoutes(
     max: 10,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { trustProxy: false },
     message: { message: "Trop de tentatives de connexion. Réessayez dans 15 minutes." },
   });
 
@@ -112,6 +118,7 @@ export async function registerRoutes(
     max: 20,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { trustProxy: false },
     message: { message: "Trop de tentatives de transaction. Réessayez dans 5 minutes." },
   });
 
@@ -201,16 +208,16 @@ export async function registerRoutes(
     console.warn("[session-store] All PostgreSQL URLs failed — keeping MemoryStore");
   })();
 
-  // Determine if the app is behind HTTPS.
-  // On Plesk with Nginx HTTPS → Node, req.secure will be true thanks to trust proxy.
-  // FORCE_SECURE_COOKIE=true overrides to force secure cookies even in dev.
-  // FORCE_SECURE_COOKIE=false disables secure cookies even in production.
-  const isProduction = process.env.NODE_ENV === "production";
+  // Cookie secure : utilise "auto" pour que Express décide selon req.secure
+  // (qui respecte X-Forwarded-Proto grâce à trust proxy).
+  // → HTTPS via Nginx : cookie marqué Secure automatiquement.
+  // → HTTP direct (dev, ou Plesk sans SSL) : cookie envoyé sans Secure.
+  // FORCE_SECURE_COOKIE=true/false pour forcer manuellement si besoin.
   const forceSecure = process.env.FORCE_SECURE_COOKIE;
-  const secureCookie =
+  const secureCookie: boolean | "auto" =
     forceSecure === "true" ? true :
     forceSecure === "false" ? false :
-    isProduction;
+    "auto"; // comportement automatique recommandé
 
   app.use(
     session({
@@ -252,7 +259,7 @@ export async function registerRoutes(
       host: req.headers.host,
       sessionID: req.sessionID || null,
       hasSession: !!req.session?.userId,
-      cookieSecure: secureCookie,
+      cookieSecure: String(secureCookie),
       dbUrl: process.env.DATABASE_URL ? "set" : "missing",
       directUrl: process.env.DIRECT_URL ? "set" : "missing",
       sessionSecret: process.env.SESSION_SECRET ? "set" : "missing",
