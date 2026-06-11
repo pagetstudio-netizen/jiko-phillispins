@@ -22,8 +22,11 @@ export interface IStorage {
   
   // Products
   getProducts(): Promise<Product[]>;
+  getAllProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
+  createProduct(data: Omit<Product, "id">): Promise<Product>;
   updateProduct(id: number, data: Partial<Product>): Promise<Product>;
+  deleteProduct(id: number): Promise<void>;
   
   // User Products
   getUserProducts(userId: number): Promise<(UserProduct & { product: Product })[]>;
@@ -193,14 +196,27 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(products).where(eq(products.isActive, true)).orderBy(products.sortOrder);
   }
 
+  async getAllProducts(): Promise<Product[]> {
+    return await db.select().from(products).orderBy(products.sortOrder, products.id);
+  }
+
   async getProduct(id: number): Promise<Product | undefined> {
     const [product] = await db.select().from(products).where(eq(products.id, id));
     return product || undefined;
   }
 
+  async createProduct(data: Omit<Product, "id">): Promise<Product> {
+    const [product] = await db.insert(products).values(data).returning();
+    return product;
+  }
+
   async updateProduct(id: number, data: Partial<Product>): Promise<Product> {
     const [product] = await db.update(products).set(data).where(eq(products.id, id)).returning();
     return product;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
   }
 
   // User Products

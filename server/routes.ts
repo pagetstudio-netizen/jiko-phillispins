@@ -2104,10 +2104,43 @@ export async function registerRoutes(
 
   app.get("/api/admin/products/all", requireAdmin, async (req, res) => {
     try {
-      const allProducts = await storage.getProducts();
+      const allProducts = await storage.getAllProducts();
       res.json(allProducts);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/products", requireAdmin, async (req, res) => {
+    try {
+      const { name, price, dailyEarnings, cycleDays, imageUrl, isFree, sortOrder } = req.body;
+      if (!name || price === undefined || dailyEarnings === undefined || !cycleDays)
+        return res.status(400).json({ message: "Champs requis manquants" });
+      const product = await storage.createProduct({
+        name,
+        price: Number(price),
+        dailyEarnings: Number(dailyEarnings),
+        cycleDays: Number(cycleDays),
+        totalReturn: Number(dailyEarnings) * Number(cycleDays),
+        imageUrl: imageUrl || null,
+        isFree: isFree ?? false,
+        isActive: true,
+        sortOrder: sortOrder ?? 0,
+      });
+      await storage.logAdminAction(req.session.userId!, "create_product", null, `Produit "${product.name}" créé`);
+      res.json(product);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/products/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteProduct(parseInt(req.params.id));
+      await storage.logAdminAction(req.session.userId!, "delete_product", null, `Produit ${req.params.id} supprimé`);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
     }
   });
 
