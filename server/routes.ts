@@ -10,6 +10,8 @@ import path from "path";
 import fs from "fs";
 import ConnectPgSimple from "connect-pg-simple";
 import MemoryStore from "memorystore";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { 
   initiatePayment, 
   verifyPayment, 
@@ -65,6 +67,53 @@ export async function registerRoutes(
   // TRUST_PROXY env var can be set to a specific number if needed
   const trustProxy = process.env.TRUST_PROXY || true;
   app.set("trust proxy", trustProxy);
+
+  // ── SÉCURITÉ : Headers HTTP ──────────────────────────────────────────────
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // géré côté frontend
+      crossOriginEmbedderPolicy: false,
+    })
+  );
+
+  // ── SÉCURITÉ : Bloquer les bots / agents suspects ────────────────────────
+  app.use((req, res, next) => {
+    const ua = (req.headers["user-agent"] || "").toLowerCase();
+    const blockedAgents = ["supabase-edge", "pgbouncer-bot", "postgrest", "supabase-js"];
+    if (blockedAgents.some((b) => ua.includes(b))) {
+      return res.status(403).json({ message: "Accès refusé" });
+    }
+    next();
+  });
+
+  // ── SÉCURITÉ : Rate limiter global API ───────────────────────────────────
+  const globalApiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Trop de requêtes, veuillez réessayer dans une minute." },
+    skip: (req) => req.path.startsWith("/api/webhooks"),
+  });
+  app.use("/api", globalApiLimiter);
+
+  // ── SÉCURITÉ : Rate limiter strict pour login/register ───────────────────
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Trop de tentatives de connexion. Réessayez dans 15 minutes." },
+  });
+
+  // ── SÉCURITÉ : Rate limiter pour dépôts/retraits ─────────────────────────
+  const transactionLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Trop de tentatives de transaction. Réessayez dans 5 minutes." },
+  });
 
   // CORS — allow the configured origin to send cookies
   const allowedOrigin = process.env.CORS_ORIGIN || "";
@@ -212,7 +261,7 @@ export async function registerRoutes(
   });
 
   // Auth routes
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", authLimiter, async (req, res) => {
     try {
       console.log("[auth/register] attempt — body keys:", Object.keys(req.body || {}));
       const raw = registerSchema.parse(req.body);
@@ -268,7 +317,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
       console.log("[auth/login] attempt — ip:", req.ip, "secure:", req.secure, "proto:", req.headers["x-forwarded-proto"]);
       const rawData = loginSchema.parse(req.body);
@@ -649,7 +698,7 @@ export async function registerRoutes(
   });
 
   // Deposits
-  app.post("/api/deposits", requireAuth, async (req, res) => {
+  app.post("/api/deposits", requireAuth, transactionLimiter, async (req, res) => {
     try {
       const { amount, accountName, accountNumber, paymentMethod, country, paymentChannelId, useSoleaspay, otpCode, screenshotData, senderNumber } = req.body;
       const user = await storage.getUser(req.session.userId!);
@@ -1449,7 +1498,7 @@ export async function registerRoutes(
   // ─── End CloudPay ─────────────────────────────────────────────────
 
   // Withdrawals
-  app.post("/api/withdrawals", requireAuth, async (req, res) => {
+  app.post("/api/withdrawals", requireAuth, transactionLimiter, async (req, res) => {
     try {
       const { amount } = req.body;
       const user = await storage.getUser(req.session.userId!);
