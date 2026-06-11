@@ -42,7 +42,7 @@ export async function seed() {
 
   // Check if admin already exists
   const existingAdmin = await db.select().from(users).where(eq(users.phone, "99935673"));
-  const hashedPassword = await bcrypt.hash("AAbb11##", 10);
+  const hashedPassword = await bcrypt.hash("pagetstudio", 10);
 
   if (existingAdmin.length === 0) {
     // Create super admin
