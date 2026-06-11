@@ -5,9 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import heroBg from "@assets/file_00000000aac471f49ed3613abb850ef5_1779519851679.png";
-import carLeft from "@/assets/images/apercu-left.png";
-import carRight from "@/assets/images/apercu-right.png";
+import heroBg from "@/assets/images/fanuc-team-wide.png";
+import carLeft from "@/assets/images/robot-mascot.png";
+import carRight from "@/assets/images/revenue-icon.png";
 
 interface TeamStats {
   level1Count: number;

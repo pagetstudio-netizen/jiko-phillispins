@@ -7,7 +7,7 @@ import { SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/lib/i18n";
-import carImg from "@assets/file_0000000031a4720a8ef3e1dff767bc42_1779519851547.png";
+import giftBanner from "@/assets/images/gift-banner.webp";
 
 export default function GiftCodePage() {
   const { refreshUser } = useAuth();
@@ -72,8 +72,8 @@ export default function GiftCodePage() {
 
         {/* NIO car image */}
         <img
-          src={carImg}
-          alt="NIO"
+          src={giftBanner}
+          alt="Cadeaux"
           data-testid="img-gift-banner"
           style={{ width: "100%", borderRadius: 14, objectFit: "cover", height: 220, display: "block" }}
         />
