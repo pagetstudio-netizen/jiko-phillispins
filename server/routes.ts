@@ -2598,5 +2598,61 @@ export async function registerRoutes(
     res.json({ success: true });
   });
 
+  // ── Countries (public) ─────────────────────────────────────────────────────
+  app.get("/api/countries", async (_req, res) => {
+    try {
+      const list = await storage.getCountries(true);
+      res.json(list);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  // ── Countries (admin CRUD) ─────────────────────────────────────────────────
+  app.get("/api/admin/countries", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await storage.getCountries(false));
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/admin/countries", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { code, name, currency, phonePrefix } = req.body;
+      if (!code || !name || !currency || !phonePrefix)
+        return res.status(400).json({ message: "Tous les champs sont requis" });
+      const country = await storage.createCountry({ code: code.toUpperCase(), name, currency, phonePrefix });
+      res.json(country);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.put("/api/admin/countries/:code", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { name, currency, phonePrefix, isActive } = req.body;
+      const country = await storage.updateCountry(req.params.code, { name, currency, phonePrefix, isActive });
+      res.json(country);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.delete("/api/admin/countries/:code", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteCountry(req.params.code);
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.post("/api/admin/countries/:code/operators", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { operatorName } = req.body;
+      if (!operatorName) return res.status(400).json({ message: "Nom de l'opérateur requis" });
+      const op = await storage.addOperator(req.params.code, operatorName);
+      res.json(op);
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
+  app.delete("/api/admin/operators/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteOperator(Number(req.params.id));
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ message: e.message }); }
+  });
+
   return httpServer;
 }

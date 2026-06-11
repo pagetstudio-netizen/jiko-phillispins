@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { getPaymentMethodsForCountry } from "@/lib/countries";
+import { getPaymentMethodsForCountry, type DynamicCountry } from "@/lib/countries";
 import { Loader2, Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, Shield, Check } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import type { WithdrawalWallet } from "@shared/schema";
@@ -121,9 +121,11 @@ export default function WalletPage() {
     form.handleSubmit((data) => addMutation.mutate(data))();
   };
 
+  const { data: dynamicCountries } = useQuery<DynamicCountry[]>({ queryKey: ["/api/countries"] });
+
   if (!user) return null;
 
-  const paymentMethods = getPaymentMethodsForCountry(user.country);
+  const paymentMethods = getPaymentMethodsForCountry(user.country, dynamicCountries);
   const backLink = selectMode ? "/withdrawal" : "/account";
 
   // ── ADD FORM VIEW ──────────────────────────────────────────────

@@ -1,10 +1,10 @@
 import { 
   users, products, userProducts, deposits, withdrawals, withdrawalWallets,
   paymentChannels, referralCommissions, tasks, userTasks, transactions, platformSettings, adminAuditLog,
-  giftCodes, giftCodeClaims, manualPaymentAccounts,
+  giftCodes, giftCodeClaims, manualPaymentAccounts, countries, countryOperators,
   type User, type Product, type UserProduct, type Deposit, type Withdrawal, type WithdrawalWallet,
   type PaymentChannel, type ReferralCommission, type Task, type UserTask, type Transaction, type PlatformSetting,
-  type GiftCode, type GiftCodeClaim, type ManualPaymentAccount
+  type GiftCode, type GiftCodeClaim, type ManualPaymentAccount, type Country, type CountryOperator
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, gte, lte, or } from "drizzle-orm";
@@ -1156,6 +1156,39 @@ export class DatabaseStorage implements IStorage {
 
   async deleteManualPaymentAccount(id: number): Promise<void> {
     await db.delete(manualPaymentAccounts).where(eq(manualPaymentAccounts.id, id));
+  }
+
+  // ── Countries ──────────────────────────────────────────────────────────────
+  async getCountries(activeOnly = false): Promise<(Country & { operators: CountryOperator[] })[]> {
+    const rows = activeOnly
+      ? await db.select().from(countries).where(eq(countries.isActive, true)).orderBy(countries.name)
+      : await db.select().from(countries).orderBy(countries.name);
+    const ops = await db.select().from(countryOperators).where(eq(countryOperators.isActive, true));
+    return rows.map(c => ({ ...c, operators: ops.filter(o => o.countryCode === c.code) }));
+  }
+
+  async createCountry(data: { code: string; name: string; currency: string; phonePrefix: string }): Promise<Country> {
+    const [row] = await db.insert(countries).values({ ...data, isActive: true }).returning();
+    return row;
+  }
+
+  async updateCountry(code: string, data: Partial<Country>): Promise<Country> {
+    const [row] = await db.update(countries).set(data).where(eq(countries.code, code)).returning();
+    return row;
+  }
+
+  async deleteCountry(code: string): Promise<void> {
+    await db.delete(countryOperators).where(eq(countryOperators.countryCode, code));
+    await db.delete(countries).where(eq(countries.code, code));
+  }
+
+  async addOperator(countryCode: string, operatorName: string): Promise<CountryOperator> {
+    const [row] = await db.insert(countryOperators).values({ countryCode, operatorName, isActive: true }).returning();
+    return row;
+  }
+
+  async deleteOperator(id: number): Promise<void> {
+    await db.delete(countryOperators).where(eq(countryOperators.id, id));
   }
 }
 

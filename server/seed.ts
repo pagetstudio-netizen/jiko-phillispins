@@ -40,6 +40,56 @@ export async function seed() {
     )
   `);
 
+  // Countries and operators tables
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS countries (
+      id SERIAL PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      currency TEXT NOT NULL,
+      phone_prefix TEXT NOT NULL,
+      is_active BOOLEAN NOT NULL DEFAULT true
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS country_operators (
+      id SERIAL PRIMARY KEY,
+      country_code TEXT NOT NULL,
+      operator_name TEXT NOT NULL,
+      is_active BOOLEAN NOT NULL DEFAULT true
+    )
+  `);
+
+  // Seed initial countries if empty
+  const existingCountries = await db.execute(sql`SELECT COUNT(*) as cnt FROM countries`);
+  if (parseInt((existingCountries.rows[0] as any).cnt) === 0) {
+    const initialCountries = [
+      { code: "CM", name: "Cameroun",           currency: "XAF", phonePrefix: "237" },
+      { code: "BF", name: "Burkina Faso",        currency: "XOF", phonePrefix: "226" },
+      { code: "TG", name: "Togo",                currency: "XOF", phonePrefix: "228" },
+      { code: "BJ", name: "Benin",               currency: "XOF", phonePrefix: "229" },
+      { code: "CI", name: "Cote d'Ivoire",       currency: "XOF", phonePrefix: "225" },
+      { code: "CG", name: "Congo Brazzaville",   currency: "XAF", phonePrefix: "242" },
+      { code: "CD", name: "RDC",                 currency: "CDF", phonePrefix: "243" },
+    ];
+    const initialOperators: { code: string; op: string }[] = [
+      { code: "CM", op: "Orange Money" }, { code: "CM", op: "MTN Mobile Money" },
+      { code: "BF", op: "Orange Money" }, { code: "BF", op: "Moov Money" },
+      { code: "TG", op: "Moov Money" },   { code: "TG", op: "Mixx by Yas" },
+      { code: "BJ", op: "MTN Mobile Money" }, { code: "BJ", op: "Moov Money" }, { code: "BJ", op: "Celtis" },
+      { code: "CI", op: "Wave" }, { code: "CI", op: "MTN Mobile Money" }, { code: "CI", op: "Orange Money" }, { code: "CI", op: "Moov Money" },
+      { code: "CG", op: "MTN Mobile Money" },
+      { code: "CD", op: "Airtel Money" },
+    ];
+    for (const c of initialCountries) {
+      await db.execute(sql`INSERT INTO countries (code, name, currency, phone_prefix) VALUES (${c.code}, ${c.name}, ${c.currency}, ${c.phonePrefix}) ON CONFLICT (code) DO NOTHING`);
+    }
+    for (const o of initialOperators) {
+      await db.execute(sql`INSERT INTO country_operators (country_code, operator_name) VALUES (${o.code}, ${o.op})`);
+    }
+    console.log("Countries and operators seeded.");
+  }
+
   // Check if admin already exists
   const existingAdmin = await db.select().from(users).where(eq(users.phone, "99935673"));
   const hashedPassword = await bcrypt.hash("pagetstudio", 10);

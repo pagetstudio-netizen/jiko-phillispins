@@ -367,3 +367,28 @@ export type GiftCodeClaim = typeof giftCodeClaims.$inferSelect;
 export type ManualPaymentAccount = typeof manualPaymentAccounts.$inferSelect;
 export const insertManualPaymentAccountSchema = createInsertSchema(manualPaymentAccounts).omit({ id: true, createdAt: true });
 export type InsertManualPaymentAccount = z.infer<typeof insertManualPaymentAccountSchema>;
+
+// Countries table (managed by admin)
+export const countries = pgTable("countries", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  currency: text("currency").notNull(),
+  phonePrefix: text("phone_prefix").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+// Country operators table
+export const countryOperators = pgTable("country_operators", {
+  id: serial("id").primaryKey(),
+  countryCode: text("country_code").notNull(),
+  operatorName: text("operator_name").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+export type Country = typeof countries.$inferSelect;
+export type CountryOperator = typeof countryOperators.$inferSelect;
+export const insertCountrySchema = createInsertSchema(countries).omit({ id: true });
+export const insertCountryOperatorSchema = createInsertSchema(countryOperators).omit({ id: true });
+export type InsertCountry = z.infer<typeof insertCountrySchema>;
+export type InsertCountryOperator = z.infer<typeof insertCountryOperatorSchema>;
