@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChevronLeft, Loader2, DollarSign, Copy, CheckCircle2, Upload, X, Zap, HandCoins } from "lucide-react";
@@ -43,7 +43,15 @@ export default function DepositPage() {
   const { data: accounts = [] } = useQuery<ManualPaymentAccount[]>({ queryKey: ["/api/manual-payment-accounts"] });
 
   const sendavapayEnabled = platformSettings?.sendavapayEnabled === "true";
+  const hasSemiAuto = accounts.length > 0;
   const minDepositFcfa = parseInt(platformSettings?.minDeposit || "3000");
+
+  // Auto-switch to available mode once data loads
+  useEffect(() => {
+    if (platformSettings === undefined) return;
+    if (!sendavapayEnabled && hasSemiAuto) setMode("semi_auto");
+    else if (!hasSemiAuto && sendavapayEnabled) setMode("auto");
+  }, [sendavapayEnabled, hasSemiAuto, platformSettings]);
 
   const getAmountFcfa = (): number => {
     if (selectedPreset !== null) return selectedPreset;
@@ -146,37 +154,48 @@ export default function DepositPage() {
       {/* ── CONTENT ── */}
       <div style={{ flex: 1, padding: "14px 12px 100px", display: "flex", flexDirection: "column", gap: 12 }}>
 
-        {/* ── MODE SWITCHER ── */}
-        <div style={{ background: "#1a1a1a", borderRadius: 14, padding: 6, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-          <button
-            onClick={() => { setMode("auto"); setSemiStep("choose"); setSubmitted(false); }}
-            data-testid="button-mode-auto"
-            style={{
-              background: mode === "auto" ? "#f59e0b" : "transparent",
-              border: "none", borderRadius: 10, padding: "12px 8px",
-              color: mode === "auto" ? "#000" : "#9ca3af",
-              fontWeight: 700, fontSize: 14, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
-          >
-            <Zap style={{ width: 16, height: 16 }} />
-            Dépôt Auto
-          </button>
-          <button
-            onClick={() => { setMode("semi_auto"); setSemiStep("choose"); setSubmitted(false); }}
-            data-testid="button-mode-semi-auto"
-            style={{
-              background: mode === "semi_auto" ? "#f59e0b" : "transparent",
-              border: "none", borderRadius: 10, padding: "12px 8px",
-              color: mode === "semi_auto" ? "#000" : "#9ca3af",
-              fontWeight: 700, fontSize: 14, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
-          >
-            <HandCoins style={{ width: 16, height: 16 }} />
-            Dépôt Semi-Auto
-          </button>
-        </div>
+        {/* ── MODE SWITCHER — n'affiche que les modes disponibles ── */}
+        {(sendavapayEnabled || hasSemiAuto) && (
+          <div style={{
+            background: "#1a1a1a", borderRadius: 14, padding: 6,
+            display: "grid",
+            gridTemplateColumns: sendavapayEnabled && hasSemiAuto ? "1fr 1fr" : "1fr",
+            gap: 6,
+          }}>
+            {sendavapayEnabled && (
+              <button
+                onClick={() => { setMode("auto"); setSemiStep("choose"); setSubmitted(false); }}
+                data-testid="button-mode-auto"
+                style={{
+                  background: mode === "auto" ? "#f59e0b" : "transparent",
+                  border: "none", borderRadius: 10, padding: "12px 8px",
+                  color: mode === "auto" ? "#000" : "#9ca3af",
+                  fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                }}
+              >
+                <Zap style={{ width: 16, height: 16 }} />
+                Dépôt Auto
+              </button>
+            )}
+            {hasSemiAuto && (
+              <button
+                onClick={() => { setMode("semi_auto"); setSemiStep("choose"); setSubmitted(false); }}
+                data-testid="button-mode-semi-auto"
+                style={{
+                  background: mode === "semi_auto" ? "#f59e0b" : "transparent",
+                  border: "none", borderRadius: 10, padding: "12px 8px",
+                  color: mode === "semi_auto" ? "#000" : "#9ca3af",
+                  fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                }}
+              >
+                <HandCoins style={{ width: 16, height: 16 }} />
+                Dépôt Semi-Auto
+              </button>
+            )}
+          </div>
+        )}
 
         {/* ── AMOUNT SELECTOR (commun aux deux modes) ── */}
         {(!submitted) && (
