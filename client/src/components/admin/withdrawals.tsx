@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAdminCurrency } from "@/lib/useAdminCurrency";
-import { Check, X, Search, Loader2, Send } from "lucide-react";
+import { Check, X, Search, Loader2 } from "lucide-react";
 import type { Withdrawal } from "@shared/schema";
 
 interface WithdrawalWithUser extends Withdrawal {
@@ -34,7 +34,6 @@ export default function AdminWithdrawals() {
   const { formatAmount } = useAdminCurrency();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected" | "processing">("pending");
-  const [sendingCloudpayId, setSendingCloudpayId] = useState<number | null>(null);
 
   const { data: allWithdrawals, isLoading } = useQuery<WithdrawalWithUser[]>({
     queryKey: ["/api/admin/withdrawals"],
@@ -68,22 +67,6 @@ export default function AdminWithdrawals() {
     },
   });
 
-  const sendCloudpay = async (withdrawalId: number) => {
-    setSendingCloudpayId(withdrawalId);
-    try {
-      const response = await apiRequest("POST", "/api/cloudpay/withdraw", { withdrawalId });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Erreur");
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
-      toast({ title: "Envoyé via CloudPay !", description: "Le retrait est traité automatiquement." });
-    } catch (err: any) {
-      toast({ title: "Erreur CloudPay", description: err.message, variant: "destructive" });
-    } finally {
-      setSendingCloudpayId(null);
-    }
-  };
 
   const filteredWithdrawals = withdrawals?.filter(w =>
     w.accountNumber.includes(filter) ||
@@ -218,20 +201,6 @@ export default function AdminWithdrawals() {
                         <X className="w-4 h-4 mr-1" /> Rejeter
                       </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => sendCloudpay(withdrawal.id)}
-                      disabled={sendingCloudpayId === withdrawal.id}
-                      data-testid={`button-cloudpay-withdraw-${withdrawal.id}`}
-                    >
-                      {sendingCloudpayId === withdrawal.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                      ) : (
-                        <Send className="w-4 h-4 mr-1" />
-                      )}
-                      Envoyer via CloudPay
-                    </Button>
                   </div>
                 )}
               </CardContent>

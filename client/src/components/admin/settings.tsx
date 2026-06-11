@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download, UploadCloud, CheckCircle2 } from "lucide-react";
+import { Loader2, Save, Link, Clock, Users, DollarSign, CreditCard, Download, UploadCloud, CheckCircle2, Copy, Check } from "lucide-react";
 
 
 const settingsSchema = z.object({
@@ -32,20 +32,47 @@ const settingsSchema = z.object({
   level3Commission: z.string().min(1, "Commission requise"),
   adminCurrency: z.string().min(1, "Devise requise"),
   phpToFcfaRate: z.string().min(1, "Taux requis"),
-  cloudpayEnabled: z.string(),
-  cloudpayMerchantId: z.string(),
-  cloudpaySecretKey: z.string(),
-  cloudpayDomain: z.string(),
-  cloudpayChannelName: z.string(),
   sendavapayEnabled: z.string(),
-  sendavapayApiKey: z.string(),
-  sendavapayWebhookSecret: z.string(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
 
 interface AdminSettingsProps {
   isSuperAdmin: boolean;
+}
+
+function CopyField({ label, value, testId }: { label: string; value: string; testId: string }) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      toast({ title: "Copié !" });
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-sm font-medium">{label}</p>
+      <div className="flex items-center gap-2">
+        <code className="flex-1 text-xs bg-muted px-3 py-2 rounded-md font-mono break-all text-muted-foreground border">
+          {value}
+        </code>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={handleCopy}
+          data-testid={testId}
+          className="shrink-0"
+        >
+          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
@@ -57,6 +84,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   const { data: settings, isLoading } = useQuery<Record<string, string>>({
     queryKey: ["/api/admin/settings"],
   });
+
+  const appOrigin = typeof window !== "undefined" ? window.location.origin : "";
+  const webhookUrl = `${appOrigin}/api/webhooks/sendavapay`;
+  const redirectUrl = `${appOrigin}/deposit-orders`;
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
@@ -78,14 +109,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level3Commission: "1",
       adminCurrency: "FCFA",
       phpToFcfaRate: "1",
-      cloudpayEnabled: "false",
-      cloudpayMerchantId: "",
-      cloudpaySecretKey: "",
       sendavapayEnabled: "false",
-      sendavapayApiKey: "",
-      sendavapayWebhookSecret: "",
-      cloudpayDomain: "",
-      cloudpayChannelName: "CloudPay",
     },
   });
 
@@ -109,14 +133,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         level3Commission: settings.level3Commission || "1",
         adminCurrency: settings.adminCurrency || "FCFA",
         phpToFcfaRate: settings.phpToFcfaRate || "1",
-        cloudpayEnabled: settings.cloudpayEnabled || "false",
-        cloudpayMerchantId: settings.cloudpayMerchantId || "",
-        cloudpaySecretKey: settings.cloudpaySecretKey || "",
-        cloudpayDomain: settings.cloudpayDomain || "",
-        cloudpayChannelName: settings.cloudpayChannelName || "CloudPay",
         sendavapayEnabled: settings.sendavapayEnabled || "false",
-        sendavapayApiKey: settings.sendavapayApiKey || "",
-        sendavapayWebhookSecret: settings.sendavapayWebhookSecret || "",
       });
     }
   }, [settings, form]);
@@ -540,96 +557,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* CloudPay (Galaxy System) */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              CloudPay (Galaxy System API)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="cloudpayEnabled"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <FormLabel className="text-base">Activer CloudPay</FormLabel>
-                    <FormDescription>Afficher CloudPay comme canal de dépôt</FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value === "true"}
-                      onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
-                      data-testid="switch-cloudpay-enabled"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cloudpayChannelName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom d'affichage du canal</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="CloudPay" data-testid="input-cloudpay-channel-name" />
-                  </FormControl>
-                  <FormDescription>Nom affiché aux utilisateurs dans la liste des canaux de paiement</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cloudpayDomain"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Domaine API</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="pay.example.com" data-testid="input-cloudpay-domain" />
-                  </FormControl>
-                  <FormDescription>Domaine fourni par Galaxy System (sans https://)</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cloudpayMerchantId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Merchant ID</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Votre Merchant ID" data-testid="input-cloudpay-merchant-id" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cloudpaySecretKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Clé secrète</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="Votre clé secrète" data-testid="input-cloudpay-secret-key" />
-                  </FormControl>
-                  <FormDescription>Clé de signature MD5 fournie par Galaxy System</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
         {/* SendavaPay */}
         <Card>
           <CardHeader className="pb-2">
@@ -639,6 +566,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+
             <FormField
               control={form.control}
               name="sendavapayEnabled"
@@ -658,39 +586,28 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="sendavapayApiKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Clé API SendavaPay</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="pk_live_..." data-testid="input-sendavapay-api-key" />
-                  </FormControl>
-                  <FormDescription>Clé API fournie dans votre tableau de bord SendavaPay</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="sendavapayWebhookSecret"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Secret Webhook</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="whsec_..." data-testid="input-sendavapay-webhook-secret" />
-                  </FormControl>
-                  <FormDescription>
-                    Configurez ce webhook dans SendavaPay :{" "}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                      {typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/sendavapay
-                    </code>
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-1">
+              <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Clés API</p>
+              <p className="text-xs text-muted-foreground">
+                Les clés API SendavaPay (<code className="bg-muted px-1 rounded">SENDAVAPAY_API_KEY</code> et <code className="bg-muted px-1 rounded">SENDAVAPAY_WEBHOOK_SECRET</code>) sont configurées dans les secrets du serveur. Contactez votre administrateur système pour les modifier.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">URLs à configurer sur SendavaPay</p>
+              <CopyField
+                label="URL Webhook"
+                value={webhookUrl}
+                testId="button-copy-webhook-url"
+              />
+              <CopyField
+                label="URL de Redirection"
+                value={redirectUrl}
+                testId="button-copy-redirect-url"
+              />
+            </div>
+
           </CardContent>
         </Card>
 

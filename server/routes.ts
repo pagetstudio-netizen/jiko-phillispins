@@ -659,19 +659,6 @@ export async function registerRoutes(
         });
       }
 
-      const cloudpayEnabled = settings.cloudpayEnabled === "true";
-      const cloudpayChannelName = settings.cloudpayChannelName || "CloudPay";
-      if (cloudpayEnabled) {
-        virtualChannels.push({
-          id: -5,
-          name: cloudpayChannelName,
-          redirectUrl: "",
-          isApi: true,
-          isActive: true,
-          gateway: "cloudpay",
-        });
-      }
-
       // Manual channels created by admin (no gateway auto-processing)
       const manualChannels = channels.map((ch) => ({ ...ch, gateway: null }));
 
@@ -2419,7 +2406,7 @@ export async function registerRoutes(
 
       const settings = await storage.getSettings();
       const enabled = settings.sendavapayEnabled === "true";
-      const apiKey = settings.sendavapayApiKey || "";
+      const apiKey = process.env.SENDAVAPAY_API_KEY || "";
       if (!enabled || !apiKey) return res.status(400).json({ message: "SendavaPay non activé" });
 
       const { amount } = req.body;
@@ -2473,8 +2460,7 @@ export async function registerRoutes(
       }
       if (!deposit.sendavapayReference) return res.json({ status: deposit.status });
 
-      const settings = await storage.getSettings();
-      const apiKey = settings.sendavapayApiKey || "";
+      const apiKey = process.env.SENDAVAPAY_API_KEY || "";
       const result = await sendavapay.verifyPayment(apiKey, deposit.sendavapayReference);
       const mappedStatus = sendavapay.mapSendavapayStatus(result.status);
 
@@ -2498,8 +2484,7 @@ export async function registerRoutes(
 
   app.post("/api/webhooks/sendavapay", async (req, res) => {
     try {
-      const settings = await storage.getSettings();
-      const webhookSecret = settings.sendavapayWebhookSecret || "";
+      const webhookSecret = process.env.SENDAVAPAY_WEBHOOK_SECRET || "";
       const signature = req.headers["x-sendavapay-signature"] as string;
       const event = req.headers["x-sendavapay-event"] as string;
 
