@@ -7,7 +7,7 @@ import { ChevronLeft, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Task } from "@shared/schema";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import heroImg from "@/assets/images/tasks-banner.webp";
+import heroImg from "@assets/IMG_20260610_064532_360_1781191770266.jpg";
 
 interface TaskWithStatus extends Task {
   isCompleted: boolean;

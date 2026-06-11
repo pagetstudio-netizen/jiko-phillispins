@@ -7,7 +7,7 @@ import { SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/lib/i18n";
-import giftBanner from "@/assets/images/gift-banner.webp";
+import giftBanner from "@assets/IMG_20260610_064532_335_1781191770243.jpg";
 
 export default function GiftCodePage() {
   const { refreshUser } = useAuth();
