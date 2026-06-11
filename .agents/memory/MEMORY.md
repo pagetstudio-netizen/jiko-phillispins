@@ -1,0 +1,1 @@
+- [Supabase database usage](supabase-db.md) — app uses Supabase via DATABASE_URL; Replit executeSql tool hits a different DB and is useless here.
