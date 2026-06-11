@@ -878,19 +878,9 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUser(userId);
     if (!user) return [];
 
-    // Compute total team investment (sum of approved deposits across all 3 levels)
+    // Count direct (level-1) referrals who have BOTH deposited AND purchased a product
     const level1 = await this.getReferrals(userId, 1);
-    const level2 = await this.getReferrals(userId, 2);
-    const level3 = await this.getReferrals(userId, 3);
-    const allTeam = [...level1, ...level2, ...level3];
-
-    let totalTeamInvestment = 0;
-    for (const member of allTeam) {
-      const result = await db.select({ total: sql<string>`COALESCE(SUM(${deposits.amount}), 0)` })
-        .from(deposits)
-        .where(and(eq(deposits.userId, member.id), eq(deposits.status, "approved")));
-      totalTeamInvestment += parseFloat(result[0]?.total || "0");
-    }
+    const activeInvites = level1.filter(m => m.hasDeposited && m.hasActiveProduct).length;
 
     const completedTasks = await db.select().from(userTasks).where(eq(userTasks.userId, userId));
     const completedIds = new Set(completedTasks.map(t => t.taskId));
@@ -898,8 +888,8 @@ export class DatabaseStorage implements IStorage {
     return allTasks.map(task => ({
       ...task,
       isCompleted: completedIds.has(task.id),
-      canClaim: !completedIds.has(task.id) && totalTeamInvestment >= task.requiredInvites,
-      currentInvites: Math.floor(totalTeamInvestment),
+      canClaim: !completedIds.has(task.id) && activeInvites >= task.requiredInvites,
+      currentInvites: activeInvites,
     }));
   }
 

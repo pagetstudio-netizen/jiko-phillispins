@@ -253,11 +253,12 @@ export async function seed() {
   // Check if tasks exist - update to 5 referral bonus missions (PHP rewards)
   const existingTasks = await db.select().from(tasks);
   const requiredTasks = [
-    { name: "Mission 1 - Parrainage", description: "Atteignez 1 000 en investissement total d'équipe pour gagner une récompense de 100",    requiredInvites: 1000,   reward: 100,  sortOrder: 1 },
-    { name: "Mission 2 - Parrainage", description: "Atteignez 5 000 en investissement total d'équipe pour gagner une récompense de 500",    requiredInvites: 5000,   reward: 500,  sortOrder: 2 },
-    { name: "Mission 3 - Parrainage", description: "Atteignez 20 000 en investissement total d'équipe pour gagner une récompense de 1 000", requiredInvites: 20000,  reward: 1000, sortOrder: 3 },
-    { name: "Mission 4 - Parrainage", description: "Atteignez 50 000 en investissement total d'équipe pour gagner une récompense de 2 000", requiredInvites: 50000,  reward: 2000, sortOrder: 4 },
-    { name: "Mission 5 - Parrainage", description: "Atteignez 100 000 en investissement total d'équipe pour gagner une récompense de 5 000",requiredInvites: 100000, reward: 5000, sortOrder: 5 },
+    { name: "Mission 1 - Parrainage", description: "Invitez 3 personnes qui ont effectué un dépôt et acheté un produit pour gagner 300 FCFA",     requiredInvites: 3,   reward: 300,   sortOrder: 1 },
+    { name: "Mission 2 - Parrainage", description: "Invitez 10 personnes qui ont effectué un dépôt et acheté un produit pour gagner 1 000 FCFA",   requiredInvites: 10,  reward: 1000,  sortOrder: 2 },
+    { name: "Mission 3 - Parrainage", description: "Invitez 20 personnes qui ont effectué un dépôt et acheté un produit pour gagner 3 500 FCFA",   requiredInvites: 20,  reward: 3500,  sortOrder: 3 },
+    { name: "Mission 4 - Parrainage", description: "Invitez 70 personnes qui ont effectué un dépôt et acheté un produit pour gagner 10 000 FCFA",  requiredInvites: 70,  reward: 10000, sortOrder: 4 },
+    { name: "Mission 5 - Parrainage", description: "Invitez 150 personnes qui ont effectué un dépôt et acheté un produit pour gagner 20 000 FCFA", requiredInvites: 150, reward: 20000, sortOrder: 5 },
+    { name: "Mission 6 - Parrainage", description: "Invitez 500 personnes qui ont effectué un dépôt et acheté un produit pour gagner 45 000 FCFA", requiredInvites: 500, reward: 45000, sortOrder: 6 },
   ];
 
   const usedTaskIds = new Set<number>();

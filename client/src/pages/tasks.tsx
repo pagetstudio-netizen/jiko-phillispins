@@ -53,7 +53,7 @@ export default function TasksPage() {
   if (!user) return null;
 
   const totalClaimed = tasks?.filter(t => t.isCompleted).reduce((sum, t) => sum + t.reward, 0) || 0;
-  const currentInvestment = tasks?.[0]?.currentInvites ?? 0;
+  const activeInvites = tasks?.[0]?.currentInvites ?? 0;
 
   return (
     <div style={{ minHeight: "100vh", background: "#111111", color: "#fff", paddingBottom: 80 }}>
@@ -103,12 +103,12 @@ export default function TasksPage() {
           </div>
           <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Récompenses gagnées</div>
         </div>
-        {/* Team investment */}
+        {/* Active invites */}
         <div style={{ background: DARK_CARD, borderRadius: 12, border: `1px solid #333`, padding: "16px 12px", textAlign: "center" }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }} data-testid="text-team-investment">
-            {fmt(currentInvestment)}
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }} data-testid="text-active-invites">
+            {activeInvites}
           </div>
-          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Investissement équipe</div>
+          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Invités actifs</div>
         </div>
       </div>
 
@@ -150,8 +150,8 @@ export default function TasksPage() {
                 {/* Stats row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
                   {[
-                    { label: "Actuel",    value: fmt(current) },
-                    { label: "Objectif", value: fmt(target) },
+                    { label: "Actuel",    value: `${current}` },
+                    { label: "Objectif", value: `${target}` },
                     { label: "Progrès",  value: `${pct}%` },
                   ].map((col, i) => (
                     <div
