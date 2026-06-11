@@ -143,70 +143,97 @@ export async function registerRoutes(
     next();
   });
 
-  // Session store: start immediately with MemoryStore so the server never blocks.
-  // Then, in the background, try each PostgreSQL URL until one connects and swap
-  // the store transparently. connect-pg-simple works with both port 5432 (direct)
-  // and port 6543 (pgBouncer) because it only needs simple SQL — no advisory locks.
+  // ── SESSION STORE ────────────────────────────────────────────────────────
+  // IMPORTANT PLESK/PRODUCTION : le store est initialisé de façon SYNCHRONE
+  // (await) avant d'enregistrer le middleware de session.
+  // Cela garantit que les sessions sont TOUJOURS stockées dans PostgreSQL dès
+  // la première connexion. Sur Plesk, Passenger peut redémarrer le processus
+  // Node.js à tout moment — si les sessions sont dans MemoryStore elles sont
+  // perdues au redémarrage, ce qui fait échouer login/inscription silencieusement.
+  //
+  // Variables d'environnement requises sur Plesk :
+  //   DATABASE_URL    = postgresql://user:password@host:port/dbname  ← Supabase
+  //   NODE_ENV        = production
+  //   SESSION_SECRET  = une chaîne secrète longue et aléatoire
+  //   PORT            = port que Plesk/Passenger attend (ex: 3000)
+  //
+  // Variables optionnelles :
+  //   SUPABASE_DATABASE_URL = URL alternative Supabase (priorité sur DATABASE_URL)
+  //   DIRECT_URL            = URL directe port 5432 (si pooler port 6543 utilisé)
+  //   TRUST_PROXY           = "1" (Nginx devant Node) ou "false" (sans proxy)
+  //   FORCE_SECURE_COOKIE   = "true" | "false" (auto par défaut)
+  //   CORS_ORIGIN           = https://votre-domaine.com (si frontend séparé)
+
   const MemStore = MemoryStore(session);
 
   function isPostgresUrl(u: string | undefined): u is string {
     return !!u && (u.startsWith("postgresql://") || u.startsWith("postgres://"));
   }
 
-  // Proxy store: delegates to an inner store that can be swapped at any time.
-  // This lets us start instantly with MemoryStore, then upgrade to Postgres
-  // without re-registering the session middleware.
-  class ProxyStore extends session.Store {
-    inner: session.Store;
-    constructor(initial: session.Store) { super(); this.inner = initial; }
-    get(sid: string, cb: (err: any, s?: session.SessionData | null) => void) { this.inner.get(sid, cb); }
-    set(sid: string, s: session.SessionData, cb?: (err?: any) => void) { this.inner.set(sid, s, cb); }
-    destroy(sid: string, cb?: (err?: any) => void) { this.inner.destroy(sid, cb); }
-    touch(sid: string, s: session.SessionData, cb?: (err?: any) => void) {
-      if (typeof (this.inner as any).touch === "function") (this.inner as any).touch(sid, s, cb);
-      else cb?.();
-    }
-  }
-
-  const sessionStore = new ProxyStore(new MemStore({ checkPeriod: 86400000 }));
-
-  // Background: try PostgreSQL URLs one by one (5s timeout each), swap when one works.
-  (async () => {
+  // Tente de connecter le store PostgreSQL — attend jusqu'à 8s au démarrage.
+  // Si la connexion réussit, les sessions sont persistantes (survit aux redémarrages).
+  // Si elle échoue, bascule sur MemoryStore avec un avertissement clair.
+  async function buildSessionStore(): Promise<session.Store> {
+    // Priorité : SUPABASE_DATABASE_URL > DATABASE_URL > DIRECT_URL
+    // (SUPABASE_DATABASE_URL est spécifique à Supabase pour éviter toute confusion
+    //  avec une éventuelle DATABASE_URL pointant vers la DB locale Replit)
     const candidates = [
+      process.env.SUPABASE_DATABASE_URL,
       process.env.DATABASE_URL,
       process.env.DIRECT_URL,
-      process.env.SUPABASE_DATABASE_URL,
     ].filter(isPostgresUrl);
 
+    if (candidates.length === 0) {
+      console.warn(
+        "[session-store] ⚠️  Aucune URL PostgreSQL valide trouvée pour les sessions.\n" +
+        "  → Configurez DATABASE_URL ou SUPABASE_DATABASE_URL sur votre serveur Plesk.\n" +
+        "  → Les sessions seront perdues au redémarrage du processus (MemoryStore)."
+      );
+      return new MemStore({ checkPeriod: 86400000 });
+    }
+
     for (const url of candidates) {
+      const safeUrl = url.replace(/:[^:@]+@/, ":***@");
       try {
         const pg2 = (await import("pg")).default;
+        // Test de connexion avec timeout de 8s pour ne pas bloquer le démarrage trop longtemps
         const testPool = new pg2.Pool({
           connectionString: url,
-          ssl: { rejectUnauthorized: false },
+          ssl: url.includes("sslmode=disable") ? false : { rejectUnauthorized: false },
           max: 1,
-          connectionTimeoutMillis: 5000,
+          connectionTimeoutMillis: 8000,
         });
         const client = await testPool.connect();
         client.release();
         await testPool.end();
+
         const PgSessionStore = ConnectPgSimple(session);
         const pgStore = new PgSessionStore({
           conString: url,
           tableName: "session",
           createTableIfMissing: true,
           pruneSessionInterval: 60 * 60,
+          ssl: url.includes("sslmode=disable") ? false : { rejectUnauthorized: false },
           errorLog: (err: Error) => console.error("[session-store]", err.message),
         });
-        sessionStore.inner = pgStore;
-        console.log(`[session-store] Upgraded to PostgreSQL: ${url.replace(/:[^:@]+@/, ":***@")}`);
-        return;
+
+        console.log(`[session-store] ✓ PostgreSQL connecté : ${safeUrl}`);
+        return pgStore;
       } catch (e: any) {
-        console.warn(`[session-store] URL failed (${url.replace(/:[^:@]+@/, ":***@")}): ${e.message}`);
+        console.warn(`[session-store] ✗ Connexion échouée (${safeUrl}): ${e.message}`);
       }
     }
-    console.warn("[session-store] All PostgreSQL URLs failed — keeping MemoryStore");
-  })();
+
+    console.warn(
+      "[session-store] ⚠️  Toutes les URLs PostgreSQL ont échoué — MemoryStore utilisé.\n" +
+      "  → Les sessions seront perdues au redémarrage du processus.\n" +
+      "  → Vérifiez que DATABASE_URL est correctement configuré sur Plesk."
+    );
+    return new MemStore({ checkpointPeriod: 86400000 } as any);
+  }
+
+  // AWAIT synchrone — le store est prêt avant le premier login
+  const sessionStore = await buildSessionStore();
 
   // Cookie secure : utilise "auto" pour que Express décide selon req.secure
   // (qui respecte X-Forwarded-Proto grâce à trust proxy).
