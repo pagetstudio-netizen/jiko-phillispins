@@ -24,7 +24,7 @@ import iconHelp     from "@assets/téléchargement_(67)_1779463427299.png";
 import iconBell     from "@assets/téléchargement_(65)_1779463427321.png";
 
 const TICKER_TEXT =
-  "★★★★★73 recharged 35,000 ★★★★★★3765 recharged 15,000 ★★★★★8829 recharged 30,000 ★★★★★★1234 recharged 10,000 ★★★★★5678 recharged 50,000 ★★★★★9012 recharged 8,000 ★★★★★★3456 recharged 25,000 ★★★★7890 recharged 12,000 ★★★★★★";
+  "★★★★★ 73 a rechargé 35 000 ★★★★★★ 3765 a rechargé 15 000 ★★★★★ 8829 a rechargé 30 000 ★★★★★★ 1234 a rechargé 10 000 ★★★★★ 5678 a rechargé 50 000 ★★★★★ 9012 a rechargé 8 000 ★★★★★★ 3456 a rechargé 25 000 ★★★★ 7890 a rechargé 12 000 ★★★★★★";
 
 function EiffageLogo() {
   return (
@@ -71,9 +71,9 @@ export default function HomePage() {
     },
     onSuccess: (data) => {
       setGiftCode(""); setShowGiftModal(false);
-      toast({ title: "Congratulations!", description: data.message });
+      toast({ title: "Félicitations !", description: data.message });
     },
-    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Erreur", description: err.message, variant: "destructive" }),
   });
 
   if (!user) return <div style={{ minHeight: "100vh", backgroundColor: "#111111" }} />;
@@ -125,8 +125,8 @@ export default function HomePage() {
               </p>
               <div style={{ marginTop: 6, padding: "10px 14px", background: "#111", borderRadius: 10, borderLeft: "3px solid #f59e0b" }}>
                 <p style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, margin: "0 0 4px" }}>💼 Plans de Rendement</p>
-                <p style={{ color: "#bbb", fontSize: 12, margin: 0 }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(500)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(50)}</strong></p>
-                <p style={{ color: "#bbb", fontSize: 12, margin: "2px 0 0" }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(2000)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(200)}</strong></p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: 0 }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(3000)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(400)}</strong></p>
+                <p style={{ color: "#bbb", fontSize: 12, margin: "2px 0 0" }}>• Investissez <strong style={{ color: "#fff" }}>{fmt(7000)}</strong> | Retour quotidien : <strong style={{ color: "#fff" }}>{fmt(1000)}</strong></p>
               </div>
             </div>
 
@@ -320,7 +320,7 @@ export default function HomePage() {
               </button>
             </div>
             <div className="px-6 pb-2 pt-1">
-              <h2 className="text-white font-extrabold text-2xl italic leading-tight">Receive<br />Free Money</h2>
+              <h2 className="text-white font-extrabold text-2xl italic leading-tight">Recevez<br />de l'argent gratuit</h2>
             </div>
             <div className="flex justify-center py-4">
               <span style={{ fontSize: 52 }}>💰</span>
@@ -330,7 +330,7 @@ export default function HomePage() {
                 type="text"
                 value={giftCode}
                 onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
-                placeholder="Your bonus code"
+                placeholder="Votre code bonus"
                 className="w-full px-4 py-3.5 rounded-xl text-center font-mono tracking-widest text-gray-800 text-sm outline-none"
                 style={{ borderWidth: 2.5, borderStyle: "solid", borderColor: giftCode ? "#1a5c0a" : "white", background: "white" }}
                 data-testid="input-gift-code-modal"
@@ -339,7 +339,7 @@ export default function HomePage() {
             <div className="px-6 pb-5">
               <button
                 onClick={() => {
-                  if (!giftCode.trim()) { toast({ title: "Error", description: "Please enter a code", variant: "destructive" }); return; }
+                  if (!giftCode.trim()) { toast({ title: "Erreur", description: "Veuillez saisir un code", variant: "destructive" }); return; }
                   claimMutation.mutate(giftCode.trim());
                 }}
                 disabled={claimMutation.isPending}
@@ -347,21 +347,21 @@ export default function HomePage() {
                 style={{ background: "#111827", color: "#f59e0b" }}
                 data-testid="button-confirm-gift"
               >
-                {claimMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin text-yellow-400" /> : "CONFIRM"}
+                {claimMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin text-yellow-400" /> : "CONFIRMER"}
               </button>
             </div>
             <div className="mx-5 mb-5 rounded-2xl p-4 space-y-2" style={{ background: "rgba(0,0,0,0.15)" }}>
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs font-medium leading-relaxed">
-                  <span className="font-bold">Cash Rewards!</span><br />
-                  Enter the bonus code to receive a random amount! Up to {fmt(1000)}!
+                  <span className="font-bold">Récompenses en argent !</span><br />
+                  Saisissez le code bonus pour recevoir un montant aléatoire ! Jusqu'à {fmt(1000)} !
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-base mt-0.5">💡</span>
                 <p className="text-white text-xs leading-relaxed">
-                  Bonus codes are published on the official Telegram channel every day at 11:30 and 18:00.
+                  Les codes bonus sont publiés sur le canal Telegram officiel chaque jour à 11h30 et 18h00.
                 </p>
               </div>
             </div>

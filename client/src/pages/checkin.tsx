@@ -53,7 +53,7 @@ export default function CheckinPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/daily-bonus-status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({ title: fr ? "Pointage effectué avec succès" : "Check-in successful!", description: `+${fmt(DAILY_BONUS)}` });
+      toast({ title: "Pointage effectué avec succès !", description: `+${fmt(DAILY_BONUS)}` });
     },
     onError: (error: Error) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
@@ -111,15 +111,13 @@ export default function CheckinPage() {
           fontWeight: 600,
           color: "#fff",
         }}>
-          {fr ? "Bonus cumulé" : "Total bonus"}
+          Bonus cumulé
         </div>
       </div>
 
       {/* Consecutive days text */}
       <p style={{ textAlign: "center", color: "#fff", fontSize: 15, marginTop: 20, fontWeight: 400 }}>
-        {fr
-          ? `Vous avez pointé ${daysPointed} jours consécutifs`
-          : `You have checked in ${daysPointed} consecutive days`}
+        Vous avez pointé {daysPointed} jours consécutifs
       </p>
 
       {/* Stats row */}
@@ -132,12 +130,12 @@ export default function CheckinPage() {
       }}>
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>{daysPointed}</div>
-          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>{fr ? "Jours" : "Days"}</div>
+          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>Jours</div>
         </div>
         <div style={{ width: 1, height: 48, background: "#333" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>{fmt(totalBonusClaimed)}</div>
-          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>{fr ? "Récompenses" : "Rewards"}</div>
+          <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>Récompenses</div>
         </div>
       </div>
 
@@ -167,7 +165,7 @@ export default function CheckinPage() {
           >
             {claimMutation.isPending ? (
               <Loader2 style={{ width: 20, height: 20 }} className="animate-spin" />
-            ) : (fr ? "Pointer" : "Check In")}
+            ) : "Pointer"}
           </button>
         ) : (
           <button
@@ -188,7 +186,7 @@ export default function CheckinPage() {
               justifyContent: "center",
             }}
           >
-            {fr ? `Revenez dans ${hoursLeft}h` : `Come back in ${hoursLeft}h`}
+            Revenez dans {hoursLeft}h
           </button>
         )}
       </div>
@@ -201,13 +199,13 @@ export default function CheckinPage() {
         padding: "16px 18px",
       }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-          {fr ? "Conseils utiles" : "Useful tips"}
+          Conseils utiles
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[
-            `1. Daily login reward: ${fmt(DAILY_BONUS)}.`,
-            "2. Log in once per day to accumulate bonuses.",
-            "3. Log in again after midnight each day.",
+            `1. Récompense de connexion quotidienne : ${fmt(DAILY_BONUS)}.`,
+            "2. Connectez-vous une fois par jour pour accumuler des bonus.",
+            "3. Reconnectez-vous après minuit chaque jour pour pointer à nouveau.",
           ].map((tip, i) => (
             <p key={i} style={{ fontSize: 13, color: "#888", margin: 0, lineHeight: 1.5 }}>{tip}</p>
           ))}

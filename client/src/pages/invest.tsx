@@ -28,14 +28,16 @@ interface ProductWithOwnership extends Product {
 }
 
 const VIP_NAMES = [
-  "Nano AI Robot",
-  "Smart AI Robot",
-  "Pro AI Robot",
-  "Elite AI Robot",
-  "Premium AI Robot",
-  "Expert AI Robot",
-  "Master AI Robot",
-  "Ultra AI Robot",
+  "Rouleau Compacteur",
+  "Chargeuse-Pelleteuse",
+  "Pelleteuse Hydraulique",
+  "Camion Bétonnière",
+  "Camion Benne",
+  "Grue à Tour",
+  "Bulldozer",
+  "Finisseur de Chaussée",
+  "Foreuse",
+  "Tunnelier",
 ];
 
 export default function InvestPage() {

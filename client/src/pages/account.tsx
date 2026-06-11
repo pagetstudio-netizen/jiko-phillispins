@@ -73,20 +73,20 @@ export default function AccountPage() {
   const level = (products?.length || 0) === 0 ? "LV0" : `LV${Math.min(products!.length, 9)}`;
 
   const quickActions = [
-    { icon: iconRecharge, label: fr ? "Recharger" : "Deposit",  href: "/deposit" },
-    { icon: iconRetirer,  label: fr ? "Retirer"   : "Withdraw", href: "/withdrawal" },
-    { icon: iconRecords,  label: fr ? "Historique": "History",  href: "/deposit-orders" },
+    { icon: iconRecharge, label: "Recharger", href: "/deposit" },
+    { icon: iconRetirer,  label: "Retirer",   href: "/withdrawal" },
+    { icon: iconRecords,  label: "Historique",href: "/deposit-orders" },
   ];
 
   const gridMenu = [
-    { icon: iconAbout,    label: fr ? "À propos"              : "About",           action: () => navigate("/about") },
-    { icon: iconRegle,    label: fr ? "Réglementation"        : "Rules",           action: () => navigate("/rules") },
-    { icon: iconRecords,  label: fr ? "Historique"            : "History",         action: () => navigate("/deposit-orders") },
-    { icon: iconSupport,  label: fr ? "Service client"        : "Support",         action: () => navigate("/service") },
-    { icon: iconDownload, label: fr ? "Télécharger l'app"     : "Download app",    action: () => { const link = appLinks?.appDownloadLink; if (link) window.open(link, "_blank"); else toast({ title: fr ? "Lien non configuré" : "Link not configured yet", variant: "destructive" }); } },
-    { icon: iconBankcard, label: fr ? "Lier une carte bancaire": "Bank card",      action: () => navigate("/wallet") },
-    { icon: iconPassword, label: fr ? "Changer le mot de passe": "Change password",action: () => navigate("/change-password") },
-    { icon: iconGift,     label: "GIFT",                                            action: () => navigate("/gift-code") },
+    { icon: iconAbout,    label: "À propos",               action: () => navigate("/about") },
+    { icon: iconRegle,    label: "Réglementation",          action: () => navigate("/rules") },
+    { icon: iconRecords,  label: "Historique",              action: () => navigate("/deposit-orders") },
+    { icon: iconSupport,  label: "Service client",          action: () => navigate("/service") },
+    { icon: iconDownload, label: "Télécharger l'app",       action: () => { const link = appLinks?.appDownloadLink; if (link) window.open(link, "_blank"); else toast({ title: "Lien non configuré", variant: "destructive" }); } },
+    { icon: iconBankcard, label: "Lier une carte bancaire", action: () => navigate("/wallet") },
+    { icon: iconPassword, label: "Changer le mot de passe", action: () => navigate("/change-password") },
+    { icon: iconGift,     label: "GIFT",                    action: () => navigate("/gift-code") },
   ];
 
   return (
@@ -141,7 +141,7 @@ export default function AccountPage() {
 
           {/* Greeting */}
           <div className="mt-2 pr-20">
-            <p className="text-white font-black text-3xl leading-tight">{fr ? "Bonjour," : "Hello,"}</p>
+            <p className="text-white font-black text-3xl leading-tight">Bonjour,</p>
             <p className="text-gray-300 text-base font-medium mt-0.5" data-testid="text-phone">
               {phonePrefix} {user.phone}
             </p>
@@ -175,7 +175,7 @@ export default function AccountPage() {
             <p className="text-white font-extrabold text-xl leading-tight" data-testid="text-balance">
               {fmt(balance)}
             </p>
-            <p className="text-gray-400 text-sm">{fr ? "Solde" : "Balance"}</p>
+            <p className="text-gray-400 text-sm">Solde</p>
           </div>
           <div
             className="flex-1 rounded-2xl p-4 flex flex-col gap-1"
@@ -184,7 +184,7 @@ export default function AccountPage() {
             <p className="text-white font-extrabold text-xl leading-tight" data-testid="text-cumulative">
               {fmt(totalEarnings)}
             </p>
-            <p className="text-gray-400 text-sm">{fr ? "Revenus cumulés" : "Total earned"}</p>
+            <p className="text-gray-400 text-sm">Revenus cumulés</p>
           </div>
         </div>
 
@@ -221,7 +221,7 @@ export default function AccountPage() {
             data-testid="button-logout"
           >
             <LogOut className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold text-base">{fr ? "Déconnexion" : "Log Out"}</span>
+            <span className="text-white font-semibold text-base">Déconnexion</span>
           </button>
         </div>
 
@@ -232,22 +232,22 @@ export default function AccountPage() {
       <Dialog open={showPinModal} onOpenChange={setShowPinModal}>
         <DialogContent className="max-w-sm" style={{ background: "#1a1a1a", border: "1px solid rgba(245,158,11,0.3)" }}>
           <DialogHeader>
-            <DialogTitle className="text-center text-white">Administrator Access</DialogTitle>
+            <DialogTitle className="text-center text-white">Accès Administrateur</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-400 text-center">Enter your PIN to access the admin panel</p>
+            <p className="text-sm text-gray-400 text-center">Saisissez votre PIN pour accéder au panneau d'administration</p>
             <Input
               type="password"
               value={adminPin}
               onChange={(e) => setAdminPin(e.target.value)}
-              placeholder="PIN Code"
+              placeholder="Code PIN"
               className="text-center text-2xl tracking-widest bg-black/40 border-white/20 text-white"
               maxLength={8}
               data-testid="input-admin-pin"
             />
             <Button
               onClick={() => {
-                if (adminPin.length < 4) { toast({ title: "PIN must be at least 4 characters", variant: "destructive" }); return; }
+                if (adminPin.length < 4) { toast({ title: "Le PIN doit contenir au moins 4 caractères", variant: "destructive" }); return; }
                 verifyPinMutation.mutate(adminPin);
               }}
               disabled={verifyPinMutation.isPending || adminPin.length < 4}
@@ -256,7 +256,7 @@ export default function AccountPage() {
               data-testid="button-verify-pin"
             >
               {verifyPinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Confirm
+              Confirmer
             </Button>
           </div>
         </DialogContent>

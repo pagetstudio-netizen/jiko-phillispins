@@ -43,10 +43,10 @@ export default function TasksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       refreshUser();
-      toast({ title: "Reward claimed!", description: "The bonus has been added to your account." });
+      toast({ title: "Récompense reçue !", description: "Le bonus a été ajouté à votre compte." });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
@@ -90,7 +90,7 @@ export default function TasksPage() {
           textShadow: "0 2px 12px rgba(0,0,0,0.7)",
           textTransform: "uppercase",
         }}>
-          MISSION CENTER
+          CENTRE DE MISSIONS
         </div>
       </div>
 
@@ -101,14 +101,14 @@ export default function TasksPage() {
           <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }} data-testid="text-total-rewards">
             {fmt(totalClaimed)}
           </div>
-          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Rewards Earned</div>
+          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Récompenses gagnées</div>
         </div>
         {/* Team investment */}
         <div style={{ background: DARK_CARD, borderRadius: 12, border: `1px solid #333`, padding: "16px 12px", textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }} data-testid="text-team-investment">
             {fmt(currentInvestment)}
           </div>
-          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Team Investment</div>
+          <div style={{ fontSize: 11, color: "#888", marginTop: 5 }}>Investissement équipe</div>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export default function TasksPage() {
                 {/* Card top */}
                 <div style={{ padding: "16px 16px 12px", display: "flex", gap: 14 }}>
                   <div style={{ flexShrink: 0, textAlign: "center" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Mission</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Mission N°</div>
                     <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{missionNum}</div>
                   </div>
                   <div style={{ flex: 1, fontSize: 13, color: "#ccc", lineHeight: 1.6 }}>
@@ -150,9 +150,9 @@ export default function TasksPage() {
                 {/* Stats row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
                   {[
-                    { label: "Current",  value: fmt(current) },
-                    { label: "Target",   value: fmt(target) },
-                    { label: "Progress", value: `${pct}%` },
+                    { label: "Actuel",    value: fmt(current) },
+                    { label: "Objectif", value: fmt(target) },
+                    { label: "Progrès",  value: `${pct}%` },
                   ].map((col, i) => (
                     <div
                       key={i}
@@ -186,7 +186,7 @@ export default function TasksPage() {
                         justifyContent: "center",
                       }}
                     >
-                      ✓ Claimed
+                      ✓ Réclamé
                     </div>
                   ) : task.canClaim ? (
                     <button
@@ -211,7 +211,7 @@ export default function TasksPage() {
                     >
                       {claimMutation.isPending ? (
                         <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
-                      ) : `Claim ${fmt(task.reward)}`}
+                      ) : `Réclamer ${fmt(task.reward)}`}
                     </button>
                   ) : (
                     <div
@@ -228,7 +228,7 @@ export default function TasksPage() {
                         justifyContent: "center",
                       }}
                     >
-                      In Progress
+                      En cours
                     </div>
                   )}
                 </div>
@@ -237,7 +237,7 @@ export default function TasksPage() {
           })
         ) : (
           <div style={{ textAlign: "center", padding: "48px 0", color: "#555" }}>
-            No missions available
+            Aucune mission disponible
           </div>
         )}
       </div>
