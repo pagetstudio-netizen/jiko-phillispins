@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import buildingImg from "@assets/file_000000008ed8720a9a149bc45896943c_1779479835731.png";
+import buildingImg from "@assets/IMG_20260610_064537_476_1781186238210.jpg";
 
 interface AboutModalProps {
   open: boolean;

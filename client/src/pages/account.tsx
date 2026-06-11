@@ -13,7 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/lib/i18n";
 
-import nioAvatar   from "@assets/IMG-20260522-WA0031_1779519908758.jpg";
+import nioAvatar   from "@assets/IMG_20260610_064537_331_1781186238252.jpg";
 import iconRecharge  from "@assets/recharge-icon-BZHWSjQZ_1779464171620.png";
 import iconRetirer   from "@assets/withdraw-icon-DFsum39V_(1)_1779464171531.png";
 import iconRecords   from "@assets/mine-mod-records-DgHXSKa1_1779464171459.png";

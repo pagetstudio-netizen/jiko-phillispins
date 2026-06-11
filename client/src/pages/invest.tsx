@@ -9,17 +9,14 @@ import { useUserCurrency } from "@/lib/useUserCurrency";
 import { useLang } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
-import heroImg from "@assets/IMG_20260610_064536_725_1781133373757.jpg";
-import r1 from "@assets/IMG_20260610_064537_676_1781133373703.jpg";
-import r2 from "@assets/IMG_20260610_064537_635_1781133373730.jpg";
-import r3 from "@assets/IMG_20260610_064537_278_1781133373783.jpg";
-import r4 from "@assets/IMG_20260610_064537_345_1781133373807.jpg";
-import r5 from "@assets/IMG_20260610_064536_957_1781133373542.jpg";
-import r6 from "@assets/IMG_20260610_064536_850_1781133373673.jpg";
-import r7 from "@assets/IMG_20260610_064537_331_1781133373827.jpg";
-import r8 from "@assets/IMG_20260610_231500_793_1781133437015.jpg";
+import heroImg from "@assets/IMG_20260610_064537_476_1781186238210.jpg";
+import r1 from "@assets/IMG_20260610_064537_676_1781186237954.jpg";
+import r2 from "@assets/IMG_20260610_064537_345_1781186238173.jpg";
+import r3 from "@assets/IMG_20260610_064537_278_1781186238193.jpg";
+import r4 from "@assets/IMG_20260610_064536_722_1781186238228.jpg";
+import r5 from "@assets/IMG_20260610_064537_476_1781186238210.jpg";
 
-const CAR_IMAGES = [r1, r2, r3, r4, r5, r6, r7, r8];
+const CAR_IMAGES = [r1, r2, r3, r4, r5, r1, r2, r3];
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;

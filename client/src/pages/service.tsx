@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { SiTelegram } from "react-icons/si";
 import { useLang } from "@/lib/i18n";
-import heroBg from "@assets/images_(29)_1779519826317.jpeg";
+import heroBg from "@assets/IMG_20260610_064536_722_1781186238228.jpg";
 
 export default function ServicePage() {
   const { lang, t } = useLang();
