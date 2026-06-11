@@ -244,10 +244,10 @@ export async function seed() {
   // Check if settings exist
   const existingSettings = await db.select().from(platformSettings);
   const requiredSettings = [
-    { key: "supportLink", value: "https://t.me/EiffageSupport" },
-    { key: "support2Link", value: "https://t.me/EiffageSupport" },
-    { key: "channelLink", value: "https://t.me/EiffageSupport" },
-    { key: "groupLink", value: "https://t.me/+Y9c8J9PO1hg0MGNh" },
+    { key: "supportLink", value: "https://wa.me/qr/IXZNRQDK7IFJH1" },
+    { key: "support2Link", value: "https://t.me/EIFFAGE_service" },
+    { key: "channelLink", value: "https://t.me/EIFFAGE_canzl" },
+    { key: "groupLink", value: "https://whatsapp.com/channel/0029VbDH4mGElagq0ISJ7e1N" },
     { key: "signupBonus", value: "500" },
     { key: "minDeposit", value: "3000" },
     { key: "minWithdrawal", value: "1500" },
@@ -278,7 +278,7 @@ export async function seed() {
   ];
 
   // Settings that should always be updated to the required value (critical platform config)
-  const alwaysUpdateKeys = new Set(["signupBonus", "minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "maxWithdrawalsPerDay", "level1Commission", "level2Commission", "level3Commission", "groupLink", "adminCurrency", "phpToFcfaRate"]);
+  const alwaysUpdateKeys = new Set(["signupBonus", "minDeposit", "minWithdrawal", "withdrawalFees", "withdrawalStartHour", "withdrawalEndHour", "maxWithdrawalsPerDay", "level1Commission", "level2Commission", "level3Commission", "supportLink", "support2Link", "channelLink", "groupLink", "adminCurrency", "phpToFcfaRate"]);
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);

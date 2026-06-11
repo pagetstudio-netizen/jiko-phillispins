@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
-import { SiTelegram } from "react-icons/si";
+import { SiTelegram, SiWhatsapp } from "react-icons/si";
 import { useLang } from "@/lib/i18n";
 import heroBg from "@assets/IMG_20260610_064536_722_1781186238228.jpg";
 
 export default function ServicePage() {
-  const { lang, t } = useLang();
+  const { lang } = useLang();
   const [, navigate] = useLocation();
   useEffect(() => { document.title = "Service Client | EIFFAGE"; }, []);
 
@@ -26,19 +26,28 @@ export default function ServicePage() {
 
   const links = [
     {
-      label: lang === "fr" ? "Service Telegram" : "Telegram Support",
-      url: settings?.supportLink || "https://t.me/EiffageSupport",
+      label: lang === "fr" ? "WhatsApp Support" : "WhatsApp Support",
+      url: settings?.supportLink || "https://wa.me/qr/IXZNRQDK7IFJH1",
       testId: "button-support-link",
+      type: "whatsapp" as const,
     },
     {
-      label: lang === "fr" ? "Groupes Telegram" : "Telegram Groups",
-      url: settings?.groupLink || "https://t.me/EiffageSupport",
-      testId: "button-group-link",
+      label: lang === "fr" ? "Telegram Service" : "Telegram Support",
+      url: settings?.support2Link || "https://t.me/EIFFAGE_service",
+      testId: "button-support2-link",
+      type: "telegram" as const,
     },
     {
-      label: lang === "fr" ? "Chaînes Telegram" : "Telegram Channels",
-      url: settings?.channelLink || "https://t.me/EiffageSupport",
+      label: lang === "fr" ? "Canal Telegram" : "Telegram Channel",
+      url: settings?.channelLink || "https://t.me/EIFFAGE_canzl",
       testId: "button-channel-link",
+      type: "telegram" as const,
+    },
+    {
+      label: lang === "fr" ? "Chaîne WhatsApp" : "WhatsApp Channel",
+      url: settings?.groupLink || "https://whatsapp.com/channel/0029VbDH4mGElagq0ISJ7e1N",
+      testId: "button-group-link",
+      type: "whatsapp" as const,
     },
   ];
 
@@ -62,13 +71,11 @@ export default function ServicePage() {
           alt=""
           style={{ width: "100%", height: 220, objectFit: "cover", objectPosition: "center 40%", display: "block" }}
         />
-        {/* gradient overlay */}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.65) 100%)",
         }} />
 
-        {/* back button */}
         <div style={{ position: "absolute", top: 44, left: 16, zIndex: 10 }}>
           <button
             data-testid="button-back"
@@ -79,7 +86,6 @@ export default function ServicePage() {
           </button>
         </div>
 
-        {/* centered text */}
         <div style={{
           position: "absolute", inset: 0,
           display: "flex", flexDirection: "column",
@@ -102,11 +108,10 @@ export default function ServicePage() {
       <div style={{ flex: 1, padding: "18px 12px 60px", display: "flex", flexDirection: "column", gap: 8 }}>
 
         {/* Section label */}
-        <p style={{ color: "#3b82f6", fontSize: 14, fontWeight: 600, marginBottom: 4, paddingLeft: 2 }}>
-          Telegram
+        <p style={{ color: "#9ca3af", fontSize: 13, fontWeight: 600, marginBottom: 4, paddingLeft: 2 }}>
+          {lang === "fr" ? "Nous contacter" : "Contact us"}
         </p>
 
-        {/* Telegram rows */}
         {links.map((item) => (
           <button
             key={item.testId}
@@ -124,14 +129,16 @@ export default function ServicePage() {
               cursor: "pointer",
             }}
           >
-            {/* Telegram circle icon */}
             <div style={{
               width: 44, height: 44, borderRadius: "50%",
-              background: "#229ED9",
+              background: item.type === "whatsapp" ? "#25D366" : "#229ED9",
               display: "flex", alignItems: "center", justifyContent: "center",
               flexShrink: 0,
             }}>
-              <SiTelegram style={{ width: 22, height: 22, color: "white" }} />
+              {item.type === "whatsapp"
+                ? <SiWhatsapp style={{ width: 22, height: 22, color: "white" }} />
+                : <SiTelegram style={{ width: 22, height: 22, color: "white" }} />
+              }
             </div>
 
             <span style={{ flex: 1, color: "white", fontSize: 15, fontWeight: 500, textAlign: "left" }}>

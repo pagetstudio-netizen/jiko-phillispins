@@ -92,10 +92,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      supportLink: "https://t.me/EiffageSupport",
-      support2Link: "https://t.me/EiffageSupport",
-      channelLink: "https://t.me/EiffageSupport",
-      groupLink: "https://t.me/+R9SFSGneBkg3NTFh",
+      supportLink: "https://wa.me/qr/IXZNRQDK7IFJH1",
+      support2Link: "https://t.me/EIFFAGE_service",
+      channelLink: "https://t.me/EIFFAGE_canzl",
+      groupLink: "https://whatsapp.com/channel/0029VbDH4mGElagq0ISJ7e1N",
       appDownloadLink: "",
       signupBonus: "500",
       minDeposit: "3000",
@@ -116,10 +116,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
   useEffect(() => {
     if (settings) {
       form.reset({
-        supportLink: settings.supportLink || "https://t.me/EiffageSupport",
-        support2Link: settings.support2Link || "https://t.me/EiffageSupport",
-        channelLink: settings.channelLink || "https://t.me/EiffageSupport",
-        groupLink: settings.groupLink || "https://t.me/+R9SFSGneBkg3NTFh",
+        supportLink: settings.supportLink || "https://wa.me/qr/IXZNRQDK7IFJH1",
+        support2Link: settings.support2Link || "https://t.me/EIFFAGE_service",
+        channelLink: settings.channelLink || "https://t.me/EIFFAGE_canzl",
+        groupLink: settings.groupLink || "https://whatsapp.com/channel/0029VbDH4mGElagq0ISJ7e1N",
         appDownloadLink: settings.appDownloadLink || "",
         signupBonus: settings.signupBonus || "500",
         minDeposit: settings.minDeposit || "3000",
