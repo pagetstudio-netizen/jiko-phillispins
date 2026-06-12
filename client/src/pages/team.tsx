@@ -5,9 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
-import heroBg from "@assets/IMG_20260610_064537_635_1781191770166.jpg";
-import carLeft from "@assets/IMG_20260610_064536_725_1781191770204.jpg";
-import carRight from "@assets/IMG_20260610_064531_480_1781191770226.jpg";
+import heroBg from "@assets/IMG_20260610_064537_635_1781279350395.jpg";
+import carLeft from "@assets/IMG_20260610_064536_722_1781279350174.jpg";
+import carRight from "@assets/IMG_20260610_064531_480_1781279350346.jpg";
 
 interface TeamStats {
   level1Count: number;

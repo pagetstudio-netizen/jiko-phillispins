@@ -5,7 +5,7 @@ import { ChevronLeft, Loader2, DollarSign, Copy, CheckCircle2, Upload, X, Zap, H
 import { Link, useLocation } from "wouter";
 import { useUserCurrency } from "@/lib/useUserCurrency";
 import { apiRequest } from "@/lib/queryClient";
-import heroImg from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779519826156.png";
+import heroImg from "@assets/IMG_20260610_064537_476_1781279350278.jpg";
 import historyIcon from "@assets/5708960_1774829436660-C3SIos42_1775833646464.png";
 import type { ManualPaymentAccount } from "@shared/schema";
 

@@ -8,16 +8,14 @@ import { ChevronLeft, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@shared/schema";
 
-import r1 from "@assets/ROBOTIQUE-ET-IA_1779479959842.jpg";
-import r2 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479959906.png";
-import r3 from "@assets/robot-humanoide_1779479959935.jpg";
-import r4 from "@assets/roboter-pyhsikalische-ki-Xpert.Digital-png_1779479959968.png";
-import r5 from "@assets/images_(30)_1779479959995.jpeg";
-import r6 from "@assets/photo-1737644467636-6b0053476bb2_1779479960022.jpeg";
-import r7 from "@assets/images_(29)_1779479856301.jpeg";
-import r8 from "@assets/Liberer-le-potentiel-de-lintelligence-artificielle-dans-la-rob_1779479856196.png";
+import r1 from "@assets/IMG_20260610_064536_722_1781279350174.jpg";
+import r2 from "@assets/IMG_20260610_064537_476_1781279350278.jpg";
+import r3 from "@assets/IMG_20260610_064532_360_1781279350322.jpg";
+import r4 from "@assets/IMG_20260610_064531_480_1781279350346.jpg";
+import r5 from "@assets/IMG_20260610_064537_345_1781279350369.jpg";
+import r6 from "@assets/IMG_20260610_064537_635_1781279350395.jpg";
 
-const ROBOT_IMAGES = [r1, r2, r3, r4, r5, r6, r7, r8];
+const ROBOT_IMAGES = [r1, r2, r3, r4, r5, r6];
 const defaultImg = r1;
 
 interface ProductWithOwnership extends Product {
