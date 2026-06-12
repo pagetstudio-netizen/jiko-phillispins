@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Check, X, Ban, Search, Loader2, ArrowLeft,
+  Check, X, Ban, Search, Loader2, ArrowLeft, LogOut,
   Copy, ClipboardCheck, Send, Filter
 } from "lucide-react";
 import type { Deposit, Withdrawal } from "@shared/schema";
@@ -42,7 +42,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function BankerPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const { formatAmount } = useAdminCurrency();
   const [, navigate] = useLocation();
@@ -52,12 +52,20 @@ export default function BankerPage() {
 
   if (!user?.isAdmin && !user?.isBanker) return null;
 
+  const isBankerOnly = !user.isAdmin && (user as any).isBanker;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-secondary px-4 py-4 flex items-center gap-4 sticky top-0 z-50">
-        <Button size="icon" variant="ghost" onClick={() => navigate("/account")} data-testid="button-back">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+        {isBankerOnly ? (
+          <Button size="icon" variant="ghost" onClick={() => logout()} data-testid="button-logout">
+            <LogOut className="w-5 h-5" />
+          </Button>
+        ) : (
+          <Button size="icon" variant="ghost" onClick={() => navigate("/account")} data-testid="button-back">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        )}
         <div>
           <h1 className="text-lg font-bold text-secondary-foreground">Espace Bankier</h1>
           <p className="text-xs text-muted-foreground">Gestion des recharges et retraits</p>
