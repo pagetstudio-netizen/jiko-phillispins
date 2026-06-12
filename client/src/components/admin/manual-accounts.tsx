@@ -12,6 +12,63 @@ import { Trash2, Plus, Pencil, X, Check, CreditCard } from "lucide-react";
 import { COUNTRIES } from "@/lib/countries";
 import type { ManualPaymentAccount } from "@shared/schema";
 
+import moovMoneyLogo from "@assets/ZJCa7PK_1781279204610.jpg";
+import tMoneyLogo from "@assets/ruU3bQe_1781279225301.png";
+import penguinLogo from "@assets/zOMoVcU_1781279225334.png";
+import mtnLogo from "@assets/XzQ5b64_1781279225359.png";
+import orangeMoneyLogo from "@assets/ctVnv9i_1781279225387.png";
+
+const LOGO_OPTIONS = [
+  { label: "Moov Money", src: moovMoneyLogo },
+  { label: "TMoney",     src: tMoneyLogo },
+  { label: "Mixx/Yas",  src: penguinLogo },
+  { label: "MTN",        src: mtnLogo },
+  { label: "Orange Money", src: orangeMoneyLogo },
+];
+
+function LogoPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="col-span-2">
+      <label className="text-xs text-muted-foreground mb-2 block">Logo opérateur</label>
+      <div className="flex flex-wrap gap-3">
+        {LOGO_OPTIONS.map((logo) => (
+          <button
+            key={logo.label}
+            type="button"
+            onClick={() => onChange(logo.src)}
+            className={`rounded-xl border-2 p-1 transition-all focus:outline-none ${
+              value === logo.src
+                ? "border-primary ring-2 ring-primary/30"
+                : "border-transparent hover:border-muted-foreground/40"
+            }`}
+            title={logo.label}
+            data-testid={`logo-option-${logo.label}`}
+          >
+            <img src={logo.src} alt={logo.label} className="w-14 h-14 rounded-lg object-cover" />
+            <p className="text-xs text-center mt-1 text-muted-foreground leading-tight w-14 truncate">{logo.label}</p>
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className={`rounded-xl border-2 p-1 transition-all focus:outline-none flex flex-col items-center justify-center ${
+            value === ""
+              ? "border-primary ring-2 ring-primary/30"
+              : "border-transparent hover:border-muted-foreground/40"
+          }`}
+          title="Aucun logo"
+          data-testid="logo-option-none"
+        >
+          <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center">
+            <X className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-center mt-1 text-muted-foreground w-14">Aucun</p>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const EMPTY_FORM = { operatorName: "", ownerName: "", phoneNumber: "", country: "", logoUrl: "", isActive: true };
 
 export default function AdminManualAccounts() {
@@ -122,10 +179,7 @@ export default function AdminManualAccounts() {
                   {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>
-              <div className="col-span-2">
-                <label className="text-xs text-muted-foreground mb-1 block">URL logo (optionnel)</label>
-                <Input placeholder="https://..." value={form.logoUrl} onChange={e => setForm(f => ({ ...f, logoUrl: e.target.value }))} data-testid="input-logo-url" />
-              </div>
+              <LogoPicker value={form.logoUrl} onChange={v => setForm(f => ({ ...f, logoUrl: v }))} />
               <div className="col-span-2 flex items-center gap-2">
                 <Switch checked={form.isActive} onCheckedChange={v => setForm(f => ({ ...f, isActive: v }))} id="new-active" />
                 <label htmlFor="new-active" className="text-sm">Actif</label>
@@ -161,7 +215,7 @@ export default function AdminManualAccounts() {
                       <select value={editing.country} onChange={e => setEditing(a => a ? { ...a, country: e.target.value } : a)} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
                         {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                       </select>
-                      <Input value={editing.logoUrl || ""} onChange={e => setEditing(a => a ? { ...a, logoUrl: e.target.value } : a)} placeholder="URL logo" className="col-span-2" />
+                      <LogoPicker value={editing.logoUrl || ""} onChange={v => setEditing(a => a ? { ...a, logoUrl: v } : a)} />
                       <div className="col-span-2 flex items-center gap-2">
                         <Switch checked={editing.isActive} onCheckedChange={v => setEditing(a => a ? { ...a, isActive: v } : a)} id={`edit-active-${account.id}`} />
                         <label htmlFor={`edit-active-${account.id}`} className="text-sm">Actif</label>
@@ -174,8 +228,12 @@ export default function AdminManualAccounts() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    {account.logoUrl && (
+                    {account.logoUrl ? (
                       <img src={account.logoUrl} alt={account.operatorName} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <CreditCard className="w-5 h-5 text-muted-foreground" />
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
