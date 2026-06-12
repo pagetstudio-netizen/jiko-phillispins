@@ -67,6 +67,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if ((user as any).isBanker && !user.isAdmin) {
+    return <Redirect to="/banker" />;
+  }
+
   return <>{children}</>;
 }
 

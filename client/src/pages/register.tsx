@@ -8,7 +8,9 @@ import { useAuth } from "@/lib/auth";
 import { Loader2, Eye, EyeOff, ChevronDown, Globe } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { ELIGIBLE_COUNTRIES } from "@/lib/countries";
+import type { DynamicCountry } from "@/lib/countries";
 import { CountrySelector } from "@/components/country-selector";
+import { useQuery } from "@tanstack/react-query";
 
 export default function RegisterPage() {
   const [, navigate] = useLocation();
@@ -51,8 +53,13 @@ export default function RegisterPage() {
     },
   });
 
+  const { data: dynamicCountries } = useQuery<DynamicCountry[]>({ queryKey: ["/api/countries"] });
+
   const selectedCountry = form.watch("country");
-  const countryData = ELIGIBLE_COUNTRIES.find(c => c.code === selectedCountry);
+  const countryList = (dynamicCountries && dynamicCountries.length > 0)
+    ? dynamicCountries
+    : ELIGIBLE_COUNTRIES.map(c => ({ ...c, id: 0, isActive: true, operators: [] }));
+  const countryData = countryList.find((c: any) => c.code === selectedCountry);
 
   async function onSubmit(data: RegisterForm) {
     setIsLoading(true);

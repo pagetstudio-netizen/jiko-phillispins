@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Trash2, Plus, Pencil, X, Check, CreditCard } from "lucide-react";
 import { COUNTRIES } from "@/lib/countries";
+import type { DynamicCountry } from "@/lib/countries";
 import type { ManualPaymentAccount } from "@shared/schema";
 
 import moovMoneyLogo from "@assets/ZJCa7PK_1781279204610.jpg";
@@ -80,6 +81,9 @@ export default function AdminManualAccounts() {
   const { data: accounts = [], isLoading } = useQuery<ManualPaymentAccount[]>({
     queryKey: ["/api/admin/manual-payment-accounts"],
   });
+
+  const { data: dynamicCountries } = useQuery<DynamicCountry[]>({ queryKey: ["/api/countries"] });
+  const countryList = (dynamicCountries && dynamicCountries.length > 0) ? dynamicCountries : COUNTRIES;
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof EMPTY_FORM) => {
@@ -176,7 +180,7 @@ export default function AdminManualAccounts() {
                   data-testid="select-country"
                 >
                   <option value="">Sélectionner...</option>
-                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                  {countryList.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>
               <LogoPicker value={form.logoUrl} onChange={v => setForm(f => ({ ...f, logoUrl: v }))} />
@@ -213,7 +217,7 @@ export default function AdminManualAccounts() {
                       <Input value={editing.ownerName} onChange={e => setEditing(a => a ? { ...a, ownerName: e.target.value } : a)} placeholder="Propriétaire" />
                       <Input value={editing.phoneNumber} onChange={e => setEditing(a => a ? { ...a, phoneNumber: e.target.value } : a)} placeholder="Numéro" />
                       <select value={editing.country} onChange={e => setEditing(a => a ? { ...a, country: e.target.value } : a)} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
-                        {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                        {countryList.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                       </select>
                       <LogoPicker value={editing.logoUrl || ""} onChange={v => setEditing(a => a ? { ...a, logoUrl: v } : a)} />
                       <div className="col-span-2 flex items-center gap-2">
