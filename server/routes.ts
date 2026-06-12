@@ -103,12 +103,25 @@ export async function registerRoutes(
   app.use("/api", globalApiLimiter);
 
   // ── SÉCURITÉ : Rate limiter strict pour login/register ───────────────────
+  // max: 30 (au lieu de 10) pour éviter les faux positifs en production Plesk
+  // où plusieurs utilisateurs peuvent partager la même IP Nginx si X-Forwarded-For
+  // n'est pas correctement configuré.
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10,
+    max: 30,
     standardHeaders: true,
     legacyHeaders: false,
-    validate: { trustProxy: false },
+    validate: { trustProxy: false, keyGeneratorIpFallback: false },
+    keyGenerator: (req) => {
+      // Lire l'IP réelle depuis X-Forwarded-For si disponible, sinon req.ip
+      const forwarded = req.headers["x-forwarded-for"];
+      const ip = Array.isArray(forwarded)
+        ? forwarded[0]
+        : typeof forwarded === "string"
+        ? forwarded.split(",")[0].trim()
+        : req.ip || "unknown";
+      return ip;
+    },
     message: { message: "Trop de tentatives de connexion. Réessayez dans 15 minutes." },
   });
 
@@ -208,13 +221,31 @@ export async function registerRoutes(
         await testPool.end();
 
         const PgSessionStore = ConnectPgSimple(session);
+        const sslDisabled = url.includes("sslmode=disable");
         const pgStore = new PgSessionStore({
           conString: url,
           tableName: "session",
           createTableIfMissing: true,
           pruneSessionInterval: 60 * 60,
-          ssl: url.includes("sslmode=disable") ? false : { rejectUnauthorized: false },
-          errorLog: (err: Error) => console.error("[session-store]", err.message),
+          // Pass SSL via pgOptions so connect-pg-simple v10 honours it correctly
+          pgOptions: sslDisabled ? undefined : { ssl: { rejectUnauthorized: false } },
+          errorLog: (err: Error) => console.error("[session-store] write error:", err.message),
+        });
+
+        // Verify the store can actually write a session (catches RLS / permission issues early)
+        await new Promise<void>((resolve) => {
+          pgStore.set(
+            "__health_check__",
+            { cookie: { originalMaxAge: 60000 } } as any,
+            (err) => {
+              if (err) {
+                console.warn(`[session-store] ⚠️  Write test failed for ${safeUrl}: ${err.message}`);
+              } else {
+                pgStore.destroy("__health_check__", () => {});
+              }
+              resolve(); // always resolve — write failure is non-fatal, store still returned
+            }
+          );
         });
 
         console.log(`[session-store] ✓ PostgreSQL connecté : ${safeUrl}`);
@@ -235,16 +266,22 @@ export async function registerRoutes(
   // AWAIT synchrone — le store est prêt avant le premier login
   const sessionStore = await buildSessionStore();
 
-  // Cookie secure : utilise "auto" pour que Express décide selon req.secure
-  // (qui respecte X-Forwarded-Proto grâce à trust proxy).
-  // → HTTPS via Nginx : cookie marqué Secure automatiquement.
-  // → HTTP direct (dev, ou Plesk sans SSL) : cookie envoyé sans Secure.
-  // FORCE_SECURE_COOKIE=true/false pour forcer manuellement si besoin.
+  // Cookie secure :
+  // - FORCE_SECURE_COOKIE=true  → Secure forcé (HTTPS uniquement)
+  // - FORCE_SECURE_COOKIE=false → jamais Secure (HTTP/HTTPS)
+  // - non défini (défaut)       → false pour compatibilité maximale Plesk/Nginx
+  //   (Plesk peut ne pas transmettre X-Forwarded-Proto, "auto" échouerait)
+  //   Si votre site est en HTTPS sur Plesk, ajoutez FORCE_SECURE_COOKIE=true
   const forceSecure = process.env.FORCE_SECURE_COOKIE;
-  const secureCookie: boolean | "auto" =
-    forceSecure === "true" ? true :
-    forceSecure === "false" ? false :
-    "auto"; // comportement automatique recommandé
+  const secureCookie: boolean =
+    forceSecure === "true" ? true : false;
+
+  // sameSite: "lax" is correct for same-domain setups (Plesk serving frontend+backend)
+  // Use "none" only if frontend and backend are on different domains (requires Secure=true)
+  const sameSiteCookie: "lax" | "none" | "strict" =
+    process.env.COOKIE_SAME_SITE === "none" ? "none" :
+    process.env.COOKIE_SAME_SITE === "strict" ? "strict" :
+    "lax";
 
   app.use(
     session({
@@ -257,7 +294,7 @@ export async function registerRoutes(
         secure: secureCookie,
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
+        sameSite: sameSiteCookie,
       },
     })
   );
@@ -283,13 +320,18 @@ export async function registerRoutes(
       env: process.env.NODE_ENV,
       secure: req.secure,
       proto: req.headers["x-forwarded-proto"],
+      ip: req.ip,
+      forwardedFor: req.headers["x-forwarded-for"] || null,
       host: req.headers.host,
       sessionID: req.sessionID || null,
       hasSession: !!req.session?.userId,
-      cookieSecure: String(secureCookie),
+      cookieSecure: secureCookie,
+      cookieSameSite: sameSiteCookie,
       dbUrl: process.env.DATABASE_URL ? "set" : "missing",
       directUrl: process.env.DIRECT_URL ? "set" : "missing",
+      supabaseUrl: process.env.SUPABASE_DATABASE_URL ? "set" : "missing",
       sessionSecret: process.env.SESSION_SECRET ? "set" : "missing",
+      trustProxy: String(trustProxy),
       db: { status: dbStatus, userCount, error: dbError },
     });
   });

@@ -143,12 +143,17 @@ export class DatabaseStorage implements IStorage {
       balance: "500",
     } as any).returning();
     
-    await this.createTransaction({
-      userId: user.id,
-      type: "bonus",
-      amount: "500",
-      description: "Bonus d'inscription",
-    });
+    // Non-fatal: record signup bonus transaction, but don't fail registration if it errors
+    try {
+      await this.createTransaction({
+        userId: user.id,
+        type: "bonus",
+        amount: "500",
+        description: "Bonus d'inscription",
+      });
+    } catch (txErr: any) {
+      console.error("[createUser] bonus transaction failed (non-fatal):", txErr?.message || txErr);
+    }
     
     return user;
   }
