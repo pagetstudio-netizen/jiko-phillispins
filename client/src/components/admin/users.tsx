@@ -76,7 +76,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<"all" | "banned" | "blocked" | "promoter">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "banned" | "blocked" | "promoter" | "admin">("all");
   const [selectedUser, setSelectedUser] = useState<UserWithTeam | null>(null);
   const [editBalance, setEditBalance] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -179,6 +179,7 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
     if (statusFilter === "banned") return u.isBanned;
     if (statusFilter === "blocked") return u.isWithdrawalBlocked;
     if (statusFilter === "promoter") return u.isPromoter;
+    if (statusFilter === "admin") return u.isAdmin || u.isSuperAdmin;
     return true;
   });
 
@@ -247,15 +248,16 @@ export default function AdminUsers({ isSuperAdmin }: AdminUsersProps) {
         </div>
       )}
 
-      <div className="flex gap-2 overflow-x-auto">
-        {(["all", "banned", "blocked", "promoter"] as const).map((status) => (
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {(["all", "admin", "banned", "blocked", "promoter"] as const).map((status) => (
           <Button
             key={status}
             size="sm"
             variant={statusFilter === status ? "default" : "outline"}
-            onClick={() => setStatusFilter(status)}
+            onClick={() => { setStatusFilter(status); setCurrentPage(1); }}
+            data-testid={`filter-${status}`}
           >
-            {status === "all" ? "Tous" : status === "banned" ? "Bannis" : status === "blocked" ? "Retrait bloqué" : "Promoteurs"}
+            {status === "all" ? "Tous" : status === "admin" ? "Admins" : status === "banned" ? "Bannis" : status === "blocked" ? "Retrait bloqué" : "Promoteurs"}
           </Button>
         ))}
       </div>
