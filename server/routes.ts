@@ -2125,6 +2125,9 @@ export async function registerRoutes(
           await storage.logAdminAction(req.session.userId!, "toggle_must_invite", userId, `Doit inviter: ${!user4?.mustInviteToWithdraw}`);
           break;
         case "toggle-banker":
+          if (!adminUser?.isSuperAdmin) {
+            return res.status(403).json({ message: "Action réservée au super admin" });
+          }
           const userBanker = await storage.getUser(userId);
           await storage.updateUser(userId, { isBanker: !userBanker?.isBanker });
           await storage.logAdminAction(req.session.userId!, "toggle_banker", userId, `Bankier: ${!userBanker?.isBanker}`);
