@@ -1863,7 +1863,12 @@ export async function registerRoutes(
     try {
       const status = req.query.status as string || "pending";
       const deposits = await storage.getDeposits(status === "pending" ? "pending" : undefined);
-      const filtered = status === "all" ? deposits : deposits.filter(d => d.status === status);
+      let filtered = status === "all" ? deposits : deposits.filter(d => d.status === status);
+      // Banker-only: restrict to their country
+      const requester = await storage.getUser(req.session.userId!);
+      if (requester && !requester.isAdmin && requester.isBanker) {
+        filtered = filtered.filter((d: any) => d.user?.country === requester.country);
+      }
       res.json(filtered);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -1986,7 +1991,12 @@ export async function registerRoutes(
     try {
       const status = req.query.status as string || "pending";
       const withdrawals = await storage.getWithdrawals(status === "pending" ? "pending" : undefined);
-      const filtered = status === "all" ? withdrawals : withdrawals.filter(w => w.status === status);
+      let filtered = status === "all" ? withdrawals : withdrawals.filter(w => w.status === status);
+      // Banker-only: restrict to their country
+      const requester = await storage.getUser(req.session.userId!);
+      if (requester && !requester.isAdmin && requester.isBanker) {
+        filtered = filtered.filter((w: any) => w.user?.country === requester.country);
+      }
       res.json(filtered);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -2040,11 +2050,19 @@ export async function registerRoutes(
 
   app.get("/api/banker/history", requireBanker, async (req, res) => {
     try {
+      const requester = await storage.getUser(req.session.userId!);
       const allDeposits = await storage.getDeposits();
       const allWithdrawals = await storage.getWithdrawals();
+      // Banker-only: restrict to their country
+      const deposits = (requester && !requester.isAdmin && requester.isBanker)
+        ? allDeposits.filter((d: any) => d.user?.country === requester.country)
+        : allDeposits;
+      const withdrawals = (requester && !requester.isAdmin && requester.isBanker)
+        ? allWithdrawals.filter((w: any) => w.user?.country === requester.country)
+        : allWithdrawals;
       const combined = [
-        ...allDeposits.map((d: any) => ({ ...d, _type: "deposit" })),
-        ...allWithdrawals.map((w: any) => ({ ...w, _type: "withdrawal" })),
+        ...deposits.map((d: any) => ({ ...d, _type: "deposit" })),
+        ...withdrawals.map((w: any) => ({ ...w, _type: "withdrawal" })),
       ].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       res.json(combined);
     } catch (error: any) {
