@@ -2524,9 +2524,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: `Montant minimum: ${minDeposit} FCFA` });
       }
 
-      const host = process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : `${req.protocol}://${req.get("host")}`;
+      const host = process.env.APP_URL || "https://polaroidaut.top";
 
       const externalRef = `EIF-${user.id}-${Date.now()}`;
       const redirectUrl = `${host}/deposit-orders`;
