@@ -1869,7 +1869,24 @@ export async function registerRoutes(
       if (requester && !requester.isAdmin && requester.isBanker) {
         filtered = filtered.filter((d: any) => d.user?.country === requester.country);
       }
-      res.json(filtered);
+      // Strip screenshotData from list to avoid huge response (~58MB with base64 images)
+      // Screenshots are loaded on-demand via /api/admin/deposits/:id/screenshot
+      const stripped = filtered.map((d: any) => {
+        const { screenshotData, ...rest } = d;
+        return { ...rest, hasScreenshot: !!screenshotData };
+      });
+      res.json(stripped);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/deposits/:id/screenshot", requireBanker, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deposit = await storage.getDeposit(id);
+      if (!deposit) return res.status(404).json({ message: "Dépôt introuvable" });
+      res.json({ screenshotData: (deposit as any).screenshotData || null });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAdminCurrency } from "@/lib/useAdminCurrency";
-import { Check, X, Ban, Search, Loader2, Copy, ClipboardCheck } from "lucide-react";
+import { Check, X, Ban, Search, Loader2, Copy, ClipboardCheck, ImageIcon } from "lucide-react";
 import type { Deposit } from "@shared/schema";
 
 interface DepositWithUser extends Deposit {
@@ -19,6 +19,43 @@ interface DepositWithUser extends Deposit {
     country: string;
     isPromoter: boolean;
   };
+  hasScreenshot?: boolean;
+}
+
+function DepositScreenshot({ depositId }: { depositId: number }) {
+  const [show, setShow] = useState(false);
+  const { data, isLoading } = useQuery<{ screenshotData: string | null }>({
+    queryKey: ["/api/admin/deposits", depositId, "screenshot"],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/deposits/${depositId}/screenshot`, { credentials: "include" });
+      if (!res.ok) throw new Error("Erreur chargement capture");
+      return res.json();
+    },
+    enabled: show,
+  });
+
+  if (!show) {
+    return (
+      <Button size="sm" variant="outline" className="w-full" onClick={() => setShow(true)}>
+        <ImageIcon className="w-4 h-4 mr-2" /> Voir la capture d'écran
+      </Button>
+    );
+  }
+  if (isLoading) return <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+  if (!data?.screenshotData) return <p className="text-xs text-muted-foreground text-center py-2">Aucune capture disponible</p>;
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-2 font-medium">Capture d'écran de paiement</p>
+      <a href={data.screenshotData} target="_blank" rel="noopener noreferrer">
+        <img
+          src={data.screenshotData}
+          alt="Preuve de paiement"
+          className="w-full max-h-64 object-contain rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity"
+        />
+      </a>
+      <p className="text-xs text-muted-foreground mt-1">Appuyez pour agrandir</p>
+    </div>
+  );
 }
 
 function statusLabel(s: string) {
@@ -57,11 +94,14 @@ export default function AdminDeposits() {
     }
   };
 
-  const { data: allDeposits, isLoading } = useQuery<DepositWithUser[]>({
+  const { data: allDeposits, isLoading, isError, error } = useQuery<DepositWithUser[]>({
     queryKey: ["/api/admin/deposits"],
     queryFn: async () => {
       const res = await fetch(`/api/admin/deposits?status=all`, { credentials: "include" });
-      if (!res.ok) throw new Error("Erreur de chargement des recharges");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || `Erreur ${res.status}`);
+      }
       return res.json();
     },
   });
@@ -125,6 +165,10 @@ export default function AdminDeposits() {
       <div className="space-y-3">
         {isLoading ? (
           Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-40" />)
+        ) : isError ? (
+          <div className="text-center py-8 text-destructive">
+            Erreur : {(error as any)?.message || "Impossible de charger les recharges"}
+          </div>
         ) : filteredDeposits.length > 0 ? (
           filteredDeposits.map((deposit) => (
             <Card key={deposit.id}>
@@ -242,18 +286,8 @@ export default function AdminDeposits() {
                   </Button>
                 )}
 
-                {(deposit as any).screenshotData && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Capture d'écran de paiement</p>
-                    <a href={(deposit as any).screenshotData} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={(deposit as any).screenshotData}
-                        alt="Preuve de paiement"
-                        className="w-full max-h-64 object-contain rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                      />
-                    </a>
-                    <p className="text-xs text-muted-foreground mt-1">Appuyez pour agrandir</p>
-                  </div>
+                {deposit.hasScreenshot && (
+                  <DepositScreenshot depositId={deposit.id} />
                 )}
 
                 {deposit.status === "pending" && (
