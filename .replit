@@ -49,5 +49,5 @@ expertMode = true
 [userenv]
 
 [userenv.shared]
-SUPABASE_DATABASE_URL = "postgresql://postgres.woihliffrdvohpslhfvm:QetDCEU9KQeVYRpo@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
+SUPABASE_DATABASE_URL = "postgresql://postgres.ujmyxnafllbakhamsymw:wL8ZDAXogDpo5OsB@aws-1-us-west-2.pooler.supabase.com:6543/postgres"
 APP_URL = "https://auttelerngapp.cc"
